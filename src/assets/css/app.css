@@ -1,0 +1,14 @@
+@tailwind base;
+
+html {
+  @apply font-sans;
+  font-size: 14px;
+}
+
+body {
+  width: 348px;
+}
+
+@tailwind components;
+
+@tailwind utilities;
