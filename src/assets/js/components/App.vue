@@ -101,7 +101,7 @@ export default {
     apiToken: {
       async handler(val) {
         try {
-          await browser.storage.sync.set({ apiToken: val })
+          await this.$browser.storage.sync.set({ apiToken: val })
         } catch (error) {
           console.log(error)
         }
@@ -114,7 +114,7 @@ export default {
   methods: {
     async getApiToken() {
       try {
-        var result = await browser.storage.sync.get({ apiToken: '' })
+        var result = await this.$browser.storage.sync.get({ apiToken: '' })
         return result.apiToken
       } catch (error) {
         console.log(error)
@@ -122,7 +122,7 @@ export default {
     },
     async getCurrentTabHostname() {
       try {
-        var result = await browser.tabs.query({ active: true, currentWindow: true })
+        var result = await this.$browser.tabs.query({ active: true, currentWindow: true })
         var url = new URL(result[0].url)
 
         return url.hostname
@@ -149,7 +149,7 @@ export default {
       this.error = ''
 
       try {
-        await browser.storage.sync.remove('apiToken')
+        await this.$browser.storage.sync.remove('apiToken')
         this.apiToken = await this.getApiToken()
       } catch (error) {
         console.log(error)

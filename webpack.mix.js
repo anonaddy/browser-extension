@@ -2,6 +2,16 @@ let mix = require('laravel-mix')
 require('laravel-mix-purgecss')
 
 mix
+  .webpackConfig({
+    node: {
+      global: false
+    },
+    resolve: {
+        alias: {
+            'vue$': 'vue/dist/vue.runtime.js'
+        }
+    }
+  })
   .copy('src/app.html', 'dist/')
   .copy('src/manifest.json', 'dist/')
   .copyDirectory('src/assets/img', 'dist/img')

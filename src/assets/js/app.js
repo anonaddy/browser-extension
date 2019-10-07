@@ -3,7 +3,7 @@ import App from './components/App.vue'
 import Clipboard from 'v-clipboard'
 
 // Mozilla's polyfill
-window.browser = require('webextension-polyfill')
+Vue.prototype.$browser = require('webextension-polyfill')
 
 Vue.use(Clipboard)
 

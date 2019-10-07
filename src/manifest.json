@@ -1,6 +1,9 @@
 {
   "manifest_version": 2,
   "name": "AnonAddy",
+  "author": "Will Browning",
+  "description": "Open-source Anonymous Email Fowarding",
+  "homepage_url": "https://anonaddy.com",
   "version": "1.0.0",
   "icons": {
     "48": "img/icon.png",
@@ -18,8 +21,7 @@
   "content_security_policy": "script-src 'self' ; object-src 'self'",
   "applications": {
     "gecko": {
-      "id": "browser-extension@anonaddy",
-      "strict_min_version": "53.0"
+      "id": "browser-extension@anonaddy"
     }
   }
 }
