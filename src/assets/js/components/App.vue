@@ -1,19 +1,23 @@
 <template>
   <div class="px-3 pb-3 pt-4">
     <div v-if="!apiToken">
+      <div
+        v-if="error"
+        class="flex items-center justify-center text-xs border-t-4 rounded-sm text-yellow-800 border-yellow-600 bg-yellow-100 p-2 mb-3"
+        role="alert"
+      >
+        {{ error }}
+      </div>
+
       <input
         v-model="tokenInput"
         type="text"
         name="token"
-        placeholder="Enter your API token..."
+        placeholder="Enter your API token from the settings page..."
         required="required"
         autofocus="autofocus"
         class="appearance-none bg-white rounded-sm w-full p-2 text-grey-700 focus:shadow-outline mb-3"
       />
-
-      <p v-if="error" class="text-white text-xs italic mb-3">
-        {{ error }}
-      </p>
 
       <button
         @click="saveApiToken"
@@ -22,7 +26,7 @@
         Add API Token
       </button>
 
-      <p class="w-full text-xs text-center text-indigo-100 mt-3">
+      <p class="w-full text-xs text-indigo-100 mt-3">
         Don't have an account?
         <a
           href="https://app.anonaddy.com/register"
@@ -36,13 +40,21 @@
     </div>
 
     <div v-else>
-      <div v-if="newAlias" class="text-white text-sm mb-3">
+      <div
+        v-if="newAlias"
+        class="flex items-center justify-center text-xs border-t-4 rounded-sm text-green-800 border-green-600 bg-green-100 p-2 mb-3"
+        role="alert"
+      >
         {{ newAlias }}
       </div>
 
-      <p v-if="error" class="text-white text-xs italic mb-3">
+      <div
+        v-if="error"
+        class="flex items-center justify-center text-xs border-t-4 rounded-sm text-yellow-800 border-yellow-600 bg-yellow-100 p-2 mb-3"
+        role="alert"
+      >
         {{ error }}
-      </p>
+      </div>
 
       <button
         v-if="newAlias"
@@ -65,8 +77,8 @@
         <loader v-if="loading" />
       </button>
 
-      <p class="w-full text-xs text-center text-indigo-100 mt-3">
-        <a @click="deleteApiToken" class="text-grey-50 hover:text-indigo-50 cursor-pointer">
+      <p class="w-full text-xs text-indigo-100 mt-3">
+        <a @click="deleteApiToken" class="text-grey-200 hover:text-indigo-50 cursor-pointer">
           Logout
         </a>
       </p>
@@ -175,12 +187,16 @@ export default {
         this.loading = false
 
         if (response.status === 403) {
-          this.error = 'You have reached your UUID alias limit'
+          this.error = 'You have reached your active UUID alias limit'
         } else if (response.status === 429) {
           this.error = 'You have reached your hourly limit for creating new aliases'
         } else if (response.status === 200) {
-          let data = await response.json()
-          this.newAlias = data.data.email
+          if (response.redirected) {
+            this.error = 'Please check your API token'
+          } else {
+            let data = await response.json()
+            this.newAlias = data.data.email
+          }
         } else {
           this.error = 'An Error Has Occurred'
           console.log(error)

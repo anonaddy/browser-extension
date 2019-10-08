@@ -1,6 +1,6 @@
 {
   "name": "anonaddy-extension",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "AnonAddy browser extension.",
   "main": "app.js",
   "scripts": {
@@ -20,7 +20,7 @@
     "husky": "^3.0.8",
     "laravel-mix": "^5.0.0",
     "laravel-mix-purgecss": "^4.2.0",
-    "lint-staged": "^9.4.1",
+    "lint-staged": "^9.4.2",
     "postcss-import": "^12.0.1",
     "postcss-nesting": "^7.0.1",
     "prettier": "^1.18.2",
