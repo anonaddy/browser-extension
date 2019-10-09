@@ -2,9 +2,9 @@
   "manifest_version": 2,
   "name": "AnonAddy",
   "author": "Will Browning",
-  "description": "Open-source Anonymous Email Fowarding",
+  "description": "Open-source Anonymous Email Forwarding",
   "homepage_url": "https://anonaddy.com",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "icons": {
     "48": "img/icon.png",
     "96": "img/icon@2x.png"
