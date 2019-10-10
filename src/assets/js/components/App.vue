@@ -103,7 +103,7 @@
         </div>
 
         <label for="alias_description" class="block text-indigo-100 text-xs mb-1">
-          Description: (defaults to current tab's hostname)
+          Description (defaults to current tab's hostname):
         </label>
         <input
           v-model="description"
@@ -256,13 +256,11 @@ export default {
           this.error = 'You have reached your hourly limit for creating new aliases'
         } else if (response.status === 422) {
           this.error = 'The given data was invalid'
+        } else if (response.status === 401) {
+          this.error = 'Unauthenticated, please check your API token'
         } else if (response.status === 200) {
-          if (response.redirected) {
-            this.error = 'Please check your API token'
-          } else {
-            let data = await response.json()
-            this.newAlias = data.data.email
-          }
+          let data = await response.json()
+          this.newAlias = data.data.email
         } else {
           this.error = 'An Error Has Occurred'
           console.log(error)

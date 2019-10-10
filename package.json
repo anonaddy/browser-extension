@@ -1,6 +1,6 @@
 {
   "name": "anonaddy-extension",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "AnonAddy browser extension.",
   "main": "app.js",
   "scripts": {
@@ -8,7 +8,7 @@
     "watch": "NODE_ENV=development node_modules/webpack/bin/webpack.js --watch --progress --hide-modules --config=node_modules/laravel-mix/setup/webpack.config.js",
     "hot": "NODE_ENV=development webpack-dev-server --inline --hot --config=node_modules/laravel-mix/setup/webpack.config.js",
     "production": "NODE_ENV=production node_modules/webpack/bin/webpack.js --progress --hide-modules --config=node_modules/laravel-mix/setup/webpack.config.js",
-    "build": "npm run production && npm run zip",
+    "build": "npm run production && rm -rf dist-zip && npm run zip",
     "format": "prettier --write 'src/assets/**/*.{css,js,vue}'",
     "zip": "node scripts/build-zip.js"
   },
