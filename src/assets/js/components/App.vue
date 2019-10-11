@@ -205,10 +205,6 @@ export default {
         return (this.error = 'API token is required')
       }
 
-      if (this.tokenInput.length !== 60) {
-        return (this.error = 'Invalid API Token')
-      }
-
       this.apiToken = this.tokenInput
     },
     async deleteApiToken() {
