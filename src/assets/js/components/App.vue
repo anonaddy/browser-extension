@@ -8,27 +8,25 @@
       >
         {{ error }}
       </div>
-
       <label for="api_token" class="block text-indigo-100 text-xs mb-1">
         API token (from the settings page):
       </label>
-      <input
+      <textarea
         v-model="tokenInput"
         id="api_token"
-        type="text"
         placeholder="Enter API token..."
+        rows="3"
         required="required"
         autofocus="autofocus"
         class="appearance-none bg-white rounded-sm w-full p-2 text-grey-700 focus:shadow-outline mb-3"
-      />
-
+      >
+      </textarea>
       <button
         @click="saveApiToken"
         class="px-3 py-2 w-full text-sm text-cyan-900 font-semibold bg-cyan-400 hover:bg-cyan-300 border border-transparent rounded-sm focus:outline-none"
       >
         Add API Token
       </button>
-
       <p class="w-full text-xs text-indigo-100 mt-3">
         Don't have an account?
         <a
@@ -50,7 +48,6 @@
       >
         {{ error }}
       </div>
-
       <div v-if="newAlias">
         <div
           class="flex items-center justify-center text-xs border-t-4 rounded-sm text-green-800 border-green-600 bg-green-100 p-2 mb-3"
@@ -58,7 +55,6 @@
         >
           {{ newAlias }}
         </div>
-
         <button
           v-clipboard="() => newAlias"
           v-clipboard:success="clipboardSuccess"
@@ -68,7 +64,6 @@
           {{ clipboardButtonText }}
         </button>
       </div>
-
       <div v-else>
         <label for="alias_domain" class="block text-indigo-100 text-xs mb-1">
           Alias Domain:
@@ -101,7 +96,6 @@
             </svg>
           </div>
         </div>
-
         <label for="alias_description" class="block text-indigo-100 text-xs mb-1">
           Description (defaults to current tab's hostname):
         </label>
@@ -113,7 +107,6 @@
           autofocus="autofocus"
           class="appearance-none bg-white rounded-sm w-full p-2 text-grey-700 focus:shadow-outline mb-4"
         />
-
         <button
           @click="generateAlias"
           class="px-3 py-2 w-full text-sm text-cyan-900 font-semibold bg-cyan-400 hover:bg-cyan-300 border border-transparent rounded-sm focus:outline-none"
@@ -124,7 +117,6 @@
           <loader v-if="loading" />
         </button>
       </div>
-
       <p class="w-full text-xs text-indigo-100 mt-3">
         <a @click="deleteApiToken" class="text-grey-200 hover:text-indigo-50 cursor-pointer">
           Logout
