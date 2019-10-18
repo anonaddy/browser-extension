@@ -246,12 +246,11 @@ export default {
           this.error = 'The given data was invalid'
         } else if (response.status === 401) {
           this.error = 'Unauthenticated, please check your API token'
-        } else if (response.status === 200) {
+        } else if (response.status === 201) {
           let data = await response.json()
           this.newAlias = data.data.email
         } else {
           this.error = 'An Error Has Occurred'
-          console.log(error)
         }
       } catch (error) {
         this.loading = false
