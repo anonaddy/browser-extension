@@ -147,7 +147,7 @@ export default {
       domain: 'anonaddy.me',
       domainOptions: [
         { name: 'anonaddy.me', value: 'anonaddy.me' },
-        { name: '4wrd.cc (Pro users only)', value: '4wrd.cc' },
+        { name: '4wrd.cc (Paid plans only)', value: '4wrd.cc' },
       ],
     }
   },
