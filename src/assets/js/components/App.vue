@@ -22,10 +22,13 @@
       >
       </textarea>
       <button
-        @click="saveApiToken"
+        @click="getAliasDomainOptions(tokenInput)"
         class="px-3 py-2 w-full text-sm text-cyan-900 font-semibold bg-cyan-400 hover:bg-cyan-300 border border-transparent rounded-sm focus:outline-none"
+        :class="domainOptionsloading ? 'cursor-not-allowed' : ''"
+        :disabled="domainOptionsloading"
       >
         Add API Token
+        <loader v-if="domainOptionsloading" />
       </button>
       <p class="w-full text-xs text-indigo-100 mt-3">
         Don't have an account?
@@ -77,9 +80,38 @@
           >
             <option
               v-for="domainOption in domainOptions"
-              :key="domainOption.value"
-              :value="domainOption.value"
-              >{{ domainOption.name }}</option
+              :key="domainOption"
+              :value="domainOption"
+              >{{ domainOption }}</option
+            >
+          </select>
+          <div
+            class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700"
+          >
+            <svg
+              class="fill-current h-4 w-4"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+            >
+              <path
+                d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"
+              />
+            </svg>
+          </div>
+        </div>
+        <label for="alias_format" class="block text-indigo-100 text-xs mb-1">
+          Alias Format:
+        </label>
+        <div class="block relative w-full mb-3">
+          <select
+            v-model="aliasIsUuid"
+            id="alias_format"
+            class="block appearance-none w-full text-grey-700 bg-white p-2 pr-8 rounded shadow focus:shadow-outline"
+            required
+          >
+            <option :value="true">UUID</option>
+            <option :value="false" :disabled="!subscribed"
+              >Random Words {{ !subscribed ? '(Subscribe To Unlock)' : '' }}</option
             >
           </select>
           <div
@@ -117,11 +149,17 @@
           <loader v-if="loading" />
         </button>
       </div>
-      <p class="w-full text-xs text-indigo-100 mt-3">
-        <a @click="deleteApiToken" class="text-grey-200 hover:text-indigo-50 cursor-pointer">
+      <div class="w-full text-xs mt-3 flex justify-between">
+        <a
+          @click="getAliasDomainOptions(apiToken)"
+          class="text-grey-200 hover:text-indigo-50 cursor-pointer"
+        >
+          Refresh Domains
+        </a>
+        <a @click="logout" class="text-grey-200 hover:text-indigo-50 cursor-pointer">
           Logout
         </a>
-      </p>
+      </div>
     </div>
   </div>
 </template>
@@ -140,19 +178,19 @@ export default {
       apiToken: '',
       currentTabHostname: '',
       description: '',
+      domainOptionsloading: false,
       loading: false,
       newAlias: '',
       clipboardButtonText: 'Copy To Clipboard',
       error: '',
       domain: 'anonaddy.me',
-      domainOptions: [
-        { name: 'anonaddy.me', value: 'anonaddy.me' },
-        { name: '4wrd.cc (Paid plans only)', value: '4wrd.cc' },
-      ],
+      domainOptions: [],
+      aliasIsUuid: true,
     }
   },
   async mounted() {
     this.apiToken = await this.getApiToken()
+    this.domainOptions = await this.getDomainOptions()
     this.currentTabHostname = await this.getCurrentTabHostname()
   },
   watch: {
@@ -165,6 +203,15 @@ export default {
         }
       },
     },
+    domainOptions: {
+      async handler(val) {
+        try {
+          await this.$browser.storage.sync.set({ domainOptions: val })
+        } catch (error) {
+          console.log(error)
+        }
+      },
+    },
     tokenInput: function() {
       this.error = ''
     },
@@ -172,11 +219,24 @@ export default {
       this.error = ''
     },
   },
+  computed: {
+    subscribed() {
+      return this.domainOptions.length > 3
+    },
+  },
   methods: {
     async getApiToken() {
       try {
         var result = await this.$browser.storage.sync.get({ apiToken: '' })
         return result.apiToken
+      } catch (error) {
+        console.log(error)
+      }
+    },
+    async getDomainOptions() {
+      try {
+        var result = await this.$browser.storage.sync.get({ domainOptions: ['anonaddy.me'] })
+        return result.domainOptions
       } catch (error) {
         console.log(error)
       }
@@ -190,22 +250,42 @@ export default {
         console.log(error)
       }
     },
-    async saveApiToken() {
+    async getAliasDomainOptions(token) {
+      this.domainOptionsloading = true
       this.error = ''
+      this.domain = 'anonaddy.me'
 
-      if (!this.tokenInput) {
+      if (!token) {
         return (this.error = 'API token is required')
       }
 
-      this.apiToken = this.tokenInput
-    },
-    async deleteApiToken() {
-      this.error = ''
-
       try {
-        await this.$browser.storage.sync.remove('apiToken')
-        this.apiToken = await this.getApiToken()
+        const response = await fetch('https://app.anonaddy.com/api/v1/domain-options', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            Authorization: `Bearer ${token}`,
+          },
+        })
+
+        this.domainOptionsloading = false
+
+        if (response.status === 401) {
+          this.error = 'Unauthenticated, please check your API token'
+        } else if (response.status === 200) {
+          if (!this.apiToken) {
+            this.apiToken = token
+          }
+
+          let data = await response.json()
+          this.domainOptions = data.data
+        } else {
+          this.error = 'An Error Has Occurred'
+        }
       } catch (error) {
+        this.domainOptionsloading = false
+        this.error = 'An Error Has Occurred'
         console.log(error)
       }
     },
@@ -214,7 +294,7 @@ export default {
         return (this.error = 'Description cannot be more than 100 characters')
       }
 
-      if (!this.domainOptions.find(domain => domain.value === this.domain)) {
+      if (!this.domainOptions.find(domain => domain === this.domain)) {
         return (this.error = 'Invalid alias domain name')
       }
 
@@ -232,6 +312,7 @@ export default {
           body: JSON.stringify({
             domain: this.domain,
             description: this.description ? this.description : this.currentTabHostname,
+            uuid: this.aliasIsUuid,
           }),
         })
 
@@ -255,6 +336,17 @@ export default {
       } catch (error) {
         this.loading = false
         this.error = 'An Error Has Occurred'
+        console.log(error)
+      }
+    },
+    async logout() {
+      Object.assign(this.$data, this.$options.data.apply(this))
+
+      try {
+        await this.$browser.storage.sync.remove(['apiToken', 'domainOptions'])
+        this.apiToken = await this.getApiToken()
+        this.domainOptions = await this.getDomainOptions()
+      } catch (error) {
         console.log(error)
       }
     },
