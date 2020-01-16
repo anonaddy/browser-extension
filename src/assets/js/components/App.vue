@@ -145,7 +145,7 @@
           :class="loading ? 'cursor-not-allowed' : ''"
           :disabled="loading"
         >
-          Generate UUID Alias
+          Generate Alias
           <loader v-if="loading" />
         </button>
       </div>
@@ -320,7 +320,7 @@ export default {
         this.description = ''
 
         if (response.status === 403) {
-          this.error = 'You have reached your active UUID alias limit'
+          this.error = 'You have reached your active UUID/Random Word alias limit'
         } else if (response.status === 429) {
           this.error = 'You have reached your hourly limit for creating new aliases'
         } else if (response.status === 422) {
