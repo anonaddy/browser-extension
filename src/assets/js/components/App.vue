@@ -104,14 +104,18 @@
         </label>
         <div class="block relative w-full mb-3">
           <select
-            v-model="aliasIsUuid"
+            v-model="aliasFormat"
             id="alias_format"
             class="block appearance-none w-full text-grey-700 bg-white p-2 pr-8 rounded shadow focus:shadow-outline"
             required
           >
-            <option :value="true">UUID</option>
-            <option :value="false" :disabled="!subscribed"
-              >Random Words {{ !subscribed ? '(Subscribe To Unlock)' : '' }}</option
+            <option
+              v-for="formatOption in aliasFormatOptions"
+              :key="formatOption.value"
+              :value="formatOption.value"
+              :disabled="!subscribed && formatOption.paid"
+              >{{ formatOption.label }}
+              {{ !subscribed && formatOption.paid ? '(Subscribe To Unlock)' : '' }}</option
             >
           </select>
           <div
@@ -185,12 +189,25 @@ export default {
       error: '',
       domain: 'anonaddy.me',
       domainOptions: [],
-      aliasIsUuid: true,
+      aliasFormat: 'uuid',
+      aliasFormatOptions: [
+        {
+          value: 'uuid',
+          label: 'UUID',
+          paid: false,
+        },
+        {
+          value: 'random_words',
+          label: 'Random Words',
+          paid: true,
+        },
+      ],
     }
   },
   async mounted() {
     this.apiToken = await this.getApiToken()
     this.domainOptions = await this.getDomainOptions()
+    this.domain = await this.getDomain()
     this.currentTabHostname = await this.getCurrentTabHostname()
   },
   watch: {
@@ -207,6 +224,15 @@ export default {
       async handler(val) {
         try {
           await this.$browser.storage.sync.set({ domainOptions: val })
+        } catch (error) {
+          console.log(error)
+        }
+      },
+    },
+    domain: {
+      async handler(val) {
+        try {
+          await this.$browser.storage.sync.set({ domain: val })
         } catch (error) {
           console.log(error)
         }
@@ -237,6 +263,14 @@ export default {
       try {
         var result = await this.$browser.storage.sync.get({ domainOptions: ['anonaddy.me'] })
         return result.domainOptions
+      } catch (error) {
+        console.log(error)
+      }
+    },
+    async getDomain() {
+      try {
+        var result = await this.$browser.storage.sync.get({ domain: 'anonaddy.me' })
+        return result.domain
       } catch (error) {
         console.log(error)
       }
@@ -280,6 +314,7 @@ export default {
 
           let data = await response.json()
           this.domainOptions = data.data
+          this.domain = data.defaultAliasDomain ? data.defaultAliasDomain : 'anonaddy.me'
         } else {
           this.error = 'An Error Has Occurred'
         }
@@ -312,12 +347,11 @@ export default {
           body: JSON.stringify({
             domain: this.domain,
             description: this.description ? this.description : this.currentTabHostname,
-            uuid: this.aliasIsUuid,
+            format: this.aliasFormat,
           }),
         })
 
         this.loading = false
-        this.description = ''
 
         if (response.status === 403) {
           this.error = 'You have reached your active UUID/Random Word alias limit'
@@ -343,9 +377,10 @@ export default {
       Object.assign(this.$data, this.$options.data.apply(this))
 
       try {
-        await this.$browser.storage.sync.remove(['apiToken', 'domainOptions'])
+        await this.$browser.storage.sync.remove(['apiToken', 'domainOptions', 'domain'])
         this.apiToken = await this.getApiToken()
         this.domainOptions = await this.getDomainOptions()
+        this.domain = await this.getDomain()
       } catch (error) {
         console.log(error)
       }
