@@ -1,16 +1,15 @@
 let mix = require('laravel-mix')
-require('laravel-mix-purgecss')
 
 mix
   .webpackConfig({
     node: {
-      global: false
+      global: false,
     },
     resolve: {
-        alias: {
-            'vue$': 'vue/dist/vue.runtime.js'
-        }
-    }
+      alias: {
+        vue$: 'vue/dist/vue.runtime.js',
+      },
+    },
   })
   .copy('src/app.html', 'dist/')
   .copy('src/manifest.json', 'dist/')
@@ -20,10 +19,7 @@ mix
   .options({
     postCss: [
       require('postcss-import')(),
-      require('tailwindcss')( './tailwind.config.js' ),
+      require('tailwindcss')('./tailwind.config.js'),
       require('postcss-nesting')(),
-    ]
-  })
-  .purgeCss({
-    folders: ['dist']
+    ],
   })

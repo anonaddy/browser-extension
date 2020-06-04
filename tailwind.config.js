@@ -1,4 +1,5 @@
 module.exports = {
+  purge: ['./src/**/*.html', './src/**/*.vue'],
   theme: {
     colors: {
       white: '#FFF',
@@ -87,10 +88,10 @@ module.exports = {
         700: '#0E7817',
         800: '#07600E',
         900: '#014807',
-      }
+      },
     },
   },
   plugins: [
     // Some useful comment
-  ]
+  ],
 }
