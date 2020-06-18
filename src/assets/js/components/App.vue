@@ -158,7 +158,7 @@
           @click="getAliasDomainOptions(apiToken)"
           class="text-grey-200 hover:text-indigo-50 cursor-pointer"
         >
-          Refresh Domains
+          Refresh Domains and Defaults
         </a>
         <a @click="logout" class="text-grey-200 hover:text-indigo-50 cursor-pointer">
           Logout
@@ -208,6 +208,7 @@ export default {
     this.apiToken = await this.getApiToken()
     this.domainOptions = await this.getDomainOptions()
     this.domain = await this.getDomain()
+    this.aliasFormat = await this.getAliasFormat()
     this.currentTabHostname = await this.getCurrentTabHostname()
   },
   watch: {
@@ -233,6 +234,15 @@ export default {
       async handler(val) {
         try {
           await this.$browser.storage.sync.set({ domain: val })
+        } catch (error) {
+          console.log(error)
+        }
+      },
+    },
+    aliasFormat: {
+      async handler(val) {
+        try {
+          await this.$browser.storage.sync.set({ aliasFormat: val })
         } catch (error) {
           console.log(error)
         }
@@ -275,6 +285,14 @@ export default {
         console.log(error)
       }
     },
+    async getAliasFormat() {
+      try {
+        var result = await this.$browser.storage.sync.get({ aliasFormat: 'uuid' })
+        return result.aliasFormat
+      } catch (error) {
+        console.log(error)
+      }
+    },
     async getCurrentTabHostname() {
       try {
         var result = await this.$browser.tabs.query({ active: true, currentWindow: true })
@@ -288,6 +306,7 @@ export default {
       this.domainOptionsloading = true
       this.error = ''
       this.domain = 'anonaddy.me'
+      this.aliasFormat = 'uuid'
 
       if (!token) {
         return (this.error = 'API token is required')
@@ -315,6 +334,7 @@ export default {
           let data = await response.json()
           this.domainOptions = data.data
           this.domain = data.defaultAliasDomain ? data.defaultAliasDomain : 'anonaddy.me'
+          this.aliasFormat = data.defaultAliasFormat ? data.defaultAliasFormat : 'uuid'
         } else {
           this.error = 'An Error Has Occurred'
         }
@@ -377,10 +397,16 @@ export default {
       Object.assign(this.$data, this.$options.data.apply(this))
 
       try {
-        await this.$browser.storage.sync.remove(['apiToken', 'domainOptions', 'domain'])
+        await this.$browser.storage.sync.remove([
+          'apiToken',
+          'domainOptions',
+          'domain',
+          'aliasFormat',
+        ])
         this.apiToken = await this.getApiToken()
         this.domainOptions = await this.getDomainOptions()
         this.domain = await this.getDomain()
+        this.aliasFormat = await this.getAliasFormat()
       } catch (error) {
         console.log(error)
       }
