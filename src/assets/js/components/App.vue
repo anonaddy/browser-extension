@@ -310,6 +310,9 @@ export default {
   async mounted() {
     this.apiToken = await this.getApiToken()
     this.instance = await this.getInstance()
+    if (this.apiToken && !this.instance) {
+      this.instance = 'https://app.anonaddy.com'
+    }
     this.domainOptions = await this.getDomainOptions()
     this.domain = await this.getDomain()
     this.aliasFormat = this.sharedDomainSelected ? 'uuid' : await this.getAliasFormat()
