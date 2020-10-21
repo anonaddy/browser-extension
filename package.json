@@ -1,6 +1,6 @@
 {
   "name": "anonaddy-extension",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "AnonAddy browser extension.",
   "main": "app.js",
   "scripts": {

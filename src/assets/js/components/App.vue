@@ -499,6 +499,10 @@ export default {
           this.domainOptions = data.data
           this.domain = data.defaultAliasDomain ? data.defaultAliasDomain : data.data[0]
           this.aliasFormat = data.defaultAliasFormat ? data.defaultAliasFormat : 'uuid'
+
+          if (this.sharedDomainSelected && this.aliasFormat === 'custom' && !this.selfHosting) {
+            this.aliasFormat = 'uuid'
+          }
         } else {
           this.error = 'An Error Has Occurred'
         }
