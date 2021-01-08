@@ -17,7 +17,7 @@
           id="instance"
           type="text"
           required="required"
-          class="appearance-none bg-white rounded-sm w-full p-2 text-grey-700 focus:shadow-outline mb-4"
+          class="appearance-none bg-white rounded-sm w-full p-2 text-grey-700 focus:ring mb-4"
         />
       </div>
       <label for="api_token" class="block text-indigo-100 text-xs mb-1">
@@ -30,7 +30,7 @@
         rows="3"
         required="required"
         autofocus="autofocus"
-        class="appearance-none bg-white rounded-sm w-full p-2 text-grey-700 focus:shadow-outline mb-3"
+        class="appearance-none bg-white rounded-sm w-full p-2 text-grey-700 focus:ring mb-3"
       >
       </textarea>
       <button
@@ -97,9 +97,7 @@
       </div>
       <div v-else>
         <div v-if="lastCreated">
-          <p for="alias_domain" class="block text-indigo-100 text-xs mb-1">
-            Last Created:
-          </p>
+          <p for="alias_domain" class="block text-indigo-100 text-xs mb-1">Last Created:</p>
           <div
             v-clipboard="() => lastCreated"
             v-clipboard:success="setLastCreatedCopied"
@@ -140,22 +138,17 @@
           </div>
         </div>
 
-        <label for="alias_domain" class="block text-indigo-100 text-xs mb-1">
-          Alias Domain:
-        </label>
+        <label for="alias_domain" class="block text-indigo-100 text-xs mb-1"> Alias Domain: </label>
         <div class="block relative w-full mb-3">
           <select
             v-model="domain"
             id="alias_domain"
-            class="block appearance-none w-full text-grey-700 bg-white p-2 pr-8 rounded shadow focus:shadow-outline"
+            class="block appearance-none w-full text-grey-700 bg-white p-2 pr-8 rounded shadow focus:ring"
             required
           >
-            <option
-              v-for="domainOption in domainOptions"
-              :key="domainOption"
-              :value="domainOption"
-              >{{ domainOption }}</option
-            >
+            <option v-for="domainOption in domainOptions" :key="domainOption" :value="domainOption">
+              {{ domainOption }}
+            </option>
           </select>
           <div
             class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700"
@@ -171,14 +164,12 @@
             </svg>
           </div>
         </div>
-        <label for="alias_format" class="block text-indigo-100 text-xs mb-1">
-          Alias Format:
-        </label>
+        <label for="alias_format" class="block text-indigo-100 text-xs mb-1"> Alias Format: </label>
         <div class="block relative w-full mb-3">
           <select
             v-model="aliasFormat"
             id="alias_format"
-            class="block appearance-none w-full text-grey-700 bg-white p-2 pr-8 rounded shadow focus:shadow-outline"
+            class="block appearance-none w-full text-grey-700 bg-white p-2 pr-8 rounded shadow focus:ring"
             required
           >
             <option
@@ -187,16 +178,17 @@
               :value="formatOption.value"
               :disabled="
                 (!subscibedOrSelfHosting && formatOption.paid) ||
-                  (formatOption.value === 'custom' && sharedDomainSelected)
+                (formatOption.value === 'custom' && sharedDomainSelected)
               "
-              >{{ formatOption.label }}
+            >
+              {{ formatOption.label }}
               {{ !subscibedOrSelfHosting && formatOption.paid ? '(Subscribe To Unlock)' : ''
               }}{{
                 formatOption.value === 'custom' && sharedDomainSelected
                   ? '(Not available for shared domains)'
                   : ''
-              }}</option
-            >
+              }}
+            </option>
           </select>
           <div
             class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700"
@@ -221,7 +213,7 @@
             id="alias_local_part"
             type="text"
             placeholder="Enter local part..."
-            class="appearance-none bg-white rounded-sm w-full p-2 text-grey-700 focus:shadow-outline mb-4"
+            class="appearance-none bg-white rounded-sm w-full p-2 text-grey-700 focus:ring mb-4"
           />
         </div>
         <label for="alias_description" class="block text-indigo-100 text-xs mb-1">
@@ -233,7 +225,7 @@
           type="text"
           placeholder="Enter description (optional)..."
           autofocus="autofocus"
-          class="appearance-none bg-white rounded-sm w-full p-2 text-grey-700 focus:shadow-outline mb-4"
+          class="appearance-none bg-white rounded-sm w-full p-2 text-grey-700 focus:ring mb-4"
         />
         <button
           @click="createAlias"
@@ -252,9 +244,7 @@
         >
           Refresh Domains and Defaults
         </a>
-        <a @click="logout" class="text-grey-200 hover:text-indigo-50 cursor-pointer">
-          Logout
-        </a>
+        <a @click="logout" class="text-grey-200 hover:text-indigo-50 cursor-pointer"> Logout </a>
       </div>
     </div>
   </div>
@@ -287,8 +277,13 @@ export default {
       error: '',
       domain: '',
       domainOptions: [],
-      aliasFormat: 'uuid',
+      aliasFormat: 'random_characters',
       aliasFormatOptions: [
+        {
+          value: 'random_characters',
+          label: 'Random Characters',
+          paid: false,
+        },
         {
           value: 'uuid',
           label: 'UUID',
@@ -315,7 +310,10 @@ export default {
     }
     this.domainOptions = await this.getDomainOptions()
     this.domain = await this.getDomain()
-    this.aliasFormat = this.sharedDomainSelected ? 'uuid' : await this.getAliasFormat()
+    this.aliasFormat = await this.getAliasFormat()
+    if (this.sharedDomainSelected && this.aliasFormat === 'custom' && !this.selfHosting) {
+      this.aliasFormat = 'random_characters'
+    }
     this.lastCreated = await this.getLastCreated()
     this.currentTabHostname = await this.getCurrentTabHostname()
   },
@@ -350,7 +348,7 @@ export default {
     domain: {
       async handler(val) {
         if (this.sharedDomainSelected) {
-          this.aliasFormat = 'uuid'
+          this.aliasFormat = 'random_characters'
         }
         try {
           await this.$browser.storage.sync.set({ domain: val })
@@ -377,13 +375,13 @@ export default {
         }
       },
     },
-    tokenInput: function() {
+    tokenInput: function () {
       this.error = ''
     },
-    description: function() {
+    description: function () {
       this.error = ''
     },
-    localPart: function() {
+    localPart: function () {
       this.error = ''
     },
   },
@@ -436,7 +434,7 @@ export default {
     },
     async getAliasFormat() {
       try {
-        var result = await this.$browser.storage.sync.get({ aliasFormat: 'uuid' })
+        var result = await this.$browser.storage.sync.get({ aliasFormat: 'random_characters' })
         return result.aliasFormat
       } catch (error) {
         console.log(error)
@@ -498,10 +496,10 @@ export default {
           let data = await response.json()
           this.domainOptions = data.data
           this.domain = data.defaultAliasDomain ? data.defaultAliasDomain : data.data[0]
-          this.aliasFormat = data.defaultAliasFormat ? data.defaultAliasFormat : 'uuid'
+          this.aliasFormat = data.defaultAliasFormat ? data.defaultAliasFormat : 'random_characters'
 
           if (this.sharedDomainSelected && this.aliasFormat === 'custom' && !this.selfHosting) {
-            this.aliasFormat = 'uuid'
+            this.aliasFormat = 'random_characters'
           }
         } else {
           this.error = 'An Error Has Occurred'
@@ -526,7 +524,7 @@ export default {
         return (this.error = 'Description cannot be more than 100 characters')
       }
 
-      if (!this.domainOptions.find(domain => domain === this.domain)) {
+      if (!this.domainOptions.find((domain) => domain === this.domain)) {
         return (this.error = 'Invalid alias domain name')
       }
 
@@ -552,7 +550,7 @@ export default {
         this.loading = false
 
         if (response.status === 403) {
-          this.error = 'You have reached your active UUID/Random Word alias limit'
+          this.error = 'You have reached your active shared domain alias limit'
         } else if (response.status === 429) {
           this.error = 'You have reached your hourly limit for creating new aliases'
         } else if (response.status === 422) {
