@@ -1,4 +1,4 @@
-let mix = require('laravel-mix')
+const mix = require('laravel-mix')
 
 mix
   .webpackConfig({
@@ -15,4 +15,9 @@ mix
   .copy('src/manifest.json', 'dist/')
   .copyDirectory('src/assets/img', 'dist/img')
   .js('src/assets/js/app.js', 'dist/')
-  .postCss('src/assets/css/app.css', 'dist/', [require('tailwindcss')])
+  .vue()
+  .postCss('src/assets/css/app.css', 'dist/', [
+    require('postcss-import'),
+    require('tailwindcss'),
+    require('autoprefixer'),
+  ])

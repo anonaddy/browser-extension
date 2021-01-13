@@ -2,5 +2,8 @@
     "/dist/app.js": "/dist/app.js",
     "/dist/app.css": "/dist/app.css",
     "/dist/app.html": "/dist/app.html",
-    "/dist/manifest.json": "/dist/manifest.json"
+    "/dist/manifest.json": "/dist/manifest.json",
+    "/dist/img/icon.png": "/dist/img/icon.png",
+    "/dist/img/icon@2x.png": "/dist/img/icon@2x.png",
+    "/dist/img/logo.png": "/dist/img/logo.png"
 }
