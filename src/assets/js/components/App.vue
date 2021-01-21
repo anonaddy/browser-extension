@@ -396,7 +396,9 @@ export default {
       return this.subscribed || this.selfHosting
     },
     sharedDomainSelected() {
-      return this.domain === 'anonaddy.me' || this.domain === '4wrd.cc'
+      return (
+        this.domain === 'anonaddy.me' || this.domain === '4wrd.cc' || this.domain === 'mailer.me'
+      )
     },
   },
   methods: {
