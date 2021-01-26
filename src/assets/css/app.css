@@ -6,7 +6,8 @@ html {
 }
 
 body {
-  width: 348px;
+  min-width: 348px;
+  width: 100%;
 }
 
 @tailwind components;
