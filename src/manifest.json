@@ -23,5 +23,13 @@
     "gecko": {
       "id": "browser-extension@anonaddy"
     }
+  },
+  "sidebar_action": {
+    "default_icon": {
+      "48": "img/icon.png",
+      "96": "img/icon@2x.png"
+    },
+    "default_title": "AnonAddy",
+    "default_panel": "app.html"
   }
 }
