@@ -55,10 +55,18 @@
           </a>
         </p>
         <span
+          v-if="!changeInstance"
           @click="changeInstance = true"
           class="block text-xs text-white hover:text-indigo-50 cursor-pointer"
         >
           Change Instance
+        </span>
+        <span
+          v-else
+          @click="cancelChangeInstance"
+          class="block text-xs text-white hover:text-indigo-50 cursor-pointer"
+        >
+          Cancel
         </span>
       </div>
     </div>
@@ -596,6 +604,10 @@ export default {
       } catch (error) {
         console.log(error)
       }
+    },
+    cancelChangeInstance() {
+      this.instanceInput = 'https://app.anonaddy.com'
+      this.changeInstance = false
     },
     validInstance(instance) {
       let re = /^(?:http(s)?:\/\/)[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+(?<!\/)$/
