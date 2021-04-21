@@ -4,7 +4,7 @@
   "author": "Will Browning",
   "description": "Open-source Anonymous Email Forwarding",
   "homepage_url": "https://anonaddy.com",
-  "version": "1.1.6",
+  "version": "1.1.7",
   "icons": {
     "48": "img/icon.png",
     "96": "img/icon@2x.png"

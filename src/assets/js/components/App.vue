@@ -405,7 +405,10 @@ export default {
     },
     sharedDomainSelected() {
       return (
-        this.domain === 'anonaddy.me' || this.domain === '4wrd.cc' || this.domain === 'mailer.me'
+        this.domain === 'anonaddy.me' ||
+        this.domain === '4wrd.cc' ||
+        this.domain === 'mailer.me' ||
+        this.domain === 'addymail.com'
       )
     },
   },
