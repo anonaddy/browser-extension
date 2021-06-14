@@ -1874,7 +1874,13 @@ export default {
         })
 
         let data = await response.json()
-        this.recipients = data.data
+
+        this.recipients = data.data.map(function (recipient) {
+          return {
+            id: recipient.id,
+            email: recipient.email,
+          }
+        })
 
         if (this.selected == 'Settings') {
           this.success('Recipients refreshed')
