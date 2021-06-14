@@ -6,9 +6,105 @@ html {
 }
 
 body {
-  min-width: 348px;
-  width: 100%;
+  @apply overflow-hidden w-full;
+  width: 375px;
+  height: 600px;
 }
+
+content::-webkit-scrollbar {
+  @apply w-2 h-2;
+}
+
+content::-webkit-scrollbar-thumb {
+  @apply bg-indigo-500 rounded-full;
+}
+
+content::-webkit-scrollbar-track {
+  @apply bg-indigo-50;
+}
+
+.login {
+  height: 600px;
+}
+
+content {
+  @apply absolute top-12 bottom-14 left-0 right-0 overflow-y-auto overflow-x-auto text-base;
+}
+
+.aliases-loader,
+.recipients-loader {
+  height: 488px;
+}
+
+.alias-status-background {
+  height: 16px;
+  width: 16px;
+  min-height: 16px;
+  min-width: 16px;
+}
+
+.alias-status-foreground {
+  height: 8px;
+  width: 8px;
+}
+
+.back-icon {
+  height: 39px;
+  width: 39px;
+}
+
+/* purgecss start ignore */
+.vue-notification-wrapper .vue-notification {
+  @apply text-sm mx-2 mb-2 text-center;
+}
+
+.vue-notification-wrapper .vue-notification.success {
+  @apply bg-green-100 border-green-600 text-green-800;
+}
+
+.vue-notification-wrapper .vue-notification.error {
+  @apply bg-red-100 border-red-600 text-red-800;
+}
+
+.vue-notification-wrapper .vue-notification.warn {
+  @apply bg-yellow-100 border-yellow-600 text-yellow-800;
+}
+
+.multiselect .multiselect__tag {
+  @apply bg-indigo-100 text-indigo-900;
+
+  margin-bottom: 0 !important;
+  margin-top: 3px !important;
+}
+
+.multiselect .multiselect__tags {
+  padding: 5px 40px 0 8px;
+}
+
+.multiselect,
+.multiselect__input,
+.multiselect__single {
+  font-size: unset !important;
+}
+
+.multiselect .multiselect__input {
+  padding: 3px 0 0 0 !important;
+}
+
+.multiselect .multiselect__tag-icon:focus,
+.multiselect .multiselect__tag-icon:hover {
+  @apply bg-indigo-400;
+}
+
+.multiselect .multiselect__option--highlight {
+  @apply bg-indigo-500;
+}
+
+.multiselect .multiselect__option--selected.multiselect__option--highlight {
+  @apply bg-red-500;
+}
+
+/* purgecss end ignore */
 
 @tailwind components;
 

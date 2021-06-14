@@ -2,7 +2,7 @@
   <div class="loader inline-block ml-1">
     <svg
       version="1.1"
-      class="fill-current h-5 w-5 inline-block"
+      class="fill-current inline-block"
       xmlns="http://www.w3.org/2000/svg"
       xmlns:xlink="http://www.w3.org/1999/xlink"
       x="0px"

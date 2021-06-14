@@ -1,15 +1,35 @@
 <template>
-  <div class="p-3">
-    <div v-if="!apiToken">
+  <div>
+    <div v-if="!apiToken" class="login p-3 bg-indigo-900">
+      <header
+        class="flex items-center justify-between border-b bg-indigo-900 border-indigo-700 pb-3 mb-4"
+      >
+        <a href="https://app.anonaddy.com" target="_blank" rel="nofollow noreferrer noopener">
+          <img class="h-6" src="img/logo.png" alt="AnonAddy Logo" />
+        </a>
+        <span class="text-grey-50 text-sm self-center">Anonymous Email Forwarding</span>
+      </header>
       <div
         v-if="error"
-        class="flex items-center justify-center text-xs border-t-4 rounded-sm text-yellow-800 border-yellow-600 bg-yellow-100 p-2 mb-3"
+        class="
+          flex
+          items-center
+          justify-center
+          text-sm
+          border-t-4
+          rounded-sm
+          text-yellow-800
+          border-yellow-600
+          bg-yellow-100
+          p-2
+          mb-4
+        "
         role="alert"
       >
         {{ error }}
       </div>
       <div v-if="changeInstance">
-        <label for="instance" class="block text-indigo-100 text-xs mb-1">
+        <label for="instance" class="block text-indigo-100 text-sm mb-1">
           AnonAddy Instance:
         </label>
         <input
@@ -17,33 +37,54 @@
           id="instance"
           type="text"
           required="required"
-          class="appearance-none bg-white rounded-sm w-full p-2 text-grey-700 focus:ring mb-4"
+          class="
+            appearance-none
+            shadow
+            bg-white
+            rounded-sm
+            w-full
+            p-2
+            text-grey-700
+            focus:ring
+            mb-4
+          "
         />
       </div>
-      <label for="api_token" class="block text-indigo-100 text-xs mb-1">
+      <label for="api_token" class="block text-indigo-100 text-sm mb-1">
         API token (from the settings page):
       </label>
       <textarea
         v-model="tokenInput"
         id="api_token"
-        placeholder="Enter API token..."
-        rows="3"
+        placeholder="Enter your API token"
+        rows="10"
         required="required"
         autofocus="autofocus"
-        class="appearance-none bg-white rounded-sm w-full p-2 text-grey-700 focus:ring mb-3"
+        class="appearance-none shadow bg-white rounded-sm w-full p-2 text-grey-700 focus:ring mb-4"
       >
       </textarea>
       <button
         @click="getAliasDomainOptions(tokenInput, instanceInput)"
-        class="px-3 py-2 w-full text-sm text-cyan-900 font-semibold bg-cyan-400 hover:bg-cyan-300 border border-transparent rounded-sm focus:outline-none"
-        :class="domainOptionsloading ? 'cursor-not-allowed' : ''"
-        :disabled="domainOptionsloading"
+        class="
+          px-3
+          py-2
+          w-full
+          text-sm text-cyan-900
+          font-semibold
+          bg-cyan-400
+          hover:bg-cyan-300
+          border border-transparent
+          rounded-sm
+          focus:outline-none
+        "
+        :class="domainOptionsLoading ? 'cursor-not-allowed' : ''"
+        :disabled="domainOptionsLoading"
       >
         Sign In
-        <loader v-if="domainOptionsloading" />
+        <loader class="h-5 w-5" v-if="domainOptionsLoading" />
       </button>
       <div class="flex justify-between mt-3">
-        <p class="text-xs text-indigo-100">
+        <p class="text-sm text-indigo-100">
           Don't have an account?
           <a
             href="https://app.anonaddy.com/register"
@@ -57,14 +98,14 @@
         <span
           v-if="!changeInstance"
           @click="changeInstance = true"
-          class="block text-xs text-white hover:text-indigo-50 cursor-pointer"
+          class="block text-sm text-white hover:text-indigo-50 cursor-pointer"
         >
           Change Instance
         </span>
         <span
           v-else
           @click="cancelChangeInstance"
-          class="block text-xs text-white hover:text-indigo-50 cursor-pointer"
+          class="block text-sm text-white hover:text-indigo-50 cursor-pointer"
         >
           Cancel
         </span>
@@ -72,219 +113,1378 @@
     </div>
 
     <div v-else>
-      <div
-        v-if="error"
-        class="flex items-center justify-center text-xs border-t-4 rounded-sm text-yellow-800 border-yellow-600 bg-yellow-100 p-2 mb-3"
-        role="alert"
+      <header
+        class="flex items-center justify-between border-b bg-indigo-900 border-indigo-700 h-12"
       >
-        {{ error }}
-      </div>
-      <div v-if="newAlias">
+        <a
+          href="https://app.anonaddy.com"
+          target="_blank"
+          title="Visit AnonAddy Dashboard"
+          rel="nofollow noreferrer noopener"
+          class="h-12 w-20 px-4 flex justify-center items-center"
+        >
+          <img class="w-12" src="img/icon.png" alt="AnonAddy Logo" />
+        </a>
+        <div class="w-full">
+          <div class="relative">
+            <input
+              v-model="searchInput"
+              id="search"
+              type="text"
+              placeholder="Search aliases"
+              class="
+                w-full
+                text-base
+                appearance-none
+                shadow
+                bg-white
+                text-grey-700
+                focus:outline-none
+                rounded-sm
+                py-1
+                px-8
+              "
+            />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="absolute left-0 inset-y-0 ml-2 flex items-center text-grey-300 h-full w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+            <cross
+              v-if="searchInput"
+              @click.native="searchInput = ''"
+              class="
+                absolute
+                right-0
+                inset-y-0
+                cursor-pointer
+                mr-2
+                flex
+                items-center
+                text-grey-300
+                h-full
+                w-5
+              "
+            />
+          </div>
+        </div>
+        <button
+          @click="selected = 'CreateAlias'"
+          class="
+            text-white
+            h-12
+            w-20
+            px-4
+            hover:bg-indigo-800
+            flex
+            justify-center
+            items-center
+            focus:outline-none
+          "
+          title="Create Alias"
+        >
+          <plus />
+        </button>
+      </header>
+
+      <content>
         <div
-          class="flex items-center justify-center text-xs border-t-4 rounded-sm text-green-800 border-green-600 bg-green-100 p-2 mb-3"
+          v-if="error"
+          class="
+            flex
+            items-center
+            justify-center
+            text-sm
+            border-t-4
+            text-yellow-800
+            border-yellow-600
+            bg-yellow-100
+            p-2
+          "
           role="alert"
         >
-          {{ newAlias }}
+          {{ error }}
         </div>
-        <div class="flex">
-          <button
-            v-clipboard="() => newAlias"
-            v-clipboard:success="clipboardSuccess"
-            v-clipboard:error="clipboardError"
-            class="px-3 py-2 mr-3 w-full text-sm text-cyan-900 font-semibold bg-cyan-400 hover:bg-cyan-300 border border-transparent rounded-sm focus:outline-none"
-          >
-            {{ clipboardButtonText }}
-          </button>
-          <button
-            @click="newAlias = ''"
-            class="px-3 py-2 w-full text-sm text-cyan-900 font-semibold bg-cyan-400 hover:bg-cyan-300 border border-transparent rounded-sm focus:outline-none"
-          >
-            Back
-          </button>
-        </div>
-      </div>
-      <div v-else>
-        <div v-if="lastCreated">
-          <p for="alias_domain" class="block text-indigo-100 text-xs mb-1">Last Created:</p>
-          <div
-            v-clipboard="() => lastCreated"
-            v-clipboard:success="setLastCreatedCopied"
-            class="flex items-center justify-between cursor-pointer text-xs border-t-4 rounded-sm text-green-800 border-green-600 bg-green-100 p-2 mb-3"
-            role="alert"
-          >
-            <span>
-              {{ lastCreated }}
-            </span>
-            <svg
-              v-if="lastCreatedCopied"
-              viewBox="0 0 24 24"
-              width="20"
-              height="20"
-              stroke="currentColor"
-              stroke-width="2"
-              fill="none"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <polyline points="9 11 12 14 22 4"></polyline>
-              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-            </svg>
-            <svg
-              v-else
-              viewBox="0 0 24 24"
-              width="20"
-              height="20"
-              stroke="currentColor"
-              stroke-width="2"
-              fill="none"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-            </svg>
+        <div v-if="selected == 'Aliases'">
+          <!-- Aliases Tab -->
+          <div v-if="getAliasesLoading" class="aliases-loader flex items-center justify-center">
+            <loader class="h-14 w-14 text-cyan-400" />
           </div>
-        </div>
 
-        <label for="alias_domain" class="block text-indigo-100 text-xs mb-1"> Alias Domain: </label>
-        <div class="block relative w-full mb-3">
-          <select
-            v-model="domain"
-            id="alias_domain"
-            class="block appearance-none w-full text-grey-700 bg-white p-2 pr-8 rounded shadow focus:ring"
-            required
-          >
-            <option v-for="domainOption in domainOptions" :key="domainOption" :value="domainOption">
-              {{ domainOption }}
-            </option>
-          </select>
-          <div
-            class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700"
-          >
-            <svg
-              class="fill-current h-4 w-4"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 20 20"
-            >
-              <path
-                d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"
-              />
-            </svg>
-          </div>
-        </div>
-        <label for="alias_format" class="block text-indigo-100 text-xs mb-1"> Alias Format: </label>
-        <div class="block relative w-full mb-3">
-          <select
-            v-model="aliasFormat"
-            id="alias_format"
-            class="block appearance-none w-full text-grey-700 bg-white p-2 pr-8 rounded shadow focus:ring"
-            required
-          >
-            <option
-              v-for="formatOption in aliasFormatOptions"
-              :key="formatOption.value"
-              :value="formatOption.value"
-              :disabled="
-                (!subscibedOrSelfHosting && formatOption.paid) ||
-                (formatOption.value === 'custom' && sharedDomainSelected)
+          <div v-else>
+            <div
+              class="
+                px-3
+                py-2
+                uppercase
+                shadow
+                text-sm
+                tracking-wide
+                text-grey-600
+                bg-white
+                flex
+                justify-between
+                items-center
               "
             >
-              {{ formatOption.label }}
-              {{ !subscibedOrSelfHosting && formatOption.paid ? '(Subscribe To Unlock)' : ''
-              }}{{
-                formatOption.value === 'custom' && sharedDomainSelected
-                  ? '(Not available for shared domains)'
-                  : ''
-              }}
-            </option>
-          </select>
-          <div
-            class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700"
-          >
-            <svg
-              class="fill-current h-4 w-4"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 20 20"
-            >
-              <path
-                d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"
-              />
-            </svg>
+              {{ aliasesTitle }}
+              <div class="relative">
+                <select
+                  v-model="showDeletedAliases"
+                  id="show_deleted_aliases"
+                  class="
+                    block
+                    appearance-none
+                    text-grey-700
+                    bg-white
+                    pl-2
+                    py-1
+                    pr-6
+                    rounded
+                    shadow
+                    focus:ring
+                  "
+                  required
+                >
+                  <option value="without">Hide Deleted</option>
+                  <option value="with">Show Deleted</option>
+                  <option value="only">Only Deleted</option>
+                </select>
+                <div
+                  class="
+                    pointer-events-none
+                    absolute
+                    inset-y-0
+                    right-0
+                    flex
+                    items-center
+                    px-2
+                    text-grey-700
+                  "
+                >
+                  <svg
+                    class="fill-current h-4 w-4"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"
+                    />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <div v-if="aliases.length > 0">
+              <div class="divide-y divide-grey-200 border-b border-grey-200">
+                <div
+                  v-for="alias in aliases"
+                  :key="alias.id"
+                  class="flex items-center h-20 hover:bg-indigo-50"
+                >
+                  <div
+                    @click="viewAlias(alias)"
+                    class="flex-grow flex items-center h-full truncate py-1 pl-2 cursor-pointer"
+                    title="View Alias Details"
+                  >
+                    <div class="text-sm text-grey-500" :title="alias.created_at | formatDate">
+                      {{ alias.created_at | timeAgo }}
+                    </div>
+                    <span
+                      :class="getAliasStatus(alias).backgroundColour"
+                      class="
+                        outline-none
+                        alias-status-background
+                        rounded-full
+                        flex
+                        items-center
+                        justify-center
+                        mx-1.5
+                      "
+                      :title="getAliasStatus(alias).status"
+                      tabindex="-1"
+                    >
+                      <span
+                        :class="getAliasStatus(alias).foregroundColour"
+                        class="alias-status-foreground rounded-full"
+                      ></span>
+                    </span>
+
+                    <span class="block truncate">
+                      <div class="truncate">
+                        <span class="font-semibold text-indigo-800">{{ alias.local_part }}</span
+                        ><span>@{{ alias.domain }}</span>
+                      </div>
+                      <div v-if="alias.description" class="flex items-center">
+                        <span
+                          class="
+                            inline-block
+                            text-grey-400 text-sm
+                            truncate
+                            py-1
+                            border border-transparent
+                          "
+                        >
+                          {{ alias.description }}
+                        </span>
+                      </div>
+                    </span>
+                  </div>
+
+                  <div class="flex items-center flex-none py-1 pr-2 h-full">
+                    <div class="cursor-pointer text-grey-400" title="Copy Alias">
+                      <clipboard
+                        v-clipboard="() => alias.email"
+                        v-clipboard:success="aliasCopied"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div v-if="aliasesHaveNextPage" class="p-3">
+                <button
+                  @click="showMoreAliases"
+                  class="
+                    w-full
+                    flex
+                    justify-center
+                    items-center
+                    px-4
+                    py-2
+                    border border-grey-300
+                    shadow-sm
+                    text-sm
+                    font-medium
+                    rounded-md
+                    text-grey-700
+                    bg-white
+                    hover:bg-grey-50
+                  "
+                  :class="showMoreAliasesLoading ? 'cursor-not-allowed' : ''"
+                  :disabled="showMoreAliasesLoading"
+                >
+                  Load more
+                  <loader class="h-5 w-5" v-if="showMoreAliasesLoading" />
+                </button>
+              </div>
+            </div>
+
+            <div v-else class="p-3 text-center text-lg">No Aliases Found!</div>
           </div>
         </div>
-        <div v-if="!sharedDomainSelected && aliasFormat === 'custom'">
-          <label for="alias_local_part" class="block text-indigo-100 text-xs mb-1">
-            Alias Local Part:
-          </label>
-          <input
-            v-model="localPart"
-            id="alias_local_part"
-            type="text"
-            placeholder="Enter local part..."
-            class="appearance-none bg-white rounded-sm w-full p-2 text-grey-700 focus:ring mb-4"
-          />
+        <div v-else-if="selected == 'Settings'">
+          <!-- Settings Tab -->
+          <div
+            class="
+              p-3
+              uppercase
+              shadow
+              text-sm
+              tracking-wide
+              text-grey-600
+              bg-white
+              flex
+              justify-between
+            "
+          >
+            Settings
+            <button
+              @click="selected = 'Aliases'"
+              class="
+                back-icon
+                text-grey-600
+                hover:bg-grey-50
+                -m-3
+                flex
+                justify-center
+                items-center
+                focus:outline-none
+              "
+            >
+              <chevron-left />
+            </button>
+          </div>
+          <button
+            @click="getAliasDomainOptions(apiToken, instance)"
+            class="
+              w-full
+              text-left
+              p-3
+              focus:outline-none
+              hover:bg-indigo-50
+              border-b border-grey-200
+            "
+            :class="domainOptionsLoading ? 'cursor-not-allowed' : ''"
+            :disabled="domainOptionsLoading"
+          >
+            Refresh Domains and Defaults
+            <loader class="h-5 w-5" v-if="domainOptionsLoading" />
+          </button>
+          <button
+            @click="getRecipientsRequest()"
+            class="
+              w-full
+              text-left
+              p-3
+              focus:outline-none
+              hover:bg-indigo-50
+              border-b border-grey-200
+            "
+            :class="recipientsLoading ? 'cursor-not-allowed' : ''"
+            :disabled="recipientsLoading"
+          >
+            Refresh Recipients
+            <loader class="h-5 w-5" v-if="recipientsLoading" />
+          </button>
+          <button
+            @click="logout"
+            class="
+              w-full
+              text-left
+              p-3
+              focus:outline-none
+              hover:bg-indigo-50
+              border-b border-grey-200
+            "
+          >
+            Logout
+          </button>
         </div>
-        <label for="alias_description" class="block text-indigo-100 text-xs mb-1">
-          Description (defaults to current tab's hostname):
-        </label>
-        <input
-          v-model="description"
-          id="alias_description"
-          type="text"
-          placeholder="Enter description (optional)..."
-          autofocus="autofocus"
-          class="appearance-none bg-white rounded-sm w-full p-2 text-grey-700 focus:ring mb-4"
-        />
-        <button
-          @click="createAlias"
-          class="px-3 py-2 w-full text-sm text-cyan-900 font-semibold bg-cyan-400 hover:bg-cyan-300 border border-transparent rounded-sm focus:outline-none"
-          :class="loading ? 'cursor-not-allowed' : ''"
-          :disabled="loading"
-        >
-          Create Alias
-          <loader v-if="loading" />
-        </button>
-      </div>
-      <div class="w-full text-xs mt-3 flex justify-between">
+        <div v-else-if="selected == 'ViewAlias'">
+          <!-- View Alias Tab -->
+          <div
+            class="
+              p-3
+              uppercase
+              shadow
+              text-sm
+              tracking-wide
+              text-grey-600
+              bg-white
+              flex
+              justify-between
+            "
+          >
+            Alias Details
+            <button
+              @click="selected = 'Aliases'"
+              class="
+                back-icon
+                text-grey-600
+                hover:bg-grey-50
+                -m-3
+                flex
+                justify-center
+                items-center
+                focus:outline-none
+              "
+            >
+              <chevron-left />
+            </button>
+          </div>
+          <div class="p-3">
+            <div class="flex items-center mb-4">
+              <span
+                :class="getAliasStatus(aliasToView).backgroundColour"
+                class="
+                  outline-none
+                  alias-status-background
+                  rounded-full
+                  flex
+                  items-center
+                  justify-center
+                  mx-1.5
+                "
+                :title="getAliasStatus(aliasToView).status"
+                tabindex="-1"
+              >
+                <span
+                  :class="getAliasStatus(aliasToView).foregroundColour"
+                  class="alias-status-foreground rounded-full"
+                ></span>
+              </span>
+
+              <span class="block break-words">
+                <div
+                  class="break-words cursor-pointer"
+                  title="Click To Copy"
+                  v-clipboard="() => aliasToView.email"
+                  v-clipboard:success="aliasCopied"
+                >
+                  <span class="font-semibold text-indigo-800">{{ aliasToView.local_part }}</span
+                  ><span>@{{ aliasToView.domain }}</span>
+                </div>
+                <div v-if="aliasToView.description" class="flex items-center">
+                  <span
+                    class="
+                      inline-block
+                      text-grey-400 text-sm
+                      break-words
+                      py-1
+                      border border-transparent
+                    "
+                  >
+                    {{ aliasToView.description }}
+                  </span>
+                </div>
+              </span>
+            </div>
+            <dl class="grid gap-3 grid-cols-2">
+              <div class="relative bg-white p-3 shadow rounded-lg overflow-hidden">
+                <dt>
+                  <div class="absolute bg-indigo-500 rounded-md p-3">
+                    <forward class="text-white" />
+                  </div>
+                  <p class="ml-16 text-sm font-medium text-grey-500">Forwarded</p>
+                </dt>
+                <dd class="ml-16 flex items-baseline">
+                  <p class="text-2xl font-semibold text-grey-900">
+                    {{ aliasToView.emails_forwarded }}
+                  </p>
+                </dd>
+              </div>
+              <div class="relative bg-white p-3 shadow rounded-lg overflow-hidden">
+                <dt>
+                  <div class="absolute bg-indigo-500 rounded-md p-3">
+                    <reply class="text-white" />
+                  </div>
+                  <p class="ml-16 text-sm font-medium text-grey-500">Replies</p>
+                </dt>
+                <dd class="ml-16 flex items-baseline">
+                  <p class="text-2xl font-semibold text-grey-900">
+                    {{ aliasToView.emails_replied }}
+                  </p>
+                </dd>
+              </div>
+              <div class="relative bg-white p-3 shadow rounded-lg overflow-hidden">
+                <dt>
+                  <div class="absolute bg-indigo-500 rounded-md p-3">
+                    <sent class="text-white" />
+                  </div>
+                  <p class="ml-16 text-sm font-medium text-grey-500">Sent</p>
+                </dt>
+                <dd class="ml-16 flex items-baseline">
+                  <p class="text-2xl font-semibold text-grey-900">
+                    {{ aliasToView.emails_sent }}
+                  </p>
+                </dd>
+              </div>
+              <div class="relative bg-white p-3 shadow rounded-lg overflow-hidden">
+                <dt>
+                  <div class="absolute bg-indigo-500 rounded-md p-3">
+                    <block class="text-white" />
+                  </div>
+                  <p class="ml-16 text-sm font-medium text-grey-500">Blocked</p>
+                </dt>
+                <dd class="ml-16 flex items-baseline">
+                  <p class="text-2xl font-semibold text-grey-900">
+                    {{ aliasToView.emails_blocked }}
+                  </p>
+                </dd>
+              </div>
+            </dl>
+          </div>
+          <div class="p-3 uppercase shadow text-sm tracking-wide text-grey-600 bg-white">
+            Actions
+          </div>
+          <button
+            @click="openSendFromAlias"
+            class="
+              w-full
+              text-left
+              p-3
+              focus:outline-none
+              hover:bg-indigo-50
+              border-b border-grey-200
+            "
+          >
+            Send from this alias
+          </button>
+          <div v-if="!aliasToView.deleted_at">
+            <button
+              v-if="aliasToView.active"
+              @click="deactivateAlias(aliasToView)"
+              class="
+                w-full
+                text-left
+                p-3
+                focus:outline-none
+                hover:bg-indigo-50
+                border-b border-grey-200
+              "
+              :class="deactivateAliasLoading ? 'cursor-not-allowed' : ''"
+              :disabled="deactivateAliasLoading"
+            >
+              Deactivate this alias
+              <loader class="h-5 w-5" v-if="deactivateAliasLoading" />
+            </button>
+            <button
+              v-else
+              @click="activateAlias(aliasToView)"
+              class="
+                w-full
+                text-left
+                p-3
+                focus:outline-none
+                hover:bg-indigo-50
+                border-b border-grey-200
+              "
+              :class="activateAliasLoading ? 'cursor-not-allowed' : ''"
+              :disabled="activateAliasLoading"
+            >
+              Activate this alias
+              <loader class="h-5 w-5" v-if="activateAliasLoading" />
+            </button>
+          </div>
+          <button
+            v-if="aliasToView.deleted_at"
+            @click="restoreAliasModalOpen = true"
+            class="
+              w-full
+              text-left
+              p-3
+              focus:outline-none
+              hover:bg-indigo-50
+              border-b border-grey-200
+            "
+          >
+            Restore this alias
+          </button>
+          <button
+            v-else
+            @click="deleteAliasModalOpen = true"
+            class="
+              w-full
+              text-left
+              p-3
+              focus:outline-none
+              hover:bg-indigo-50
+              border-b border-grey-200
+            "
+          >
+            Delete this alias
+          </button>
+          <button
+            @click="forgetAliasModalOpen = true"
+            class="
+              w-full
+              text-left
+              p-3
+              focus:outline-none
+              hover:bg-indigo-50
+              border-b border-grey-200
+            "
+          >
+            Forget this alias
+          </button>
+        </div>
+        <div v-else-if="selected == 'SendFromAlias'">
+          <!-- Send From Alias Tab -->
+          <div
+            class="
+              p-3
+              uppercase
+              shadow
+              text-sm
+              tracking-wide
+              text-grey-600
+              bg-white
+              flex
+              justify-between
+            "
+          >
+            Send From Alias
+            <button
+              @click="selected = 'ViewAlias'"
+              class="
+                back-icon
+                text-grey-600
+                hover:bg-grey-50
+                -m-3
+                flex
+                justify-center
+                items-center
+                focus:outline-none
+              "
+            >
+              <chevron-left />
+            </button>
+          </div>
+
+          <div class="p-3">
+            <p class="text-grey-700 mb-2">
+              Use this to automatically create the correct address to send an email to in order to
+              send an email from this alias.
+            </p>
+
+            <div
+              class="
+                flex
+                items-center
+                justify-center
+                rounded-sm
+                text-sm
+                border-t-4
+                text-indigo-800
+                border-indigo-600
+                bg-indigo-50
+                p-2
+                mb-4
+              "
+              role="alert"
+            >
+              <information class="text-indigo-800 mr-2 flex-none" />
+              You must send the email from a verified recipient on your AnonAddy account.
+            </div>
+
+            <label for="send_from_alias" class="block text-grey-700 mb-1">
+              Alias to send from:
+            </label>
+            <input
+              v-model="aliasToView.email"
+              id="send_from_alias"
+              type="text"
+              class="
+                appearance-none
+                shadow
+                bg-white
+                rounded-sm
+                w-full
+                p-2
+                text-grey-700
+                focus:ring
+                mb-4
+              "
+              disabled
+            />
+            <label for="send_from_alias_destination" class="block text-grey-700 mb-1">
+              Email destination:
+            </label>
+            <input
+              v-model="sendFromAliasDestination"
+              id="send_from_alias_destination"
+              type="text"
+              class="
+                appearance-none
+                shadow
+                bg-white
+                rounded-sm
+                w-full
+                p-2
+                text-grey-700
+                focus:ring
+                mb-4
+              "
+              placeholder="Enter destination email"
+              autofocus
+            />
+
+            <div v-if="sendFromAliasEmailToSendTo">
+              <p class="mb-1 text-grey-700">Send your message to this email:</p>
+              <div
+                v-clipboard="() => sendFromAliasEmailToSendTo"
+                v-clipboard:success="setSendFromAddressCopied"
+                class="
+                  flex
+                  items-center
+                  justify-between
+                  cursor-pointer
+                  text-sm
+                  border-t-4
+                  rounded-sm
+                  text-green-800
+                  border-green-600
+                  bg-green-100
+                  p-2
+                  mb-4
+                "
+                role="alert"
+                title="Click To Copy"
+              >
+                <span>
+                  {{ sendFromAliasEmailToSendTo }}
+                </span>
+                <svg
+                  v-if="sendFromAddressCopied"
+                  viewBox="0 0 24 24"
+                  width="20"
+                  height="20"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  fill="none"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polyline points="9 11 12 14 22 4"></polyline>
+                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                </svg>
+                <svg
+                  v-else
+                  viewBox="0 0 24 24"
+                  width="20"
+                  height="20"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  fill="none"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+              </div>
+            </div>
+            <button
+              @click="displaySendFromAddress"
+              class="
+                px-3
+                py-2
+                w-full
+                text-cyan-900
+                font-semibold
+                bg-cyan-400
+                hover:bg-cyan-300
+                border border-transparent
+                rounded-sm
+                focus:outline-none
+              "
+            >
+              Show Address
+            </button>
+          </div>
+        </div>
+        <div v-else>
+          <!-- Create Alias Tab -->
+          <div
+            class="
+              p-3
+              uppercase
+              shadow
+              text-sm
+              tracking-wide
+              text-grey-600
+              bg-white
+              flex
+              justify-between
+            "
+          >
+            Create A New Alias
+            <button
+              @click="selected = 'Aliases'"
+              class="
+                back-icon
+                text-grey-600
+                hover:bg-grey-50
+                -m-3
+                flex
+                justify-center
+                items-center
+                focus:outline-none
+              "
+            >
+              <chevron-left />
+            </button>
+          </div>
+          <div class="p-3">
+            <div v-if="newAlias">
+              <p for="alias_domain" class="block text-grey-700 mb-1">
+                Click To Copy Your New Alias:
+              </p>
+              <div
+                v-clipboard="() => newAlias"
+                v-clipboard:success="setNewAliasCopied"
+                class="
+                  flex
+                  items-center
+                  justify-between
+                  cursor-pointer
+                  text-sm
+                  border-t-4
+                  rounded-sm
+                  text-green-800
+                  border-green-600
+                  bg-green-100
+                  p-2
+                  mb-4
+                "
+                role="alert"
+              >
+                <span>
+                  {{ newAlias }}
+                </span>
+                <svg
+                  v-if="newAliasCopied"
+                  viewBox="0 0 24 24"
+                  width="20"
+                  height="20"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  fill="none"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polyline points="9 11 12 14 22 4"></polyline>
+                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                </svg>
+                <svg
+                  v-else
+                  viewBox="0 0 24 24"
+                  width="20"
+                  height="20"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  fill="none"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+              </div>
+            </div>
+
+            <label for="alias_domain" class="block text-grey-700 mb-1"> Alias Domain: </label>
+            <div class="block relative w-full mb-4">
+              <select
+                v-model="domain"
+                id="alias_domain"
+                class="
+                  block
+                  appearance-none
+                  w-full
+                  text-grey-700
+                  bg-white
+                  p-2
+                  pr-8
+                  rounded
+                  shadow
+                  focus:ring
+                "
+                required
+              >
+                <option
+                  v-for="domainOption in domainOptions"
+                  :key="domainOption"
+                  :value="domainOption"
+                >
+                  {{ domainOption }}
+                </option>
+              </select>
+              <div
+                class="
+                  pointer-events-none
+                  absolute
+                  inset-y-0
+                  right-0
+                  flex
+                  items-center
+                  px-2
+                  text-grey-700
+                "
+              >
+                <svg
+                  class="fill-current h-4 w-4"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"
+                  />
+                </svg>
+              </div>
+            </div>
+            <label for="alias_format" class="block text-grey-700 mb-1"> Alias Format: </label>
+            <div class="block relative w-full mb-4">
+              <select
+                v-model="aliasFormat"
+                id="alias_format"
+                class="
+                  block
+                  appearance-none
+                  w-full
+                  text-grey-700
+                  bg-white
+                  p-2
+                  pr-8
+                  rounded
+                  shadow
+                  focus:ring
+                "
+                required
+              >
+                <option
+                  v-for="formatOption in aliasFormatOptions"
+                  :key="formatOption.value"
+                  :value="formatOption.value"
+                  :disabled="
+                    (!subscribedOrSelfHosting && formatOption.paid) ||
+                    (formatOption.value === 'custom' && sharedDomainSelected)
+                  "
+                >
+                  {{ formatOption.label }}
+                  {{ !subscribedOrSelfHosting && formatOption.paid ? '(Subscribe To Unlock)' : ''
+                  }}{{
+                    formatOption.value === 'custom' && sharedDomainSelected
+                      ? '(Not available for shared domains)'
+                      : ''
+                  }}
+                </option>
+              </select>
+              <div
+                class="
+                  pointer-events-none
+                  absolute
+                  inset-y-0
+                  right-0
+                  flex
+                  items-center
+                  px-2
+                  text-grey-700
+                "
+              >
+                <svg
+                  class="fill-current h-4 w-4"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"
+                  />
+                </svg>
+              </div>
+            </div>
+            <div v-if="!sharedDomainSelected && aliasFormat === 'custom'">
+              <label for="alias_local_part" class="block text-grey-700 mb-1">
+                Alias Local Part:
+              </label>
+              <input
+                v-model="localPart"
+                id="alias_local_part"
+                type="text"
+                placeholder="Enter local part"
+                class="
+                  appearance-none
+                  shadow
+                  bg-white
+                  rounded-sm
+                  w-full
+                  p-2
+                  text-grey-700
+                  focus:ring
+                  mb-4
+                "
+              />
+            </div>
+            <label for="alias_description" class="block text-grey-700 mb-1">
+              Description: (optional)
+            </label>
+            <input
+              v-model="description"
+              id="alias_description"
+              type="text"
+              :placeholder="currentTabHostname"
+              autofocus="autofocus"
+              class="appearance-none shadow bg-white rounded-sm w-full p-2 text-grey-700 focus:ring"
+            />
+            <p class="text-xs mt-1 mb-4 text-grey-600">
+              If left empty the description will default to the current tab's hostname.
+            </p>
+
+            <label for="alias_recipient_ids" class="block text-grey-700 mb-1">
+              Recipients: (optional)
+            </label>
+            <multiselect
+              id="alias_recipient_ids"
+              class="mb-4"
+              v-model="createAliasRecipientIds"
+              :options="recipients"
+              :multiple="true"
+              :close-on-select="true"
+              :clear-on-select="false"
+              :searchable="true"
+              :max="10"
+              placeholder="Select recipient(s)"
+              label="email"
+              track-by="email"
+              :preselect-first="false"
+              :show-labels="false"
+            >
+            </multiselect>
+
+            <button
+              @click="createAlias"
+              class="
+                px-3
+                py-2
+                w-full
+                text-cyan-900
+                font-semibold
+                bg-cyan-400
+                hover:bg-cyan-300
+                border border-transparent
+                rounded-sm
+                focus:outline-none
+              "
+              :class="createAliasLoading ? 'cursor-not-allowed' : ''"
+              :disabled="createAliasLoading"
+            >
+              Create Alias
+              <loader class="h-5 w-5" v-if="createAliasLoading" />
+            </button>
+          </div>
+        </div>
+      </content>
+
+      <nav class="-mb-px flex h-14 w-full absolute bottom-0 bg-indigo-900" aria-label="Tabs">
         <a
-          @click="getAliasDomainOptions(apiToken, instance)"
-          class="text-grey-200 hover:text-indigo-50 cursor-pointer"
+          v-for="tab in tabs"
+          :key="tab.name"
+          @click="selected = tab.name"
+          href="#"
+          :class="[
+            selected == tab.name
+              ? 'border-white text-white'
+              : 'border-transparent text-indigo-100 hover:text-white',
+            'group w-1/2 inline-flex justify-center items-center py-4 px-1 border-b-2 font-medium text-sm',
+          ]"
+          :aria-current="selected == tab.name ? 'page' : undefined"
         >
-          Refresh Domains and Defaults
+          <component
+            :is="tab.icon"
+            :class="[
+              selected == tab.name ? 'text-white' : 'text-indigo-100 group-hover:text-white',
+              '-ml-0.5 mr-2 h-5 w-5',
+            ]"
+            aria-hidden="true"
+          />
+          <span>{{ tab.name }}</span>
         </a>
-        <a @click="logout" class="text-grey-200 hover:text-indigo-50 cursor-pointer"> Logout </a>
-      </div>
+      </nav>
     </div>
+
+    <Modal :open="restoreAliasModalOpen" @close="restoreAliasModalOpen = false" class="px-3">
+      <div class="w-full bg-white rounded-md shadow-2xl p-4">
+        <div>
+          <div
+            class="
+              mx-auto
+              flex-shrink-0 flex
+              items-center
+              justify-center
+              h-12
+              w-12
+              rounded-full
+              bg-cyan-50
+            "
+          >
+            <information class="text-cyan-600" />
+          </div>
+          <div class="mt-3 text-center">
+            <h3 class="text-lg leading-6 font-medium text-grey-900" id="modal-title">
+              Restore alias
+            </h3>
+            <div class="mt-2">
+              <p class="text-sm text-grey-500">
+                Are you sure you want to restore this alias? Once restored it will be
+                <b>able to receive emails again</b>.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="mt-5">
+          <button
+            type="button"
+            class="
+              inline-flex
+              justify-center
+              w-full
+              rounded-md
+              border border-transparent
+              shadow-sm
+              px-4
+              py-2
+              bg-cyan-400
+              text-base
+              font-medium
+              text-cyan-900
+              hover:bg-cyan-300
+              focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-300
+            "
+            @click="restoreAlias(aliasToView)"
+            :class="restoreAliasLoading ? 'cursor-not-allowed' : ''"
+            :disabled="restoreAliasLoading"
+          >
+            Restore
+            <loader class="h-5 w-5" v-if="restoreAliasLoading" />
+          </button>
+          <button
+            type="button"
+            class="
+              mt-3
+              w-full
+              inline-flex
+              justify-center
+              rounded-md
+              border border-grey-300
+              px-4
+              py-2
+              bg-white
+              text-base
+              font-medium
+              text-grey-700
+              shadow-sm
+              hover:bg-grey-50
+              focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500
+            "
+            @click="restoreAliasModalOpen = false"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </Modal>
+
+    <Modal :open="deleteAliasModalOpen" @close="deleteAliasModalOpen = false" class="px-3">
+      <div class="w-full bg-white rounded-md shadow-2xl p-4">
+        <div>
+          <div
+            class="
+              mx-auto
+              flex-shrink-0 flex
+              items-center
+              justify-center
+              h-12
+              w-12
+              rounded-full
+              bg-red-100
+            "
+          >
+            <exclamation class="text-red-600" />
+          </div>
+          <div class="mt-3 text-center">
+            <h3 class="text-lg leading-6 font-medium text-grey-900" id="modal-title">
+              Delete alias
+            </h3>
+            <div class="mt-2">
+              <p class="text-sm text-grey-500">
+                Are you sure you want to delete this alias? <b>You can restore this alias</b> if you
+                later change your mind. Once deleted, this alias will
+                <b>reject any emails sent to it</b>.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="mt-5">
+          <button
+            type="button"
+            class="
+              inline-flex
+              justify-center
+              w-full
+              rounded-md
+              border border-transparent
+              shadow-sm
+              px-4
+              py-2
+              bg-red-600
+              text-base
+              font-medium
+              text-white
+              hover:bg-red-700
+              focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500
+            "
+            @click="deleteAlias(aliasToView)"
+            :class="deleteAliasLoading ? 'cursor-not-allowed' : ''"
+            :disabled="deleteAliasLoading"
+          >
+            Delete
+            <loader class="h-5 w-5" v-if="deleteAliasLoading" />
+          </button>
+          <button
+            type="button"
+            class="
+              mt-3
+              w-full
+              inline-flex
+              justify-center
+              rounded-md
+              border border-grey-300
+              px-4
+              py-2
+              bg-white
+              text-base
+              font-medium
+              text-grey-700
+              shadow-sm
+              hover:bg-grey-50
+              focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500
+            "
+            @click="deleteAliasModalOpen = false"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </Modal>
+
+    <Modal :open="forgetAliasModalOpen" @close="forgetAliasModalOpen = false" class="px-3">
+      <div class="w-full bg-white rounded-md shadow-2xl p-4">
+        <div>
+          <div
+            class="
+              mx-auto
+              flex-shrink-0 flex
+              items-center
+              justify-center
+              h-12
+              w-12
+              rounded-full
+              bg-red-100
+            "
+          >
+            <exclamation class="text-red-600" />
+          </div>
+          <div class="mt-3 text-center">
+            <h3 class="text-lg leading-6 font-medium text-grey-900" id="modal-title">
+              Forget alias
+            </h3>
+            <div class="mt-2">
+              <p class="text-sm text-grey-500">
+                Are you sure you want to forget this alias? Forgetting an alias will disassociate it
+                from your account.
+              </p>
+              <p class="text-sm text-grey-500 mt-2">
+                <b>Note:</b> If this alias uses a shared domain then it can
+                <b>never be restored</b> or used again so make sure you are certain. If it is a
+                standard alias then it can be created again since it will be as if it never existed.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="mt-5">
+          <button
+            type="button"
+            class="
+              inline-flex
+              justify-center
+              w-full
+              rounded-md
+              border border-transparent
+              shadow-sm
+              px-4
+              py-2
+              bg-red-600
+              text-base
+              font-medium
+              text-white
+              hover:bg-red-700
+              focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500
+            "
+            @click="forgetAlias(aliasToView)"
+            :class="forgetAliasLoading ? 'cursor-not-allowed' : ''"
+            :disabled="forgetAliasLoading"
+          >
+            Forget
+            <loader class="h-5 w-5" v-if="forgetAliasLoading" />
+          </button>
+          <button
+            type="button"
+            class="
+              mt-3
+              w-full
+              inline-flex
+              justify-center
+              rounded-md
+              border border-grey-300
+              px-4
+              py-2
+              bg-white
+              text-base
+              font-medium
+              text-grey-700
+              shadow-sm
+              hover:bg-grey-50
+              focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500
+            "
+            @click="forgetAliasModalOpen = false"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </Modal>
+
+    <notifications position="bottom center" width="100%" />
   </div>
 </template>
 
 <script>
 import Loader from './Loader'
+import Plus from './../components/icons/Plus'
+import AtSign from './../components/icons/AtSign'
+import Cog from './../components/icons/Cog'
+import Block from './../components/icons/Block'
+import Forward from './../components/icons/Forward'
+import Reply from './../components/icons/Reply'
+import Sent from './../components/icons/Sent'
+import ChevronLeft from './../components/icons/ChevronLeft'
+import Exclamation from './../components/icons/Exclamation'
+import Information from './../components/icons/Information'
+import Clipboard from './../components/icons/Clipboard'
+import Cross from './../components/icons/Cross'
+import debounce from 'lodash/debounce'
+import Modal from './../components/Modal.vue'
+import Multiselect from 'vue-multiselect'
 
 export default {
-  name: 'app',
-  components: {
-    Loader,
-  },
-  data() {
+  data: function () {
     return {
+      tabs: [
+        { name: 'Aliases', icon: 'AtSign' },
+        { name: 'Settings', icon: 'Cog' },
+      ],
+      selected: 'Aliases',
       tokenInput: '',
       apiToken: '',
       instanceInput: 'https://app.anonaddy.com',
       instance: '',
       changeInstance: false,
+      searchInput: '',
       currentTabHostname: '',
       description: '',
       localPart: '',
-      domainOptionsloading: false,
-      loading: false,
+      sendFromAliasDestination: '',
+      sendFromAliasEmailToSendTo: '',
+      domainOptionsLoading: false,
+      recipientsLoading: false,
+      createAliasLoading: false,
+      activateAliasLoading: false,
+      deactivateAliasLoading: false,
+      deleteAliasLoading: false,
+      forgetAliasLoading: false,
+      restoreAliasLoading: false,
+      deleteAliasModalOpen: false,
+      forgetAliasModalOpen: false,
+      restoreAliasModalOpen: false,
       newAlias: '',
-      lastCreated: '',
-      lastCreatedCopied: false,
+      newAliasCopied: false,
+      sendFromAddressCopied: false,
       clipboardButtonText: 'Copy',
       error: '',
       domain: '',
       domainOptions: [],
+      recipients: [],
+      createAliasRecipientIds: [],
       aliasFormat: 'random_characters',
       aliasFormatOptions: [
         {
@@ -308,7 +1508,33 @@ export default {
           paid: false,
         },
       ],
+      aliases: [],
+      showDeletedAliases: 'without',
+      aliasesTitle: 'Latest Aliases',
+      aliasesHaveNextPage: false,
+      aliasesMeta: {},
+      aliasesCurrentPage: 1,
+      getAliasesLoading: false,
+      showMoreAliasesLoading: false,
+      aliasToView: {},
     }
+  },
+  components: {
+    Loader,
+    Plus,
+    AtSign,
+    Cog,
+    Clipboard,
+    Cross,
+    Block,
+    Forward,
+    Reply,
+    Sent,
+    ChevronLeft,
+    Exclamation,
+    Information,
+    Modal,
+    Multiselect,
   },
   async mounted() {
     this.apiToken = await this.getApiToken()
@@ -317,13 +1543,25 @@ export default {
       this.instance = 'https://app.anonaddy.com'
     }
     this.domainOptions = await this.getDomainOptions()
+    this.recipients = await this.getRecipients()
     this.domain = await this.getDomain()
     this.aliasFormat = await this.getAliasFormat()
+    this.showDeletedAliases = await this.getShowDeletedAliases()
+
     if (this.sharedDomainSelected && this.aliasFormat === 'custom' && !this.selfHosting) {
       this.aliasFormat = 'random_characters'
     }
-    this.lastCreated = await this.getLastCreated()
+
     this.currentTabHostname = await this.getCurrentTabHostname()
+
+    if (this.apiToken) {
+      document.getElementById('search').focus()
+      this.getAliases()
+
+      if (this.recipients.length == 0) {
+        this.getRecipientsRequest()
+      }
+    }
   },
   watch: {
     apiToken: {
@@ -353,6 +1591,15 @@ export default {
         }
       },
     },
+    recipients: {
+      async handler(val) {
+        try {
+          await this.$browser.storage.sync.set({ recipients: val })
+        } catch (error) {
+          console.log(error)
+        }
+      },
+    },
     domain: {
       async handler(val) {
         if (this.sharedDomainSelected) {
@@ -374,13 +1621,16 @@ export default {
         }
       },
     },
-    lastCreated: {
+    showDeletedAliases: {
       async handler(val) {
         try {
-          await this.$browser.storage.sync.set({ lastCreated: val })
+          await this.$browser.storage.sync.set({ showDeletedAliases: val })
         } catch (error) {
           console.log(error)
         }
+
+        this.aliasesCurrentPage = 1
+        this.getAliases()
       },
     },
     tokenInput: function () {
@@ -392,6 +1642,17 @@ export default {
     localPart: function () {
       this.error = ''
     },
+    selected: function (val) {
+      this.error = ''
+    },
+    searchInput: {
+      handler: debounce(function (val) {
+        if (val == '' || val.length > 2) {
+          this.aliasesCurrentPage = 1
+          this.getAliases()
+        }
+      }, 300),
+    },
   },
   computed: {
     subscribed() {
@@ -400,7 +1661,7 @@ export default {
     selfHosting() {
       return this.instance !== 'https://app.anonaddy.com'
     },
-    subscibedOrSelfHosting() {
+    subscribedOrSelfHosting() {
       return this.subscribed || this.selfHosting
     },
     sharedDomainSelected() {
@@ -437,6 +1698,14 @@ export default {
         console.log(error)
       }
     },
+    async getRecipients() {
+      try {
+        var result = await this.$browser.storage.sync.get({ recipients: [''] })
+        return result.recipients
+      } catch (error) {
+        console.log(error)
+      }
+    },
     async getDomain() {
       try {
         var result = await this.$browser.storage.sync.get({ domain: '' })
@@ -453,10 +1722,10 @@ export default {
         console.log(error)
       }
     },
-    async getLastCreated() {
+    async getShowDeletedAliases() {
       try {
-        var result = await this.$browser.storage.sync.get({ lastCreated: '' })
-        return result.lastCreated
+        var result = await this.$browser.storage.sync.get({ showDeletedAliases: 'without' })
+        return result.showDeletedAliases
       } catch (error) {
         console.log(error)
       }
@@ -467,6 +1736,68 @@ export default {
         var url = new URL(result[0].url)
         return url.hostname
       } catch (error) {
+        console.log(error)
+      }
+    },
+    async getAliases() {
+      this.error = ''
+      if (this.selected !== 'Settings') {
+        this.selected = 'Aliases'
+      }
+
+      if (this.aliasesCurrentPage == 1) {
+        this.getAliasesLoading = true
+      }
+
+      try {
+        const response = await fetch(
+          `${this.instance}/api/v1/aliases?filter[deleted]=${this.showDeletedAliases}&filter[search]=${this.searchInput}&page[number]=${this.aliasesCurrentPage}`,
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Requested-With': 'XMLHttpRequest',
+              Authorization: `Bearer ${this.apiToken}`,
+            },
+          }
+        )
+
+        if (response.status === 200) {
+          let data = await response.json()
+
+          if (this.aliasesCurrentPage > 1) {
+            this.aliases = this.aliases.concat(data.data)
+          } else {
+            this.aliases = data.data
+          }
+
+          this.aliasesTitle = this.searchInput
+            ? `Search Results (${data.meta.total} matches)`
+            : 'Latest Aliases'
+
+          if (data.links) {
+            this.aliasesHaveNextPage = data.links.next ? true : false
+          } else {
+            this.aliasesHaveNextPage = false
+          }
+
+          this.aliasesMeta = data.meta
+        } else {
+          this.error = 'An Error Has Occurred'
+        }
+
+        if (this.aliasesCurrentPage == 1) {
+          this.getAliasesLoading = false
+        } else {
+          this.showMoreAliasesLoading = false
+        }
+      } catch (error) {
+        if (this.aliasesCurrentPage == 1) {
+          this.getAliasesLoading = false
+        } else {
+          this.showMoreAliasesLoading = false
+        }
+        this.error = 'An Error Has Occurred'
         console.log(error)
       }
     },
@@ -481,7 +1812,7 @@ export default {
         return (this.error = 'Please enter a valid URL for the instance with no trailing slash')
       }
 
-      this.domainOptionsloading = true
+      this.domainOptionsLoading = true
 
       try {
         const response = await fetch(`${instance}/api/v1/domain-options`, {
@@ -493,17 +1824,23 @@ export default {
           },
         })
 
-        this.domainOptionsloading = false
+        this.domainOptionsLoading = false
 
         if (response.status === 401) {
           this.error = 'Unauthenticated, please check your API token'
         } else if (response.status === 200) {
-          if (!this.apiToken) {
-            this.apiToken = token
-          }
-
           if (!this.instance) {
             this.instance = instance
+          }
+
+          if (!this.apiToken) {
+            this.apiToken = token
+            this.getAliases()
+            this.getRecipientsRequest()
+
+            this.success('Logged in successfully')
+          } else {
+            this.success('Domains and defaults refreshed')
           }
 
           let data = await response.json()
@@ -518,7 +1855,34 @@ export default {
           this.error = 'An Error Has Occurred'
         }
       } catch (error) {
-        this.domainOptionsloading = false
+        this.domainOptionsLoading = false
+        this.error = 'An Error Has Occurred'
+        console.log(error)
+      }
+    },
+    async getRecipientsRequest() {
+      this.recipientsLoading = true
+
+      try {
+        const response = await fetch(`${this.instance}/api/v1/recipients?filter[verified]=true`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            Authorization: `Bearer ${this.apiToken}`,
+          },
+        })
+
+        let data = await response.json()
+        this.recipients = data.data
+
+        if (this.selected == 'Settings') {
+          this.success('Recipients refreshed')
+        }
+
+        this.recipientsLoading = false
+      } catch (error) {
+        this.recipientsLoading = false
         this.error = 'An Error Has Occurred'
         console.log(error)
       }
@@ -541,7 +1905,7 @@ export default {
         return (this.error = 'Invalid alias domain name')
       }
 
-      this.loading = true
+      this.createAliasLoading = true
       this.error = ''
 
       try {
@@ -557,10 +1921,11 @@ export default {
             local_part: this.localPart,
             description: this.description ? this.description : this.currentTabHostname,
             format: this.aliasFormat,
+            recipient_ids: this.createAliasRecipientIds.map((recipient) => recipient.id),
           }),
         })
 
-        this.loading = false
+        this.createAliasLoading = false
 
         if (response.status === 403) {
           this.error = 'You have reached your active shared domain alias limit'
@@ -575,16 +1940,167 @@ export default {
           let data = await response.json()
           this.localPart = ''
           this.description = ''
+          this.createAliasRecipientIds = []
           this.newAlias = data.data.email
-          this.lastCreated = data.data.email
+
+          this.aliases = [data.data].concat(this.aliases)
         } else {
           this.error = 'An Error Has Occurred'
         }
       } catch (error) {
-        this.loading = false
+        this.createAliasLoading = false
         this.error = 'An Error Has Occurred'
         console.log(error)
       }
+    },
+    async activateAlias(alias) {
+      this.activateAliasLoading = true
+
+      try {
+        const response = await fetch(`${this.instance}/api/v1/active-aliases`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            Authorization: `Bearer ${this.apiToken}`,
+          },
+          body: JSON.stringify({
+            id: alias.id,
+          }),
+        })
+
+        this.activateAliasLoading = false
+
+        if (response.status === 403) {
+          this.error = 'You have reached your active shared domain alias limit'
+        } else if (response.status === 200) {
+          alias.active = true
+          this.success('Alias activated successfully')
+        } else {
+          this.error = 'An Error Has Occurred'
+        }
+      } catch (error) {
+        this.activateAliasLoading = false
+        this.error = 'An Error Has Occurred'
+        console.log(error)
+      }
+    },
+    async deactivateAlias(alias) {
+      this.deactivateAliasLoading = true
+
+      try {
+        const response = await fetch(`${this.instance}/api/v1/active-aliases/${alias.id}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            Authorization: `Bearer ${this.apiToken}`,
+          },
+        })
+
+        this.deactivateAliasLoading = false
+
+        if (response.status === 204) {
+          alias.active = false
+          this.success('Alias deactivated successfully')
+        } else {
+          this.error = 'An Error Has Occurred'
+        }
+      } catch (error) {
+        this.deactivateAliasLoading = false
+        this.error = 'An Error Has Occurred'
+        console.log(error)
+      }
+    },
+    async deleteAlias(alias) {
+      this.deleteAliasLoading = true
+
+      try {
+        const response = await fetch(`${this.instance}/api/v1/aliases/${alias.id}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            Authorization: `Bearer ${this.apiToken}`,
+          },
+        })
+
+        this.deleteAliasLoading = false
+
+        if (response.status === 204) {
+          alias.deleted_at = dayjs().toString()
+          alias.active = false
+          this.success('Alias deleted successfully')
+        } else {
+          this.error = 'An Error Has Occurred'
+        }
+      } catch (error) {
+        this.deleteAliasLoading = false
+        this.error = 'An Error Has Occurred'
+        console.log(error)
+      }
+
+      this.deleteAliasModalOpen = false
+    },
+    async forgetAlias(alias) {
+      this.forgetAliasLoading = true
+
+      try {
+        const response = await fetch(`${this.instance}/api/v1/aliases/${alias.id}/forget`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            Authorization: `Bearer ${this.apiToken}`,
+          },
+        })
+
+        this.forgetAliasLoading = false
+
+        if (response.status === 204) {
+          this.aliases = this.aliases.filter((a) => a.id !== alias.id)
+          this.success('Alias forgotten successfully')
+        } else {
+          this.error = 'An Error Has Occurred'
+        }
+      } catch (error) {
+        this.forgetAliasLoading = false
+        this.error = 'An Error Has Occurred'
+        console.log(error)
+      }
+
+      this.selected = 'Aliases'
+      this.forgetAliasModalOpen = false
+    },
+    async restoreAlias(alias) {
+      this.retoreAliasLoading = true
+
+      try {
+        const response = await fetch(`${this.instance}/api/v1/aliases/${alias.id}/restore`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            Authorization: `Bearer ${this.apiToken}`,
+          },
+        })
+
+        this.retoreAliasLoading = false
+
+        if (response.status === 200) {
+          alias.deleted_at = null
+          alias.active = true
+          this.success('Alias restored successfully')
+        } else {
+          this.error = 'An Error Has Occurred'
+        }
+      } catch (error) {
+        this.retoreAliasLoading = false
+        this.error = 'An Error Has Occurred'
+        console.log(error)
+      }
+
+      this.restoreAliasModalOpen = false
     },
     async logout() {
       Object.assign(this.$data, this.$options.data.apply(this))
@@ -594,34 +2110,102 @@ export default {
           'apiToken',
           'instance',
           'domainOptions',
+          'recipients',
           'domain',
           'aliasFormat',
-          'lastCreated',
+          'showDeletedAliases',
         ])
         this.apiToken = await this.getApiToken()
         this.instance = await this.getInstance()
         this.domainOptions = await this.getDomainOptions()
+        this.recipients = await this.getRecipients()
         this.domain = await this.getDomain()
         this.aliasFormat = await this.getAliasFormat()
-        this.lastCreated = await this.getLastCreated()
+        this.showDeletedAliases = await this.getShowDeletedAliases()
+
+        this.success('Logged out successfully')
       } catch (error) {
         console.log(error)
       }
+    },
+    displaySendFromAddress() {
+      this.error = ''
+      this.sendFromAddressCopied = false
+
+      if (!this.validEmail(this.sendFromAliasDestination)) {
+        this.error = 'Valid Email required'
+        return
+      }
+
+      this.sendFromAliasEmailToSendTo = `${
+        this.aliasToView.local_part
+      }+${this.sendFromAliasDestination.replace('@', '=')}@${this.aliasToView.domain}`
+    },
+    openSendFromAlias() {
+      if (this.aliasToView.deleted_at) {
+        return (this.error = 'You must restore this alias first')
+      }
+
+      if (!this.aliasToView.active) {
+        return (this.error = 'You must activate this alias first')
+      }
+
+      this.sendFromAliasDestination = ''
+      this.sendFromAliasEmailToSendTo = ''
+      this.sendFromAddressCopied = false
+      this.selected = 'SendFromAlias'
+    },
+    viewAlias(alias) {
+      this.selected = 'ViewAlias'
+
+      this.aliasToView = alias
+    },
+    getAliasStatus(alias) {
+      if (alias.deleted_at) {
+        return {
+          foregroundColour: 'bg-red-400',
+          backgroundColour: 'bg-red-100',
+          status: 'Deleted',
+        }
+      } else {
+        return {
+          foregroundColour: alias.active ? 'bg-green-400' : 'bg-grey-400',
+          backgroundColour: alias.active ? 'bg-green-100' : 'bg-grey-100',
+          status: alias.active ? 'Active' : 'Inactive',
+        }
+      }
+    },
+    showMoreAliases() {
+      this.aliasesCurrentPage++
+      this.showMoreAliasesLoading = true
+
+      this.getAliases()
     },
     cancelChangeInstance() {
       this.instanceInput = 'https://app.anonaddy.com'
       this.changeInstance = false
     },
     validInstance(instance) {
-      let re = /^(?:http(s)?:\/\/)[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+(?<!\/)$/
+      let re =
+        /^(?:http(s)?:\/\/)[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+(?<!\/)$/
       return re.test(instance)
     },
     validLocalPart(part) {
       let re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))$/
       return re.test(part)
     },
-    setLastCreatedCopied() {
-      this.lastCreatedCopied = true
+    validEmail(email) {
+      let re =
+        /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+      return re.test(email)
+    },
+    setNewAliasCopied() {
+      this.newAliasCopied = true
+      this.aliasCopied()
+    },
+    setSendFromAddressCopied() {
+      this.sendFromAddressCopied = true
+      this.aliasCopied()
     },
     clipboardSuccess() {
       this.clipboardButtonText = 'Copied!'
@@ -629,6 +2213,17 @@ export default {
     clipboardError() {
       this.clipboardButtonText = 'Error!'
     },
+    aliasCopied() {
+      this.success('Copied to clipboard')
+    },
+    success(text = '') {
+      this.$notify({
+        text: text,
+        type: 'success',
+      })
+    },
   },
 }
 </script>
+
+<style src="vue-multiselect/dist/vue-multiselect.min.css"></style>
