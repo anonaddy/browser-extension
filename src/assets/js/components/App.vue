@@ -196,7 +196,7 @@
         </button>
       </header>
 
-      <content>
+      <content class="bg-grey-50">
         <div
           v-if="error"
           class="
@@ -514,7 +514,7 @@
                 ></span>
               </span>
 
-              <span class="block break-words">
+              <span class="block break-words w-full">
                 <div
                   class="break-words cursor-pointer"
                   title="Click To Copy"
@@ -524,18 +524,74 @@
                   <span class="font-semibold text-indigo-800">{{ aliasToView.local_part }}</span
                   ><span>@{{ aliasToView.domain }}</span>
                 </div>
-                <div v-if="aliasToView.description" class="flex items-center">
+
+                <div v-if="aliasToViewDescriptionEditing" class="flex items-center">
+                  <input
+                    @keyup.enter="editAliasDescription(aliasToView)"
+                    @keyup.esc="cancelEditDescription"
+                    v-model="aliasDescriptionToEdit"
+                    type="text"
+                    class="
+                      flex-grow
+                      text-sm
+                      appearance-none
+                      bg-white
+                      border
+                      text-grey-700
+                      focus:outline-none
+                      rounded-sm
+                      px-2
+                      py-1
+                      shadow
+                    "
+                    :class="
+                      aliasDescriptionToEdit.length > 100 ? 'border-red-500' : 'border-transparent'
+                    "
+                    placeholder="Add description"
+                    tabindex="0"
+                    autofocus
+                  />
+                  <cross
+                    class="inline-block w-6 h-6 text-red-300 cursor-pointer flex-none"
+                    @click.native="cancelEditDescription"
+                  />
+                  <check
+                    class="inline-block w-6 h-6 text-cyan-500 cursor-pointer flex-none"
+                    @click.native="editAliasDescription(aliasToView)"
+                  />
+                </div>
+                <div v-else-if="aliasToView.description" class="flex items-center">
                   <span
                     class="
                       inline-block
-                      text-grey-400 text-sm
                       break-words
+                      text-grey-400 text-sm
                       py-1
                       border border-transparent
                     "
                   >
                     {{ aliasToView.description }}
                   </span>
+                  <edit
+                    class="inline-block w-6 h-6 ml-2 text-grey-300 cursor-pointer flex-none"
+                    @click.native="
+                      ;(aliasToViewDescriptionEditing = true),
+                        (aliasDescriptionToEdit = aliasToView.description)
+                    "
+                  />
+                </div>
+                <div v-else>
+                  <span
+                    class="
+                      inline-block
+                      text-grey-300 text-sm
+                      cursor-pointer
+                      py-1
+                      border border-transparent
+                    "
+                    @click=";(aliasToViewDescriptionEditing = true), (aliasDescriptionToEdit = '')"
+                    >Add description</span
+                  >
                 </div>
               </span>
             </div>
@@ -786,7 +842,6 @@
                 mb-4
               "
               placeholder="Enter destination email"
-              autofocus
             />
 
             <div v-if="sendFromAliasEmailToSendTo">
@@ -1363,10 +1418,17 @@
                 Are you sure you want to forget this alias? Forgetting an alias will disassociate it
                 from your account.
               </p>
-              <p class="text-sm text-grey-500 mt-2">
-                <b>Note:</b> If this alias uses a shared domain then it can
-                <b>never be restored</b> or used again so make sure you are certain. If it is a
-                standard alias then it can be created again since it will be as if it never existed.
+              <p v-if="aliasToViewHasSharedDomain" class="text-sm text-grey-500 mt-2">
+                <b>Note:</b> This alias uses a shared domain so it can <b>never be restored</b> or
+                used again so make sure you are certain. Once forgotten, this alias will
+                <b>reject any emails sent to it</b>
+              </p>
+              <p v-else class="text-sm text-grey-500 mt-2">
+                <b>Note:</b> This is a standard alias so it
+                <b>can be created again in the future</b> since it will be as if it never existed in
+                the database. Once forgotten, if someone sends an email to this alias and you have
+                catch-all enabled then it will be created automatically again. If you would like
+                this alias to reject any messages sent to it then you should delete it instead.
               </p>
             </div>
           </div>
@@ -1442,6 +1504,8 @@ import Exclamation from './../components/icons/Exclamation'
 import Information from './../components/icons/Information'
 import Clipboard from './../components/icons/Clipboard'
 import Cross from './../components/icons/Cross'
+import Edit from './../components/icons/Edit'
+import Check from './../components/icons/Check'
 import debounce from 'lodash/debounce'
 import Modal from './../components/Modal.vue'
 import Multiselect from 'vue-multiselect'
@@ -1473,9 +1537,12 @@ export default {
       deleteAliasLoading: false,
       forgetAliasLoading: false,
       restoreAliasLoading: false,
+      editAliasDescriptionLoading: false,
       deleteAliasModalOpen: false,
       forgetAliasModalOpen: false,
       restoreAliasModalOpen: false,
+      aliasToViewDescriptionEditing: false,
+      aliasDescriptionToEdit: '',
       newAlias: '',
       newAliasCopied: false,
       sendFromAddressCopied: false,
@@ -1526,6 +1593,8 @@ export default {
     Cog,
     Clipboard,
     Cross,
+    Edit,
+    Check,
     Block,
     Forward,
     Reply,
@@ -1644,6 +1713,7 @@ export default {
     },
     selected: function (val) {
       this.error = ''
+      this.cancelEditDescription()
     },
     searchInput: {
       handler: debounce(function (val) {
@@ -1663,6 +1733,17 @@ export default {
     },
     subscribedOrSelfHosting() {
       return this.subscribed || this.selfHosting
+    },
+    aliasToViewHasSharedDomain() {
+      if (!this.aliasToView.domain) {
+        return false
+      }
+      return (
+        this.aliasToView.domain === 'anonaddy.me' ||
+        this.aliasToView.domain === '4wrd.cc' ||
+        this.aliasToView.domain === 'mailer.me' ||
+        this.aliasToView.domain === 'addymail.com'
+      )
     },
     sharedDomainSelected() {
       return (
@@ -1959,6 +2040,40 @@ export default {
         console.log(error)
       }
     },
+    async editAliasDescription(alias) {
+      this.editAliasDescriptionLoading = true
+
+      try {
+        const response = await fetch(`${this.instance}/api/v1/aliases/${alias.id}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            Authorization: `Bearer ${this.apiToken}`,
+          },
+          body: JSON.stringify({
+            description: this.aliasDescriptionToEdit,
+          }),
+        })
+
+        this.editAliasDescriptionLoading = false
+
+        if (response.status === 200) {
+          alias.description = this.aliasDescriptionToEdit
+          this.aliasDescriptionToEdit = ''
+          this.aliasToViewDescriptionEditing = false
+          this.success('Alias description updated successfully')
+        } else {
+          this.error = 'An Error Has Occurred'
+        }
+      } catch (error) {
+        this.editAliasDescriptionLoading = false
+        this.aliasDescriptionToEdit = ''
+        this.aliasToViewDescriptionEditing = false
+        this.error = 'An Error Has Occurred'
+        console.log(error)
+      }
+    },
     async activateAlias(alias) {
       this.activateAliasLoading = true
 
@@ -2186,6 +2301,10 @@ export default {
       this.showMoreAliasesLoading = true
 
       this.getAliases()
+    },
+    cancelEditDescription() {
+      this.aliasToViewDescriptionEditing = false
+      this.aliasDescriptionToEdit = ''
     },
     cancelChangeInstance() {
       this.instanceInput = 'https://app.anonaddy.com'
