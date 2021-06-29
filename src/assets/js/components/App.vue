@@ -517,7 +517,7 @@
               <span class="block break-words w-full">
                 <div
                   class="break-words cursor-pointer"
-                  title="Click To Copy"
+                  title="Click To Copy Alias"
                   v-clipboard="() => aliasToView.email"
                   v-clipboard:success="aliasCopied"
                 >
@@ -531,6 +531,7 @@
                     @keyup.esc="cancelEditDescription"
                     v-model="aliasDescriptionToEdit"
                     type="text"
+                    id="description-input"
                     class="
                       flex-grow
                       text-sm
@@ -565,10 +566,14 @@
                     class="
                       inline-block
                       break-words
+                      cursor-pointer
                       text-grey-400 text-sm
                       py-1
                       border border-transparent
                     "
+                    title="Click To Copy Description"
+                    v-clipboard="() => aliasToView.description"
+                    v-clipboard:success="aliasCopied"
                   >
                     {{ aliasToView.description }}
                   </span>
@@ -1723,6 +1728,13 @@ export default {
         }
       }, 300),
     },
+    aliasToViewDescriptionEditing: {
+      handler: debounce(function (val) {
+        if (val === true) {
+          document.getElementById('description-input').focus()
+        }
+      }, 100),
+    },
   },
   computed: {
     subscribed() {
@@ -1852,9 +1864,13 @@ export default {
             this.aliases = data.data
           }
 
-          this.aliasesTitle = this.searchInput
-            ? `Search Results (${data.meta.total} matches)`
-            : 'Latest Aliases'
+          if (this.searchInput) {
+            this.aliasesTitle = `Search Results (${data.meta.total} `
+
+            this.aliasesTitle += data.meta.total === 1 ? 'match)' : 'matches)'
+          } else {
+            this.aliasesTitle = 'Latest Aliases'
+          }
 
           if (data.links) {
             this.aliasesHaveNextPage = data.links.next ? true : false
