@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div :class="theme">
     <div v-if="!apiToken" class="login p-3 bg-indigo-900">
       <header
         class="flex items-center justify-between border-b bg-indigo-900 border-indigo-700 pb-3 mb-4"
@@ -143,11 +143,23 @@
                 rounded-sm
                 py-1
                 px-8
+                dark:bg-grey-600 dark:text-white dark:placeholder-grey-200
               "
             />
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              class="absolute left-0 inset-y-0 ml-2 flex items-center text-grey-300 h-full w-5"
+              class="
+                absolute
+                left-0
+                inset-y-0
+                ml-2
+                flex
+                items-center
+                text-grey-300
+                dark:text-white
+                h-full
+                w-5
+              "
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -171,6 +183,7 @@
                 flex
                 items-center
                 text-grey-300
+                dark:text-white
                 h-full
                 w-5
               "
@@ -196,7 +209,7 @@
         </button>
       </header>
 
-      <content class="bg-grey-50">
+      <content class="bg-grey-50 dark:bg-grey-900 dark:text-white">
         <div
           v-if="error"
           class="
@@ -234,6 +247,7 @@
                 flex
                 justify-between
                 items-center
+                dark:bg-grey-700 dark:text-white
               "
             >
               {{ aliasesTitle }}
@@ -252,6 +266,7 @@
                     rounded
                     shadow
                     focus:ring
+                    dark:bg-grey-600 dark:text-white
                   "
                   required
                 >
@@ -269,6 +284,7 @@
                     items-center
                     px-2
                     text-grey-700
+                    dark:text-white
                   "
                 >
                   <svg
@@ -285,18 +301,27 @@
             </div>
 
             <div v-if="aliases.length > 0">
-              <div class="divide-y divide-grey-200 border-b border-grey-200">
+              <div
+                class="
+                  divide-y divide-grey-200
+                  border-b border-grey-200
+                  dark:divide-grey-600 dark:border-grey-600
+                "
+              >
                 <div
                   v-for="alias in aliases"
                   :key="alias.id"
-                  class="flex items-center h-20 hover:bg-indigo-50"
+                  class="flex items-center h-20 hover:bg-indigo-50 dark:hover:bg-grey-800"
                 >
                   <div
                     @click="viewAlias(alias)"
                     class="flex-grow flex items-center h-full truncate py-1 pl-2 cursor-pointer"
                     title="View Alias Details"
                   >
-                    <div class="text-sm text-grey-500" :title="alias.created_at | formatDate">
+                    <div
+                      class="text-sm text-grey-500 dark:text-grey-50"
+                      :title="alias.created_at | formatDate"
+                    >
                       {{ alias.created_at | timeAgo }}
                     </div>
                     <span
@@ -321,7 +346,9 @@
 
                     <span class="block truncate">
                       <div class="truncate">
-                        <span class="font-semibold text-indigo-800">{{ alias.local_part }}</span
+                        <span class="font-semibold text-indigo-800 dark:text-indigo-100">{{
+                          alias.local_part
+                        }}</span
                         ><span>@{{ alias.domain }}</span>
                       </div>
                       <div v-if="alias.description" class="flex items-center">
@@ -332,6 +359,7 @@
                             truncate
                             py-1
                             border border-transparent
+                            dark:text-grey-50
                           "
                         >
                           {{ alias.description }}
@@ -341,7 +369,7 @@
                   </div>
 
                   <div class="flex items-center flex-none py-1 pr-2 h-full">
-                    <div class="cursor-pointer text-grey-400" title="Copy Alias">
+                    <div class="cursor-pointer text-grey-400 dark:text-grey-200" title="Copy Alias">
                       <clipboard
                         v-clipboard="() => alias.email"
                         v-clipboard:success="aliasCopied"
@@ -369,6 +397,7 @@
                     text-grey-700
                     bg-white
                     hover:bg-grey-50
+                    dark:bg-grey-600 dark:text-white dark:border-grey-800 dark:hover:bg-grey-500
                   "
                   :class="showMoreAliasesLoading ? 'cursor-not-allowed' : ''"
                   :disabled="showMoreAliasesLoading"
@@ -395,6 +424,7 @@
               bg-white
               flex
               justify-between
+              dark:bg-grey-700 dark:text-white
             "
           >
             Settings
@@ -409,11 +439,65 @@
                 justify-center
                 items-center
                 focus:outline-none
+                dark:text-white dark:hover:bg-grey-800
               "
             >
               <chevron-left />
             </button>
           </div>
+
+          <div class="w-full text-left p-3 border-b border-grey-200">
+            <label for="select_theme" class="block text-grey-700 dark:text-white mb-1"
+              >Extension Theme:</label
+            >
+            <div class="relative">
+              <select
+                v-model="theme"
+                id="select_theme"
+                class="
+                  block
+                  appearance-none
+                  w-full
+                  text-grey-700
+                  bg-white
+                  p-2
+                  pr-8
+                  rounded
+                  shadow
+                  focus:ring
+                  dark:bg-grey-600 dark:text-white
+                "
+                required
+              >
+                <option value="">Light</option>
+                <option value="dark">Dark</option>
+              </select>
+              <div
+                class="
+                  pointer-events-none
+                  absolute
+                  inset-y-0
+                  right-0
+                  flex
+                  items-center
+                  px-2
+                  text-grey-700
+                  dark:text-white
+                "
+              >
+                <svg
+                  class="fill-current h-4 w-4"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"
+                  />
+                </svg>
+              </div>
+            </div>
+          </div>
+
           <button
             @click="getAliasDomainOptions(apiToken, instance)"
             class="
@@ -423,6 +507,7 @@
               focus:outline-none
               hover:bg-indigo-50
               border-b border-grey-200
+              dark:hover:bg-grey-800
             "
             :class="domainOptionsLoading ? 'cursor-not-allowed' : ''"
             :disabled="domainOptionsLoading"
@@ -439,6 +524,7 @@
               focus:outline-none
               hover:bg-indigo-50
               border-b border-grey-200
+              dark:hover:bg-grey-800
             "
             :class="recipientsLoading ? 'cursor-not-allowed' : ''"
             :disabled="recipientsLoading"
@@ -455,6 +541,7 @@
               focus:outline-none
               hover:bg-indigo-50
               border-b border-grey-200
+              dark:hover:bg-grey-800
             "
           >
             Logout
@@ -473,6 +560,7 @@
               bg-white
               flex
               justify-between
+              dark:bg-grey-700 dark:text-white
             "
           >
             Alias Details
@@ -487,6 +575,7 @@
                 justify-center
                 items-center
                 focus:outline-none
+                dark:text-white dark:hover:bg-grey-800
               "
             >
               <chevron-left />
@@ -521,7 +610,9 @@
                   v-clipboard="() => aliasToView.email"
                   v-clipboard:success="aliasCopied"
                 >
-                  <span class="font-semibold text-indigo-800">{{ aliasToView.local_part }}</span
+                  <span class="font-semibold text-indigo-800 dark:text-indigo-100">{{
+                    aliasToView.local_part
+                  }}</span
                   ><span>@{{ aliasToView.domain }}</span>
                 </div>
 
@@ -544,6 +635,7 @@
                       px-2
                       py-1
                       shadow
+                      dark:bg-grey-600 dark:text-white dark:placeholder-grey-200
                     "
                     :class="
                       aliasDescriptionToEdit.length > 100 ? 'border-red-500' : 'border-transparent'
@@ -570,6 +662,7 @@
                       text-grey-400 text-sm
                       py-1
                       border border-transparent
+                      dark:text-grey-50
                     "
                     title="Click To Copy Description"
                     v-clipboard="() => aliasToView.description"
@@ -578,7 +671,16 @@
                     {{ aliasToView.description }}
                   </span>
                   <edit
-                    class="inline-block w-6 h-6 ml-2 text-grey-300 cursor-pointer flex-none"
+                    class="
+                      inline-block
+                      w-6
+                      h-6
+                      ml-2
+                      text-grey-300
+                      cursor-pointer
+                      flex-none
+                      dark:text-grey-200
+                    "
                     @click.native="
                       ;(aliasToViewDescriptionEditing = true),
                         (aliasDescriptionToEdit = aliasToView.description)
@@ -589,7 +691,9 @@
                   <span
                     class="
                       inline-block
-                      text-grey-300 text-sm
+                      text-grey-300
+                      dark:text-grey-200
+                      text-sm
                       cursor-pointer
                       py-1
                       border border-transparent
@@ -601,61 +705,72 @@
               </span>
             </div>
             <dl class="grid gap-3 grid-cols-2">
-              <div class="relative bg-white p-3 shadow rounded-lg overflow-hidden">
+              <div class="relative bg-white dark:bg-grey-700 p-3 shadow rounded-lg overflow-hidden">
                 <dt>
                   <div class="absolute bg-indigo-500 rounded-md p-3">
                     <forward class="text-white" />
                   </div>
-                  <p class="ml-16 text-sm font-medium text-grey-500">Forwarded</p>
+                  <p class="ml-16 text-sm font-medium text-grey-500 dark:text-grey-50">Forwarded</p>
                 </dt>
                 <dd class="ml-16 flex items-baseline">
-                  <p class="text-2xl font-semibold text-grey-900">
+                  <p class="text-2xl font-semibold text-grey-900 dark:text-white">
                     {{ aliasToView.emails_forwarded }}
                   </p>
                 </dd>
               </div>
-              <div class="relative bg-white p-3 shadow rounded-lg overflow-hidden">
+              <div class="relative bg-white dark:bg-grey-700 p-3 shadow rounded-lg overflow-hidden">
                 <dt>
                   <div class="absolute bg-indigo-500 rounded-md p-3">
                     <reply class="text-white" />
                   </div>
-                  <p class="ml-16 text-sm font-medium text-grey-500">Replies</p>
+                  <p class="ml-16 text-sm font-medium text-grey-500 dark:text-grey-50">Replies</p>
                 </dt>
                 <dd class="ml-16 flex items-baseline">
-                  <p class="text-2xl font-semibold text-grey-900">
+                  <p class="text-2xl font-semibold text-grey-900 dark:text-white">
                     {{ aliasToView.emails_replied }}
                   </p>
                 </dd>
               </div>
-              <div class="relative bg-white p-3 shadow rounded-lg overflow-hidden">
+              <div class="relative bg-white dark:bg-grey-700 p-3 shadow rounded-lg overflow-hidden">
                 <dt>
                   <div class="absolute bg-indigo-500 rounded-md p-3">
                     <sent class="text-white" />
                   </div>
-                  <p class="ml-16 text-sm font-medium text-grey-500">Sent</p>
+                  <p class="ml-16 text-sm font-medium text-grey-500 dark:text-grey-50">Sent</p>
                 </dt>
                 <dd class="ml-16 flex items-baseline">
-                  <p class="text-2xl font-semibold text-grey-900">
+                  <p class="text-2xl font-semibold text-grey-900 dark:text-white">
                     {{ aliasToView.emails_sent }}
                   </p>
                 </dd>
               </div>
-              <div class="relative bg-white p-3 shadow rounded-lg overflow-hidden">
+              <div class="relative bg-white dark:bg-grey-700 p-3 shadow rounded-lg overflow-hidden">
                 <dt>
                   <div class="absolute bg-indigo-500 rounded-md p-3">
                     <block class="text-white" />
                   </div>
-                  <p class="ml-16 text-sm font-medium text-grey-500">Blocked</p>
+                  <p class="ml-16 text-sm font-medium text-grey-500 dark:text-grey-50">Blocked</p>
                 </dt>
                 <dd class="ml-16 flex items-baseline">
-                  <p class="text-2xl font-semibold text-grey-900">
+                  <p class="text-2xl font-semibold text-grey-900 dark:text-white">
                     {{ aliasToView.emails_blocked }}
                   </p>
                 </dd>
               </div>
             </dl>
           </div>
-          <div class="p-3 uppercase shadow text-sm tracking-wide text-grey-600 bg-white">
+          <div
+            class="
+              p-3
+              uppercase
+              shadow
+              text-sm
+              tracking-wide
+              text-grey-600
+              bg-white
+              dark:bg-grey-700 dark:text-white
+            "
+          >
             Actions
           </div>
           <button
@@ -667,6 +782,7 @@
               focus:outline-none
               hover:bg-indigo-50
               border-b border-grey-200
+              dark:hover:bg-grey-800
             "
           >
             Send from this alias
@@ -682,6 +798,7 @@
                 focus:outline-none
                 hover:bg-indigo-50
                 border-b border-grey-200
+                dark:hover:bg-grey-800
               "
               :class="deactivateAliasLoading ? 'cursor-not-allowed' : ''"
               :disabled="deactivateAliasLoading"
@@ -699,6 +816,7 @@
                 focus:outline-none
                 hover:bg-indigo-50
                 border-b border-grey-200
+                dark:hover:bg-grey-800
               "
               :class="activateAliasLoading ? 'cursor-not-allowed' : ''"
               :disabled="activateAliasLoading"
@@ -717,6 +835,7 @@
               focus:outline-none
               hover:bg-indigo-50
               border-b border-grey-200
+              dark:hover:bg-grey-800
             "
           >
             Restore this alias
@@ -731,6 +850,7 @@
               focus:outline-none
               hover:bg-indigo-50
               border-b border-grey-200
+              dark:hover:bg-grey-800
             "
           >
             Delete this alias
@@ -744,6 +864,7 @@
               focus:outline-none
               hover:bg-indigo-50
               border-b border-grey-200
+              dark:hover:bg-grey-800
             "
           >
             Forget this alias
@@ -762,6 +883,7 @@
               bg-white
               flex
               justify-between
+              dark:bg-grey-700 dark:text-white
             "
           >
             Send From Alias
@@ -776,6 +898,7 @@
                 justify-center
                 items-center
                 focus:outline-none
+                dark:text-white dark:hover:bg-grey-800
               "
             >
               <chevron-left />
@@ -783,7 +906,7 @@
           </div>
 
           <div class="p-3">
-            <p class="text-grey-700 mb-2">
+            <p class="text-grey-700 dark:text-white mb-2">
               Use this to automatically create the correct address to send an email to in order to
               send an email from this alias.
             </p>
@@ -808,7 +931,7 @@
               You must send the email from a verified recipient on your AnonAddy account.
             </div>
 
-            <label for="send_from_alias" class="block text-grey-700 mb-1">
+            <label for="send_from_alias" class="block text-grey-700 dark:text-grey-50 mb-1">
               Alias to send from:
             </label>
             <input
@@ -825,14 +948,19 @@
                 text-grey-700
                 focus:ring
                 mb-4
+                dark:bg-grey-600 dark:text-white
               "
               disabled
             />
-            <label for="send_from_alias_destination" class="block text-grey-700 mb-1">
+            <label
+              for="send_from_alias_destination"
+              class="block text-grey-700 dark:text-grey-50 mb-1"
+            >
               Email destination:
             </label>
             <input
               v-model="sendFromAliasDestination"
+              @keyup.enter="displaySendFromAddress"
               id="send_from_alias_destination"
               type="text"
               class="
@@ -845,12 +973,13 @@
                 text-grey-700
                 focus:ring
                 mb-4
+                dark:bg-grey-600 dark:text-white dark:placeholder-grey-200
               "
               placeholder="Enter destination email"
             />
 
             <div v-if="sendFromAliasEmailToSendTo">
-              <p class="mb-1 text-grey-700">Send your message to this email:</p>
+              <p class="mb-1 text-grey-700 dark:text-white">Send your message to this email:</p>
               <div
                 v-clipboard="() => sendFromAliasEmailToSendTo"
                 v-clipboard:success="setSendFromAddressCopied"
@@ -936,6 +1065,7 @@
               bg-white
               flex
               justify-between
+              dark:bg-grey-700 dark:text-white
             "
           >
             Create A New Alias
@@ -950,6 +1080,7 @@
                 justify-center
                 items-center
                 focus:outline-none
+                dark:text-white dark:hover:bg-grey-800
               "
             >
               <chevron-left />
@@ -957,7 +1088,7 @@
           </div>
           <div class="p-3">
             <div v-if="newAlias">
-              <p for="alias_domain" class="block text-grey-700 mb-1">
+              <p for="alias_domain" class="block text-grey-700 dark:text-white mb-1">
                 Click To Copy Your New Alias:
               </p>
               <div
@@ -1013,7 +1144,9 @@
               </div>
             </div>
 
-            <label for="alias_domain" class="block text-grey-700 mb-1"> Alias Domain: </label>
+            <label for="alias_domain" class="block text-grey-700 dark:text-grey-50 mb-1">
+              Alias Domain:
+            </label>
             <div class="block relative w-full mb-4">
               <select
                 v-model="domain"
@@ -1029,6 +1162,7 @@
                   rounded
                   shadow
                   focus:ring
+                  dark:bg-grey-600 dark:text-white
                 "
                 required
               >
@@ -1050,6 +1184,7 @@
                   items-center
                   px-2
                   text-grey-700
+                  dark:text-white
                 "
               >
                 <svg
@@ -1063,7 +1198,9 @@
                 </svg>
               </div>
             </div>
-            <label for="alias_format" class="block text-grey-700 mb-1"> Alias Format: </label>
+            <label for="alias_format" class="block text-grey-700 dark:text-grey-50 mb-1">
+              Alias Format:
+            </label>
             <div class="block relative w-full mb-4">
               <select
                 v-model="aliasFormat"
@@ -1079,6 +1216,7 @@
                   rounded
                   shadow
                   focus:ring
+                  dark:bg-grey-600 dark:text-white dark:placeholder-grey-100
                 "
                 required
               >
@@ -1110,6 +1248,7 @@
                   items-center
                   px-2
                   text-grey-700
+                  dark:text-white
                 "
               >
                 <svg
@@ -1124,7 +1263,7 @@
               </div>
             </div>
             <div v-if="!sharedDomainSelected && aliasFormat === 'custom'">
-              <label for="alias_local_part" class="block text-grey-700 mb-1">
+              <label for="alias_local_part" class="block text-grey-700 dark:text-grey-50 mb-1">
                 Alias Local Part:
               </label>
               <input
@@ -1142,10 +1281,11 @@
                   text-grey-700
                   focus:ring
                   mb-4
+                  dark:bg-grey-600 dark:text-white dark:placeholder-grey-200
                 "
               />
             </div>
-            <label for="alias_description" class="block text-grey-700 mb-1">
+            <label for="alias_description" class="block text-grey-700 dark:text-grey-50 mb-1">
               Description: (optional)
             </label>
             <input
@@ -1154,13 +1294,23 @@
               type="text"
               :placeholder="currentTabHostname"
               autofocus="autofocus"
-              class="appearance-none shadow bg-white rounded-sm w-full p-2 text-grey-700 focus:ring"
+              class="
+                appearance-none
+                shadow
+                bg-white
+                rounded-sm
+                w-full
+                p-2
+                text-grey-700
+                focus:ring
+                dark:bg-grey-600 dark:text-white dark:placeholder-grey-200
+              "
             />
-            <p class="text-xs mt-1 mb-4 text-grey-600">
+            <p class="text-xs mt-1 mb-4 text-grey-600 dark:text-grey-100">
               If left empty the description will default to the current tab's hostname.
             </p>
 
-            <label for="alias_recipient_ids" class="block text-grey-700 mb-1">
+            <label for="alias_recipient_ids" class="block text-grey-700 dark:text-grey-50 mb-1">
               Recipients: (optional)
             </label>
             <multiselect
@@ -1233,7 +1383,7 @@
     </div>
 
     <Modal :open="restoreAliasModalOpen" @close="restoreAliasModalOpen = false" class="px-3">
-      <div class="w-full bg-white rounded-md shadow-2xl p-4">
+      <div class="w-full bg-white dark:bg-grey-800 rounded-md shadow-2xl p-4">
         <div>
           <div
             class="
@@ -1250,11 +1400,14 @@
             <information class="text-cyan-600" />
           </div>
           <div class="mt-3 text-center">
-            <h3 class="text-lg leading-6 font-medium text-grey-900" id="modal-title">
+            <h3
+              class="text-lg leading-6 font-medium text-grey-900 dark:text-white"
+              id="modal-title"
+            >
               Restore alias
             </h3>
             <div class="mt-2">
-              <p class="text-sm text-grey-500">
+              <p class="text-sm text-grey-500 dark:text-white">
                 Are you sure you want to restore this alias? Once restored it will be
                 <b>able to receive emails again</b>.
               </p>
@@ -1305,6 +1458,7 @@
               shadow-sm
               hover:bg-grey-50
               focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500
+              dark:bg-grey-500 dark:text-white dark:border-grey-600
             "
             @click="restoreAliasModalOpen = false"
           >
@@ -1315,7 +1469,7 @@
     </Modal>
 
     <Modal :open="deleteAliasModalOpen" @close="deleteAliasModalOpen = false" class="px-3">
-      <div class="w-full bg-white rounded-md shadow-2xl p-4">
+      <div class="w-full bg-white dark:bg-grey-800 rounded-md shadow-2xl p-4">
         <div>
           <div
             class="
@@ -1332,11 +1486,14 @@
             <exclamation class="text-red-600" />
           </div>
           <div class="mt-3 text-center">
-            <h3 class="text-lg leading-6 font-medium text-grey-900" id="modal-title">
+            <h3
+              class="text-lg leading-6 font-medium text-grey-900 dark:text-white"
+              id="modal-title"
+            >
               Delete alias
             </h3>
             <div class="mt-2">
-              <p class="text-sm text-grey-500">
+              <p class="text-sm text-grey-500 dark:text-white">
                 Are you sure you want to delete this alias? <b>You can restore this alias</b> if you
                 later change your mind. Once deleted, this alias will
                 <b>reject any emails sent to it</b>.
@@ -1388,6 +1545,7 @@
               shadow-sm
               hover:bg-grey-50
               focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500
+              dark:bg-grey-500 dark:text-white dark:border-grey-600
             "
             @click="deleteAliasModalOpen = false"
           >
@@ -1398,7 +1556,7 @@
     </Modal>
 
     <Modal :open="forgetAliasModalOpen" @close="forgetAliasModalOpen = false" class="px-3">
-      <div class="w-full bg-white rounded-md shadow-2xl p-4">
+      <div class="w-full bg-white dark:bg-grey-800 rounded-md shadow-2xl p-4">
         <div>
           <div
             class="
@@ -1415,20 +1573,26 @@
             <exclamation class="text-red-600" />
           </div>
           <div class="mt-3 text-center">
-            <h3 class="text-lg leading-6 font-medium text-grey-900" id="modal-title">
+            <h3
+              class="text-lg leading-6 font-medium text-grey-900 dark:text-white"
+              id="modal-title"
+            >
               Forget alias
             </h3>
             <div class="mt-2">
-              <p class="text-sm text-grey-500">
+              <p class="text-sm text-grey-500 dark:text-white">
                 Are you sure you want to forget this alias? Forgetting an alias will disassociate it
                 from your account.
               </p>
-              <p v-if="aliasToViewHasSharedDomain" class="text-sm text-grey-500 mt-2">
+              <p
+                v-if="aliasToViewHasSharedDomain"
+                class="text-sm text-grey-500 dark:text-white mt-2"
+              >
                 <b>Note:</b> This alias uses a shared domain so it can <b>never be restored</b> or
                 used again so make sure you are certain. Once forgotten, this alias will
                 <b>reject any emails sent to it</b>
               </p>
-              <p v-else class="text-sm text-grey-500 mt-2">
+              <p v-else class="text-sm text-grey-500 dark:text-white mt-2">
                 <b>Note:</b> This is a standard alias so it
                 <b>can be created again in the future</b> since it will be as if it never existed in
                 the database. Once forgotten, if someone sends an email to this alias and you have
@@ -1482,6 +1646,7 @@
               shadow-sm
               hover:bg-grey-50
               focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500
+              dark:bg-grey-500 dark:text-white dark:border-grey-600
             "
             @click="forgetAliasModalOpen = false"
           >
@@ -1589,6 +1754,7 @@ export default {
       getAliasesLoading: false,
       showMoreAliasesLoading: false,
       aliasToView: {},
+      theme: '',
     }
   },
   components: {
@@ -1621,6 +1787,7 @@ export default {
     this.domain = await this.getDomain()
     this.aliasFormat = await this.getAliasFormat()
     this.showDeletedAliases = await this.getShowDeletedAliases()
+    this.theme = await this.getTheme()
 
     if (this.sharedDomainSelected && this.aliasFormat === 'custom' && !this.selfHosting) {
       this.aliasFormat = 'random_characters'
@@ -1705,6 +1872,15 @@ export default {
 
         this.aliasesCurrentPage = 1
         this.getAliases()
+      },
+    },
+    theme: {
+      async handler(val) {
+        try {
+          await this.$browser.storage.sync.set({ theme: val })
+        } catch (error) {
+          console.log(error)
+        }
       },
     },
     tokenInput: function () {
@@ -1823,6 +1999,14 @@ export default {
         console.log(error)
       }
     },
+    async getTheme() {
+      try {
+        var result = await this.$browser.storage.sync.get({ theme: '' })
+        return result.theme
+      } catch (error) {
+        console.log(error)
+      }
+    },
     async getCurrentTabHostname() {
       try {
         var result = await this.$browser.tabs.query({ active: true, currentWindow: true })
@@ -1834,9 +2018,8 @@ export default {
     },
     async getAliases() {
       this.error = ''
-      if (this.selected !== 'Settings') {
-        this.selected = 'Aliases'
-      }
+
+      this.selected = 'Aliases'
 
       if (this.aliasesCurrentPage == 1) {
         this.getAliasesLoading = true
@@ -2251,6 +2434,7 @@ export default {
           'domain',
           'aliasFormat',
           'showDeletedAliases',
+          'theme',
         ])
         this.apiToken = await this.getApiToken()
         this.instance = await this.getInstance()
@@ -2259,6 +2443,7 @@ export default {
         this.domain = await this.getDomain()
         this.aliasFormat = await this.getAliasFormat()
         this.showDeletedAliases = await this.getShowDeletedAliases()
+        this.theme = await this.getTheme()
 
         this.success('Logged out successfully')
       } catch (error) {

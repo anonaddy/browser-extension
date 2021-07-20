@@ -1,5 +1,6 @@
 module.exports = {
   mode: 'jit',
+  darkMode: 'class',
   purge: {
     content: ['./src/**/*.html', './src/**/*.vue'],
   },

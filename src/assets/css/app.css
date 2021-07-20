@@ -104,6 +104,32 @@ content {
   @apply bg-red-500;
 }
 
+.dark .multiselect .multiselect__tags {
+  @apply bg-grey-700 text-white border-grey-500;
+}
+
+.dark .multiselect .multiselect__select::before {
+  @apply text-white;
+
+  border-color: #fff transparent transparent;
+}
+
+.dark .multiselect .multiselect__tags input {
+  @apply bg-grey-700 text-white placeholder-grey-100;
+}
+
+.dark .multiselect .multiselect__content-wrapper {
+  @apply bg-grey-700 text-white border-grey-500;
+}
+
+.dark .multiselect .multiselect__content-wrapper .multiselect__option--selected {
+  @apply bg-grey-500 text-white;
+}
+
+.dark .multiselect .multiselect__placeholder {
+  @apply text-grey-100;
+}
+
 /* purgecss end ignore */
 
 @tailwind components;

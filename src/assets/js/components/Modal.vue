@@ -17,7 +17,7 @@
     >
       <div v-if="showBackdrop">
         <div
-          class="inset-0 bg-black opacity-25"
+          class="inset-0 bg-black opacity-40"
           :class="overflow ? 'fixed pointer-events-none' : 'absolute'"
           @click="close"
         ></div>
