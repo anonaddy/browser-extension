@@ -1740,7 +1740,7 @@ export default {
         { name: 'Aliases', icon: 'AtSign' },
         { name: 'Settings', icon: 'Cog' },
       ],
-      selected: '',
+      selected: 'Aliases',
       tokenInput: '',
       apiToken: '',
       instanceInput: 'https://app.anonaddy.com',
@@ -1842,6 +1842,8 @@ export default {
     this.aliasFormat = await this.getAliasFormat()
     this.showDeletedAliases = await this.getShowDeletedAliases()
     this.theme = await this.getTheme()
+    this.defaultSelected = await this.getDefaultSelected()
+    this.selected = this.defaultSelected
 
     if (this.sharedDomainSelected && this.aliasFormat === 'custom' && !this.selfHosting) {
       this.aliasFormat = 'random_characters'
@@ -1851,15 +1853,12 @@ export default {
 
     if (this.apiToken) {
       document.getElementById('search').focus()
-      this.getAliases()
+      this.getAliases(true)
 
       if (this.recipients.length == 0) {
         this.getRecipientsRequest()
       }
     }
-
-    this.defaultSelected = await this.getDefaultSelected()
-    this.selected = this.defaultSelected
   },
   watch: {
     apiToken: {
@@ -2090,10 +2089,12 @@ export default {
         console.log(error)
       }
     },
-    async getAliases() {
+    async getAliases(calledFromMounted = false) {
       this.error = ''
 
-      this.selected = 'Aliases'
+      if (!calledFromMounted) {
+        this.selected = 'Aliases'
+      }
 
       if (this.aliasesCurrentPage == 1) {
         this.getAliasesLoading = true
