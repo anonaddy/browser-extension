@@ -126,6 +126,13 @@ content {
   @apply bg-grey-500 text-white;
 }
 
+.dark
+  .multiselect
+  .multiselect__content-wrapper
+  .multiselect__option--selected.multiselect__option--highlight {
+  @apply bg-red-600;
+}
+
 .dark .multiselect .multiselect__placeholder {
   @apply text-grey-100;
 }

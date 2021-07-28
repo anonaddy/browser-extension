@@ -498,6 +498,59 @@
             </div>
           </div>
 
+          <div class="w-full text-left p-3 border-b border-grey-200">
+            <label for="select_default_tab" class="block text-grey-700 dark:text-white mb-1"
+              >Tab To Show On Open:</label
+            >
+            <div class="relative">
+              <select
+                v-model="defaultSelected"
+                id="select_default_tab"
+                class="
+                  block
+                  appearance-none
+                  w-full
+                  text-grey-700
+                  bg-white
+                  p-2
+                  pr-8
+                  rounded
+                  shadow
+                  focus:ring
+                  dark:bg-grey-600 dark:text-white
+                "
+                required
+              >
+                <option value="Aliases">View Aliases</option>
+                <option value="CreateAlias">Create New Alias</option>
+                <option value="Settings">Settings</option>
+              </select>
+              <div
+                class="
+                  pointer-events-none
+                  absolute
+                  inset-y-0
+                  right-0
+                  flex
+                  items-center
+                  px-2
+                  text-grey-700
+                  dark:text-white
+                "
+              >
+                <svg
+                  class="fill-current h-4 w-4"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"
+                  />
+                </svg>
+              </div>
+            </div>
+          </div>
+
           <button
             @click="getAliasDomainOptions(apiToken, instance)"
             class="
@@ -1687,7 +1740,7 @@ export default {
         { name: 'Aliases', icon: 'AtSign' },
         { name: 'Settings', icon: 'Cog' },
       ],
-      selected: 'Aliases',
+      selected: '',
       tokenInput: '',
       apiToken: '',
       instanceInput: 'https://app.anonaddy.com',
@@ -1755,6 +1808,7 @@ export default {
       showMoreAliasesLoading: false,
       aliasToView: {},
       theme: '',
+      defaultSelected: '',
     }
   },
   components: {
@@ -1803,6 +1857,9 @@ export default {
         this.getRecipientsRequest()
       }
     }
+
+    this.defaultSelected = await this.getDefaultSelected()
+    this.selected = this.defaultSelected
   },
   watch: {
     apiToken: {
@@ -1878,6 +1935,15 @@ export default {
       async handler(val) {
         try {
           await this.$browser.storage.sync.set({ theme: val })
+        } catch (error) {
+          console.log(error)
+        }
+      },
+    },
+    defaultSelected: {
+      async handler(val) {
+        try {
+          await this.$browser.storage.sync.set({ defaultSelected: val })
         } catch (error) {
           console.log(error)
         }
@@ -2003,6 +2069,14 @@ export default {
       try {
         var result = await this.$browser.storage.sync.get({ theme: '' })
         return result.theme
+      } catch (error) {
+        console.log(error)
+      }
+    },
+    async getDefaultSelected() {
+      try {
+        var result = await this.$browser.storage.sync.get({ defaultSelected: 'Aliases' })
+        return result.defaultSelected
       } catch (error) {
         console.log(error)
       }
@@ -2435,6 +2509,7 @@ export default {
           'aliasFormat',
           'showDeletedAliases',
           'theme',
+          'defaultSelected',
         ])
         this.apiToken = await this.getApiToken()
         this.instance = await this.getInstance()
@@ -2444,6 +2519,7 @@ export default {
         this.aliasFormat = await this.getAliasFormat()
         this.showDeletedAliases = await this.getShowDeletedAliases()
         this.theme = await this.getTheme()
+        this.defaultSelected = await this.getDefaultSelected()
 
         this.success('Logged out successfully')
       } catch (error) {
