@@ -551,6 +551,58 @@
             </div>
           </div>
 
+          <div class="w-full text-left p-3 border-b border-grey-200">
+            <label for="select_auto_copy_new_alias" class="block text-grey-700 dark:text-white mb-1"
+              >Automatically Copy New Aliases to Clipboard:</label
+            >
+            <div class="relative">
+              <select
+                v-model="autoCopyNewAlias"
+                id="select_auto_copy_new_alias"
+                class="
+                  block
+                  appearance-none
+                  w-full
+                  text-grey-700
+                  bg-white
+                  p-2
+                  pr-8
+                  rounded
+                  shadow
+                  focus:ring
+                  dark:bg-grey-600 dark:text-white
+                "
+                required
+              >
+                <option :value="true">Enabled</option>
+                <option :value="false">Disabled</option>
+              </select>
+              <div
+                class="
+                  pointer-events-none
+                  absolute
+                  inset-y-0
+                  right-0
+                  flex
+                  items-center
+                  px-2
+                  text-grey-700
+                  dark:text-white
+                "
+              >
+                <svg
+                  class="fill-current h-4 w-4"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"
+                  />
+                </svg>
+              </div>
+            </div>
+          </div>
+
           <button
             @click="getAliasDomainOptions(apiToken, instance)"
             class="
@@ -1142,7 +1194,7 @@
           <div class="p-3">
             <div v-if="newAlias">
               <p for="alias_domain" class="block text-grey-700 dark:text-white mb-1">
-                Click To Copy Your New Alias:
+                {{ autoCopyNewAlias ? 'This is' : 'Click To Copy' }} Your New Alias:
               </p>
               <div
                 v-clipboard="() => newAlias"
@@ -1808,6 +1860,7 @@ export default {
       showMoreAliasesLoading: false,
       aliasToView: {},
       theme: '',
+      autoCopyNewAlias: true,
       defaultSelected: '',
     }
   },
@@ -1842,6 +1895,7 @@ export default {
     this.aliasFormat = await this.getAliasFormat()
     this.showDeletedAliases = await this.getShowDeletedAliases()
     this.theme = await this.getTheme()
+    this.autoCopyNewAlias = await this.getAutoCopyNewAlias()
     this.defaultSelected = await this.getDefaultSelected()
     this.selected = this.defaultSelected
 
@@ -1934,6 +1988,15 @@ export default {
       async handler(val) {
         try {
           await this.$browser.storage.sync.set({ theme: val })
+        } catch (error) {
+          console.log(error)
+        }
+      },
+    },
+    autoCopyNewAlias: {
+      async handler(val) {
+        try {
+          await this.$browser.storage.sync.set({ autoCopyNewAlias: val })
         } catch (error) {
           console.log(error)
         }
@@ -2068,6 +2131,14 @@ export default {
       try {
         var result = await this.$browser.storage.sync.get({ theme: '' })
         return result.theme
+      } catch (error) {
+        console.log(error)
+      }
+    },
+    async getAutoCopyNewAlias() {
+      try {
+        var result = await this.$browser.storage.sync.get({ autoCopyNewAlias: true })
+        return result.autoCopyNewAlias
       } catch (error) {
         console.log(error)
       }
@@ -2304,6 +2375,12 @@ export default {
           this.createAliasRecipientIds = []
           this.newAlias = data.data.email
 
+          // If auto copy is enabled
+          if (this.autoCopyNewAlias) {
+            this.$clipboard(data.data.email)
+            this.success('New alias copied to clipboard')
+          }
+
           this.aliases = [data.data].concat(this.aliases)
         } else {
           this.error = 'An Error Has Occurred'
@@ -2510,6 +2587,7 @@ export default {
           'aliasFormat',
           'showDeletedAliases',
           'theme',
+          'autoCopyNewAlias',
           'defaultSelected',
         ])
         this.apiToken = await this.getApiToken()
@@ -2520,6 +2598,7 @@ export default {
         this.aliasFormat = await this.getAliasFormat()
         this.showDeletedAliases = await this.getShowDeletedAliases()
         this.theme = await this.getTheme()
+        this.autoCopyNewAlias = await this.getAutoCopyNewAlias()
         this.defaultSelected = await this.getDefaultSelected()
 
         this.success('Logged out successfully')
