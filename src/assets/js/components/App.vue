@@ -112,12 +112,10 @@
       </div>
     </div>
 
-    <div v-else>
-      <header
-        class="flex items-center justify-between border-b bg-indigo-900 border-indigo-700 h-12"
-      >
+    <div class="logged-in" v-else>
+      <header class="flex items-center justify-between bg-indigo-900 h-12">
         <a
-          href="https://app.anonaddy.com"
+          :href="instance"
           target="_blank"
           title="Visit AnonAddy Dashboard"
           rel="nofollow noreferrer noopener"
@@ -1882,7 +1880,7 @@ export default {
       aliasToView: {},
       theme: '',
       autoCopyNewAlias: true,
-      defaultSelected: '',
+      defaultSelected: 'Aliases',
     }
   },
   components: {

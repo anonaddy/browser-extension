@@ -11,6 +11,10 @@ body {
   height: 600px;
 }
 
+.logged-in header {
+  @apply absolute top-0 left-0 right-0 overflow-y-auto overflow-x-auto;
+}
+
 content::-webkit-scrollbar {
   @apply w-2 h-2;
 }
