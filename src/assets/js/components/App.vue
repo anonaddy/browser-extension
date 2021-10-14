@@ -741,7 +741,7 @@
                       dark:bg-grey-600 dark:text-white dark:placeholder-grey-200
                     "
                     :class="
-                      aliasDescriptionToEdit.length > 100 ? 'border-red-500' : 'border-transparent'
+                      aliasDescriptionToEdit.length > 200 ? 'border-red-500' : 'border-transparent'
                     "
                     placeholder="Add description"
                     tabindex="0"
@@ -2348,8 +2348,8 @@ export default {
         return (this.error = 'Valid local part required')
       }
 
-      if (this.description.length > 100) {
-        return (this.error = 'Description cannot be more than 100 characters')
+      if (this.description.length > 200) {
+        return (this.error = 'Description cannot be more than 200 characters')
       }
 
       if (!this.domainOptions.find((domain) => domain === this.domain)) {
