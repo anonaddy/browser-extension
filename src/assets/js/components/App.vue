@@ -11,19 +11,7 @@
       </header>
       <div
         v-if="error"
-        class="
-          flex
-          items-center
-          justify-center
-          text-sm
-          border-t-4
-          rounded-sm
-          text-yellow-800
-          border-yellow-600
-          bg-yellow-100
-          p-2
-          mb-4
-        "
+        class="flex items-center justify-center text-sm border-t-4 rounded-sm text-yellow-800 border-yellow-600 bg-yellow-100 p-2 mb-4"
         role="alert"
       >
         {{ error }}
@@ -37,17 +25,7 @@
           id="instance"
           type="text"
           required="required"
-          class="
-            appearance-none
-            shadow
-            bg-white
-            rounded-sm
-            w-full
-            p-2
-            text-grey-700
-            focus:ring
-            mb-4
-          "
+          class="appearance-none shadow bg-white rounded-sm w-full p-2 text-grey-700 focus:ring mb-4"
         />
       </div>
       <label for="api_token" class="block text-indigo-100 text-sm mb-1">
@@ -65,18 +43,7 @@
       </textarea>
       <button
         @click="getAliasDomainOptions(tokenInput, instanceInput)"
-        class="
-          px-3
-          py-2
-          w-full
-          text-sm text-cyan-900
-          font-semibold
-          bg-cyan-400
-          hover:bg-cyan-300
-          border border-transparent
-          rounded-sm
-          focus:outline-none
-        "
+        class="px-3 py-2 w-full text-sm text-cyan-900 font-semibold bg-cyan-400 hover:bg-cyan-300 border border-transparent rounded-sm focus:outline-none"
         :class="domainOptionsLoading ? 'cursor-not-allowed' : ''"
         :disabled="domainOptionsLoading"
       >
@@ -130,34 +97,11 @@
               id="search"
               type="text"
               placeholder="Search aliases"
-              class="
-                w-full
-                text-base
-                appearance-none
-                shadow
-                bg-white
-                text-grey-700
-                focus:outline-none
-                rounded-sm
-                py-1
-                px-8
-                dark:bg-grey-600 dark:text-white dark:placeholder-grey-200
-              "
+              class="w-full text-base appearance-none shadow bg-white text-grey-700 focus:outline-none rounded-sm py-1 px-8 dark:bg-grey-600 dark:text-white dark:placeholder-grey-200"
             />
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              class="
-                absolute
-                left-0
-                inset-y-0
-                ml-2
-                flex
-                items-center
-                text-grey-300
-                dark:text-white
-                h-full
-                w-5
-              "
+              class="absolute left-0 inset-y-0 ml-2 flex items-center text-grey-300 dark:text-white h-full w-5"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -172,35 +116,13 @@
             <cross
               v-if="searchInput"
               @click.native="searchInput = ''"
-              class="
-                absolute
-                right-0
-                inset-y-0
-                cursor-pointer
-                mr-2
-                flex
-                items-center
-                text-grey-300
-                dark:text-white
-                h-full
-                w-5
-              "
+              class="absolute right-0 inset-y-0 cursor-pointer mr-2 flex items-center text-grey-300 dark:text-white h-full w-5"
             />
           </div>
         </div>
         <button
           @click="selected = 'CreateAlias'"
-          class="
-            text-white
-            h-12
-            w-20
-            px-4
-            hover:bg-indigo-800
-            flex
-            justify-center
-            items-center
-            focus:outline-none
-          "
+          class="text-white h-12 w-20 px-4 hover:bg-indigo-800 flex justify-center items-center focus:outline-none"
           title="Create Alias"
         >
           <plus />
@@ -210,17 +132,7 @@
       <content class="bg-grey-50 dark:bg-grey-900 dark:text-white">
         <div
           v-if="error"
-          class="
-            flex
-            items-center
-            justify-center
-            text-sm
-            border-t-4
-            text-yellow-800
-            border-yellow-600
-            bg-yellow-100
-            p-2
-          "
+          class="flex items-center justify-center text-sm border-t-4 text-yellow-800 border-yellow-600 bg-yellow-100 p-2"
           role="alert"
         >
           {{ error }}
@@ -233,39 +145,14 @@
 
           <div v-else>
             <div
-              class="
-                px-3
-                py-2
-                uppercase
-                shadow
-                text-sm
-                tracking-wide
-                text-grey-600
-                bg-white
-                flex
-                justify-between
-                items-center
-                dark:bg-grey-700 dark:text-white
-              "
+              class="px-3 py-2 uppercase shadow text-sm tracking-wide text-grey-600 bg-white flex justify-between items-center dark:bg-grey-700 dark:text-white"
             >
               {{ aliasesTitle }}
               <div class="relative">
                 <select
                   v-model="showDeletedAliases"
                   id="show_deleted_aliases"
-                  class="
-                    block
-                    appearance-none
-                    text-grey-700
-                    bg-white
-                    pl-2
-                    py-1
-                    pr-6
-                    rounded
-                    shadow
-                    focus:ring
-                    dark:bg-grey-600 dark:text-white
-                  "
+                  class="block appearance-none text-grey-700 bg-white pl-2 py-1 pr-6 rounded shadow focus:ring dark:bg-grey-600 dark:text-white"
                   required
                 >
                   <option value="without">Hide Deleted</option>
@@ -273,17 +160,7 @@
                   <option value="only">Only Deleted</option>
                 </select>
                 <div
-                  class="
-                    pointer-events-none
-                    absolute
-                    inset-y-0
-                    right-0
-                    flex
-                    items-center
-                    px-2
-                    text-grey-700
-                    dark:text-white
-                  "
+                  class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-grey-700 dark:text-white"
                 >
                   <svg
                     class="fill-current h-4 w-4"
@@ -300,11 +177,7 @@
 
             <div v-if="aliases.length > 0">
               <div
-                class="
-                  divide-y divide-grey-200
-                  border-b border-grey-200
-                  dark:divide-grey-600 dark:border-grey-600
-                "
+                class="divide-y divide-grey-200 border-b border-grey-200 dark:divide-grey-600 dark:border-grey-600"
               >
                 <div
                   v-for="alias in aliases"
@@ -324,15 +197,7 @@
                     </div>
                     <span
                       :class="getAliasStatus(alias).backgroundColour"
-                      class="
-                        outline-none
-                        alias-status-background
-                        rounded-full
-                        flex
-                        items-center
-                        justify-center
-                        mx-1.5
-                      "
+                      class="outline-none alias-status-background rounded-full flex items-center justify-center mx-1.5"
                       :title="getAliasStatus(alias).status"
                       tabindex="-1"
                     >
@@ -351,14 +216,7 @@
                       </div>
                       <div v-if="alias.description" class="flex items-center">
                         <span
-                          class="
-                            inline-block
-                            text-grey-400 text-sm
-                            truncate
-                            py-1
-                            border border-transparent
-                            dark:text-grey-50
-                          "
+                          class="inline-block text-grey-400 text-sm truncate py-1 border border-transparent dark:text-grey-50"
                         >
                           {{ alias.description }}
                         </span>
@@ -380,23 +238,7 @@
               <div v-if="aliasesHaveNextPage" class="p-3">
                 <button
                   @click="showMoreAliases"
-                  class="
-                    w-full
-                    flex
-                    justify-center
-                    items-center
-                    px-4
-                    py-2
-                    border border-grey-300
-                    shadow-sm
-                    text-sm
-                    font-medium
-                    rounded-md
-                    text-grey-700
-                    bg-white
-                    hover:bg-grey-50
-                    dark:bg-grey-600 dark:text-white dark:border-grey-800 dark:hover:bg-grey-500
-                  "
+                  class="w-full flex justify-center items-center px-4 py-2 border border-grey-300 shadow-sm text-sm font-medium rounded-md text-grey-700 bg-white hover:bg-grey-50 dark:bg-grey-600 dark:text-white dark:border-grey-800 dark:hover:bg-grey-500"
                   :class="showMoreAliasesLoading ? 'cursor-not-allowed' : ''"
                   :disabled="showMoreAliasesLoading"
                 >
@@ -412,33 +254,12 @@
         <div v-else-if="selected == 'Settings'">
           <!-- Settings Tab -->
           <div
-            class="
-              p-3
-              uppercase
-              shadow
-              text-sm
-              tracking-wide
-              text-grey-600
-              bg-white
-              flex
-              justify-between
-              dark:bg-grey-700 dark:text-white
-            "
+            class="p-3 uppercase shadow text-sm tracking-wide text-grey-600 bg-white flex justify-between dark:bg-grey-700 dark:text-white"
           >
             Settings
             <button
               @click="selected = 'Aliases'"
-              class="
-                back-icon
-                text-grey-600
-                hover:bg-grey-50
-                -m-3
-                flex
-                justify-center
-                items-center
-                focus:outline-none
-                dark:text-white dark:hover:bg-grey-800
-              "
+              class="back-icon text-grey-600 hover:bg-grey-50 -m-3 flex justify-center items-center focus:outline-none dark:text-white dark:hover:bg-grey-800"
             >
               <chevron-left />
             </button>
@@ -452,36 +273,14 @@
               <select
                 v-model="theme"
                 id="select_theme"
-                class="
-                  block
-                  appearance-none
-                  w-full
-                  text-grey-700
-                  bg-white
-                  p-2
-                  pr-8
-                  rounded
-                  shadow
-                  focus:ring
-                  dark:bg-grey-600 dark:text-white
-                "
+                class="block appearance-none w-full text-grey-700 bg-white p-2 pr-8 rounded shadow focus:ring dark:bg-grey-600 dark:text-white"
                 required
               >
                 <option value="">Light</option>
                 <option value="dark">Dark</option>
               </select>
               <div
-                class="
-                  pointer-events-none
-                  absolute
-                  inset-y-0
-                  right-0
-                  flex
-                  items-center
-                  px-2
-                  text-grey-700
-                  dark:text-white
-                "
+                class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-grey-700 dark:text-white"
               >
                 <svg
                   class="fill-current h-4 w-4"
@@ -504,19 +303,7 @@
               <select
                 v-model="defaultSelected"
                 id="select_default_tab"
-                class="
-                  block
-                  appearance-none
-                  w-full
-                  text-grey-700
-                  bg-white
-                  p-2
-                  pr-8
-                  rounded
-                  shadow
-                  focus:ring
-                  dark:bg-grey-600 dark:text-white
-                "
+                class="block appearance-none w-full text-grey-700 bg-white p-2 pr-8 rounded shadow focus:ring dark:bg-grey-600 dark:text-white"
                 required
               >
                 <option value="Aliases">View Aliases</option>
@@ -524,17 +311,7 @@
                 <option value="Settings">Settings</option>
               </select>
               <div
-                class="
-                  pointer-events-none
-                  absolute
-                  inset-y-0
-                  right-0
-                  flex
-                  items-center
-                  px-2
-                  text-grey-700
-                  dark:text-white
-                "
+                class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-grey-700 dark:text-white"
               >
                 <svg
                   class="fill-current h-4 w-4"
@@ -557,36 +334,14 @@
               <select
                 v-model="autoCopyNewAlias"
                 id="select_auto_copy_new_alias"
-                class="
-                  block
-                  appearance-none
-                  w-full
-                  text-grey-700
-                  bg-white
-                  p-2
-                  pr-8
-                  rounded
-                  shadow
-                  focus:ring
-                  dark:bg-grey-600 dark:text-white
-                "
+                class="block appearance-none w-full text-grey-700 bg-white p-2 pr-8 rounded shadow focus:ring dark:bg-grey-600 dark:text-white"
                 required
               >
                 <option :value="true">Enabled</option>
                 <option :value="false">Disabled</option>
               </select>
               <div
-                class="
-                  pointer-events-none
-                  absolute
-                  inset-y-0
-                  right-0
-                  flex
-                  items-center
-                  px-2
-                  text-grey-700
-                  dark:text-white
-                "
+                class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-grey-700 dark:text-white"
               >
                 <svg
                   class="fill-current h-4 w-4"
@@ -603,15 +358,7 @@
 
           <button
             @click="getAliasDomainOptions(apiToken, instance)"
-            class="
-              w-full
-              text-left
-              p-3
-              focus:outline-none
-              hover:bg-indigo-50
-              border-b border-grey-200
-              dark:hover:bg-grey-800
-            "
+            class="w-full text-left p-3 focus:outline-none hover:bg-indigo-50 border-b border-grey-200 dark:hover:bg-grey-800"
             :class="domainOptionsLoading ? 'cursor-not-allowed' : ''"
             :disabled="domainOptionsLoading"
           >
@@ -620,15 +367,7 @@
           </button>
           <button
             @click="getRecipientsRequest()"
-            class="
-              w-full
-              text-left
-              p-3
-              focus:outline-none
-              hover:bg-indigo-50
-              border-b border-grey-200
-              dark:hover:bg-grey-800
-            "
+            class="w-full text-left p-3 focus:outline-none hover:bg-indigo-50 border-b border-grey-200 dark:hover:bg-grey-800"
             :class="recipientsLoading ? 'cursor-not-allowed' : ''"
             :disabled="recipientsLoading"
           >
@@ -637,15 +376,7 @@
           </button>
           <button
             @click="logout"
-            class="
-              w-full
-              text-left
-              p-3
-              focus:outline-none
-              hover:bg-indigo-50
-              border-b border-grey-200
-              dark:hover:bg-grey-800
-            "
+            class="w-full text-left p-3 focus:outline-none hover:bg-indigo-50 border-b border-grey-200 dark:hover:bg-grey-800"
           >
             Logout
           </button>
@@ -653,33 +384,12 @@
         <div v-else-if="selected == 'ViewAlias'">
           <!-- View Alias Tab -->
           <div
-            class="
-              p-3
-              uppercase
-              shadow
-              text-sm
-              tracking-wide
-              text-grey-600
-              bg-white
-              flex
-              justify-between
-              dark:bg-grey-700 dark:text-white
-            "
+            class="p-3 uppercase shadow text-sm tracking-wide text-grey-600 bg-white flex justify-between dark:bg-grey-700 dark:text-white"
           >
             Alias Details
             <button
               @click="selected = 'Aliases'"
-              class="
-                back-icon
-                text-grey-600
-                hover:bg-grey-50
-                -m-3
-                flex
-                justify-center
-                items-center
-                focus:outline-none
-                dark:text-white dark:hover:bg-grey-800
-              "
+              class="back-icon text-grey-600 hover:bg-grey-50 -m-3 flex justify-center items-center focus:outline-none dark:text-white dark:hover:bg-grey-800"
             >
               <chevron-left />
             </button>
@@ -688,15 +398,7 @@
             <div class="flex items-center mb-4">
               <span
                 :class="getAliasStatus(aliasToView).backgroundColour"
-                class="
-                  outline-none
-                  alias-status-background
-                  rounded-full
-                  flex
-                  items-center
-                  justify-center
-                  mx-1.5
-                "
+                class="outline-none alias-status-background rounded-full flex items-center justify-center mx-1.5"
                 :title="getAliasStatus(aliasToView).status"
                 tabindex="-1"
               >
@@ -726,20 +428,7 @@
                     v-model="aliasDescriptionToEdit"
                     type="text"
                     id="description-input"
-                    class="
-                      flex-grow
-                      text-sm
-                      appearance-none
-                      bg-white
-                      border
-                      text-grey-700
-                      focus:outline-none
-                      rounded-sm
-                      px-2
-                      py-1
-                      shadow
-                      dark:bg-grey-600 dark:text-white dark:placeholder-grey-200
-                    "
+                    class="flex-grow text-sm appearance-none bg-white border text-grey-700 focus:outline-none rounded-sm px-2 py-1 shadow dark:bg-grey-600 dark:text-white dark:placeholder-grey-200"
                     :class="
                       aliasDescriptionToEdit.length > 200 ? 'border-red-500' : 'border-transparent'
                     "
@@ -758,15 +447,7 @@
                 </div>
                 <div v-else-if="aliasToView.description" class="flex items-center">
                   <span
-                    class="
-                      inline-block
-                      break-words
-                      cursor-pointer
-                      text-grey-400 text-sm
-                      py-1
-                      border border-transparent
-                      dark:text-grey-50
-                    "
+                    class="inline-block break-words cursor-pointer text-grey-400 text-sm py-1 border border-transparent dark:text-grey-50"
                     title="Click To Copy Description"
                     v-clipboard="() => aliasToView.description"
                     v-clipboard:success="aliasCopied"
@@ -774,16 +455,7 @@
                     {{ aliasToView.description }}
                   </span>
                   <edit
-                    class="
-                      inline-block
-                      w-6
-                      h-6
-                      ml-2
-                      text-grey-300
-                      cursor-pointer
-                      flex-none
-                      dark:text-grey-200
-                    "
+                    class="inline-block w-6 h-6 ml-2 text-grey-300 cursor-pointer flex-none dark:text-grey-200"
                     @click.native="
                       ;(aliasToViewDescriptionEditing = true),
                         (aliasDescriptionToEdit = aliasToView.description)
@@ -792,15 +464,7 @@
                 </div>
                 <div v-else>
                   <span
-                    class="
-                      inline-block
-                      text-grey-300
-                      dark:text-grey-200
-                      text-sm
-                      cursor-pointer
-                      py-1
-                      border border-transparent
-                    "
+                    class="inline-block text-grey-300 dark:text-grey-200 text-sm cursor-pointer py-1 border border-transparent"
                     @click=";(aliasToViewDescriptionEditing = true), (aliasDescriptionToEdit = '')"
                     >Add description</span
                   >
@@ -863,30 +527,13 @@
             </dl>
           </div>
           <div
-            class="
-              p-3
-              uppercase
-              shadow
-              text-sm
-              tracking-wide
-              text-grey-600
-              bg-white
-              dark:bg-grey-700 dark:text-white
-            "
+            class="p-3 uppercase shadow text-sm tracking-wide text-grey-600 bg-white dark:bg-grey-700 dark:text-white"
           >
             Actions
           </div>
           <button
             @click="openSendFromAlias"
-            class="
-              w-full
-              text-left
-              p-3
-              focus:outline-none
-              hover:bg-indigo-50
-              border-b border-grey-200
-              dark:hover:bg-grey-800
-            "
+            class="w-full text-left p-3 focus:outline-none hover:bg-indigo-50 border-b border-grey-200 dark:hover:bg-grey-800"
           >
             Send from this alias
           </button>
@@ -894,15 +541,7 @@
             <button
               v-if="aliasToView.active"
               @click="deactivateAlias(aliasToView)"
-              class="
-                w-full
-                text-left
-                p-3
-                focus:outline-none
-                hover:bg-indigo-50
-                border-b border-grey-200
-                dark:hover:bg-grey-800
-              "
+              class="w-full text-left p-3 focus:outline-none hover:bg-indigo-50 border-b border-grey-200 dark:hover:bg-grey-800"
               :class="deactivateAliasLoading ? 'cursor-not-allowed' : ''"
               :disabled="deactivateAliasLoading"
             >
@@ -912,15 +551,7 @@
             <button
               v-else
               @click="activateAlias(aliasToView)"
-              class="
-                w-full
-                text-left
-                p-3
-                focus:outline-none
-                hover:bg-indigo-50
-                border-b border-grey-200
-                dark:hover:bg-grey-800
-              "
+              class="w-full text-left p-3 focus:outline-none hover:bg-indigo-50 border-b border-grey-200 dark:hover:bg-grey-800"
               :class="activateAliasLoading ? 'cursor-not-allowed' : ''"
               :disabled="activateAliasLoading"
             >
@@ -931,44 +562,20 @@
           <button
             v-if="aliasToView.deleted_at"
             @click="restoreAliasModalOpen = true"
-            class="
-              w-full
-              text-left
-              p-3
-              focus:outline-none
-              hover:bg-indigo-50
-              border-b border-grey-200
-              dark:hover:bg-grey-800
-            "
+            class="w-full text-left p-3 focus:outline-none hover:bg-indigo-50 border-b border-grey-200 dark:hover:bg-grey-800"
           >
             Restore this alias
           </button>
           <button
             v-else
             @click="deleteAliasModalOpen = true"
-            class="
-              w-full
-              text-left
-              p-3
-              focus:outline-none
-              hover:bg-indigo-50
-              border-b border-grey-200
-              dark:hover:bg-grey-800
-            "
+            class="w-full text-left p-3 focus:outline-none hover:bg-indigo-50 border-b border-grey-200 dark:hover:bg-grey-800"
           >
             Delete this alias
           </button>
           <button
             @click="forgetAliasModalOpen = true"
-            class="
-              w-full
-              text-left
-              p-3
-              focus:outline-none
-              hover:bg-indigo-50
-              border-b border-grey-200
-              dark:hover:bg-grey-800
-            "
+            class="w-full text-left p-3 focus:outline-none hover:bg-indigo-50 border-b border-grey-200 dark:hover:bg-grey-800"
           >
             Forget this alias
           </button>
@@ -976,33 +583,12 @@
         <div v-else-if="selected == 'SendFromAlias'">
           <!-- Send From Alias Tab -->
           <div
-            class="
-              p-3
-              uppercase
-              shadow
-              text-sm
-              tracking-wide
-              text-grey-600
-              bg-white
-              flex
-              justify-between
-              dark:bg-grey-700 dark:text-white
-            "
+            class="p-3 uppercase shadow text-sm tracking-wide text-grey-600 bg-white flex justify-between dark:bg-grey-700 dark:text-white"
           >
             Send From Alias
             <button
               @click="selected = 'ViewAlias'"
-              class="
-                back-icon
-                text-grey-600
-                hover:bg-grey-50
-                -m-3
-                flex
-                justify-center
-                items-center
-                focus:outline-none
-                dark:text-white dark:hover:bg-grey-800
-              "
+              class="back-icon text-grey-600 hover:bg-grey-50 -m-3 flex justify-center items-center focus:outline-none dark:text-white dark:hover:bg-grey-800"
             >
               <chevron-left />
             </button>
@@ -1015,19 +601,7 @@
             </p>
 
             <div
-              class="
-                flex
-                items-center
-                justify-center
-                rounded-sm
-                text-sm
-                border-t-4
-                text-indigo-800
-                border-indigo-600
-                bg-indigo-50
-                p-2
-                mb-4
-              "
+              class="flex items-center justify-center rounded-sm text-sm border-t-4 text-indigo-800 border-indigo-600 bg-indigo-50 p-2 mb-4"
               role="alert"
             >
               <information class="text-indigo-800 mr-2 flex-none" />
@@ -1041,18 +615,7 @@
               v-model="aliasToView.email"
               id="send_from_alias"
               type="text"
-              class="
-                appearance-none
-                shadow
-                bg-white
-                rounded-sm
-                w-full
-                p-2
-                text-grey-700
-                focus:ring
-                mb-4
-                dark:bg-grey-600 dark:text-white
-              "
+              class="appearance-none shadow bg-white rounded-sm w-full p-2 text-grey-700 focus:ring mb-4 dark:bg-grey-600 dark:text-white"
               disabled
             />
             <label
@@ -1066,18 +629,7 @@
               @keyup.enter="displaySendFromAddress"
               id="send_from_alias_destination"
               type="text"
-              class="
-                appearance-none
-                shadow
-                bg-white
-                rounded-sm
-                w-full
-                p-2
-                text-grey-700
-                focus:ring
-                mb-4
-                dark:bg-grey-600 dark:text-white dark:placeholder-grey-200
-              "
+              class="appearance-none shadow bg-white rounded-sm w-full p-2 text-grey-700 focus:ring mb-4 dark:bg-grey-600 dark:text-white dark:placeholder-grey-200"
               placeholder="Enter destination email"
             />
 
@@ -1086,20 +638,7 @@
               <div
                 v-clipboard="() => sendFromAliasEmailToSendTo"
                 v-clipboard:success="setSendFromAddressCopied"
-                class="
-                  flex
-                  items-center
-                  justify-between
-                  cursor-pointer
-                  text-sm
-                  border-t-4
-                  rounded-sm
-                  text-green-800
-                  border-green-600
-                  bg-green-100
-                  p-2
-                  mb-4
-                "
+                class="flex items-center justify-between cursor-pointer text-sm border-t-4 rounded-sm text-green-800 border-green-600 bg-green-100 p-2 mb-4"
                 role="alert"
                 title="Click To Copy"
               >
@@ -1137,20 +676,7 @@
               </div>
               <a
                 :href="'mailto:' + sendFromAliasEmailToSendTo"
-                class="
-                  flex
-                  items-center
-                  justify-between
-                  cursor-pointer
-                  text-sm
-                  border-t-4
-                  rounded-sm
-                  text-green-800
-                  border-green-600
-                  bg-green-100
-                  p-2
-                  mb-4
-                "
+                class="flex items-center justify-between cursor-pointer text-sm border-t-4 rounded-sm text-green-800 border-green-600 bg-green-100 p-2 mb-4"
                 role="alert"
                 title="Click To Open Mail Application"
               >
@@ -1159,18 +685,7 @@
             </div>
             <button
               @click="displaySendFromAddress"
-              class="
-                px-3
-                py-2
-                w-full
-                text-cyan-900
-                font-semibold
-                bg-cyan-400
-                hover:bg-cyan-300
-                border border-transparent
-                rounded-sm
-                focus:outline-none
-              "
+              class="px-3 py-2 w-full text-cyan-900 font-semibold bg-cyan-400 hover:bg-cyan-300 border border-transparent rounded-sm focus:outline-none"
             >
               Show Address
             </button>
@@ -1179,33 +694,12 @@
         <div v-else>
           <!-- Create Alias Tab -->
           <div
-            class="
-              p-3
-              uppercase
-              shadow
-              text-sm
-              tracking-wide
-              text-grey-600
-              bg-white
-              flex
-              justify-between
-              dark:bg-grey-700 dark:text-white
-            "
+            class="p-3 uppercase shadow text-sm tracking-wide text-grey-600 bg-white flex justify-between dark:bg-grey-700 dark:text-white"
           >
             Create A New Alias
             <button
               @click="selected = 'Aliases'"
-              class="
-                back-icon
-                text-grey-600
-                hover:bg-grey-50
-                -m-3
-                flex
-                justify-center
-                items-center
-                focus:outline-none
-                dark:text-white dark:hover:bg-grey-800
-              "
+              class="back-icon text-grey-600 hover:bg-grey-50 -m-3 flex justify-center items-center focus:outline-none dark:text-white dark:hover:bg-grey-800"
             >
               <chevron-left />
             </button>
@@ -1218,20 +712,7 @@
               <div
                 v-clipboard="() => newAlias"
                 v-clipboard:success="setNewAliasCopied"
-                class="
-                  flex
-                  items-center
-                  justify-between
-                  cursor-pointer
-                  text-sm
-                  border-t-4
-                  rounded-sm
-                  text-green-800
-                  border-green-600
-                  bg-green-100
-                  p-2
-                  mb-4
-                "
+                class="flex items-center justify-between cursor-pointer text-sm border-t-4 rounded-sm text-green-800 border-green-600 bg-green-100 p-2 mb-4"
                 role="alert"
               >
                 <span>
@@ -1275,19 +756,7 @@
               <select
                 v-model="domain"
                 id="alias_domain"
-                class="
-                  block
-                  appearance-none
-                  w-full
-                  text-grey-700
-                  bg-white
-                  p-2
-                  pr-8
-                  rounded
-                  shadow
-                  focus:ring
-                  dark:bg-grey-600 dark:text-white
-                "
+                class="block appearance-none w-full text-grey-700 bg-white p-2 pr-8 rounded shadow focus:ring dark:bg-grey-600 dark:text-white"
                 required
               >
                 <option
@@ -1299,17 +768,7 @@
                 </option>
               </select>
               <div
-                class="
-                  pointer-events-none
-                  absolute
-                  inset-y-0
-                  right-0
-                  flex
-                  items-center
-                  px-2
-                  text-grey-700
-                  dark:text-white
-                "
+                class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-grey-700 dark:text-white"
               >
                 <svg
                   class="fill-current h-4 w-4"
@@ -1329,19 +788,7 @@
               <select
                 v-model="aliasFormat"
                 id="alias_format"
-                class="
-                  block
-                  appearance-none
-                  w-full
-                  text-grey-700
-                  bg-white
-                  p-2
-                  pr-8
-                  rounded
-                  shadow
-                  focus:ring
-                  dark:bg-grey-600 dark:text-white dark:placeholder-grey-100
-                "
+                class="block appearance-none w-full text-grey-700 bg-white p-2 pr-8 rounded shadow focus:ring dark:bg-grey-600 dark:text-white dark:placeholder-grey-100"
                 required
               >
                 <option
@@ -1363,17 +810,7 @@
                 </option>
               </select>
               <div
-                class="
-                  pointer-events-none
-                  absolute
-                  inset-y-0
-                  right-0
-                  flex
-                  items-center
-                  px-2
-                  text-grey-700
-                  dark:text-white
-                "
+                class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-grey-700 dark:text-white"
               >
                 <svg
                   class="fill-current h-4 w-4"
@@ -1395,18 +832,7 @@
                 id="alias_local_part"
                 type="text"
                 placeholder="Enter local part"
-                class="
-                  appearance-none
-                  shadow
-                  bg-white
-                  rounded-sm
-                  w-full
-                  p-2
-                  text-grey-700
-                  focus:ring
-                  mb-4
-                  dark:bg-grey-600 dark:text-white dark:placeholder-grey-200
-                "
+                class="appearance-none shadow bg-white rounded-sm w-full p-2 text-grey-700 focus:ring mb-4 dark:bg-grey-600 dark:text-white dark:placeholder-grey-200"
               />
             </div>
             <label for="alias_description" class="block text-grey-700 dark:text-grey-50 mb-1">
@@ -1418,17 +844,7 @@
               type="text"
               :placeholder="currentTabHostname"
               autofocus="autofocus"
-              class="
-                appearance-none
-                shadow
-                bg-white
-                rounded-sm
-                w-full
-                p-2
-                text-grey-700
-                focus:ring
-                dark:bg-grey-600 dark:text-white dark:placeholder-grey-200
-              "
+              class="appearance-none shadow bg-white rounded-sm w-full p-2 text-grey-700 focus:ring dark:bg-grey-600 dark:text-white dark:placeholder-grey-200"
             />
             <p class="text-xs mt-1 mb-4 text-grey-600 dark:text-grey-100">
               If left empty the description will default to the current tab's hostname.
@@ -1457,18 +873,7 @@
 
             <button
               @click="createAlias"
-              class="
-                px-3
-                py-2
-                w-full
-                text-cyan-900
-                font-semibold
-                bg-cyan-400
-                hover:bg-cyan-300
-                border border-transparent
-                rounded-sm
-                focus:outline-none
-              "
+              class="px-3 py-2 w-full text-cyan-900 font-semibold bg-cyan-400 hover:bg-cyan-300 border border-transparent rounded-sm focus:outline-none"
               :class="createAliasLoading ? 'cursor-not-allowed' : ''"
               :disabled="createAliasLoading"
             >
@@ -1510,16 +915,7 @@
       <div class="w-full bg-white dark:bg-grey-800 rounded-md shadow-2xl p-4">
         <div>
           <div
-            class="
-              mx-auto
-              flex-shrink-0 flex
-              items-center
-              justify-center
-              h-12
-              w-12
-              rounded-full
-              bg-cyan-50
-            "
+            class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-cyan-50"
           >
             <information class="text-cyan-600" />
           </div>
@@ -1541,22 +937,7 @@
         <div class="mt-5">
           <button
             type="button"
-            class="
-              inline-flex
-              justify-center
-              w-full
-              rounded-md
-              border border-transparent
-              shadow-sm
-              px-4
-              py-2
-              bg-cyan-400
-              text-base
-              font-medium
-              text-cyan-900
-              hover:bg-cyan-300
-              focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-300
-            "
+            class="inline-flex justify-center w-full rounded-md border border-transparent shadow-sm px-4 py-2 bg-cyan-400 text-base font-medium text-cyan-900 hover:bg-cyan-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-300"
             @click="restoreAlias(aliasToView)"
             :class="restoreAliasLoading ? 'cursor-not-allowed' : ''"
             :disabled="restoreAliasLoading"
@@ -1566,24 +947,7 @@
           </button>
           <button
             type="button"
-            class="
-              mt-3
-              w-full
-              inline-flex
-              justify-center
-              rounded-md
-              border border-grey-300
-              px-4
-              py-2
-              bg-white
-              text-base
-              font-medium
-              text-grey-700
-              shadow-sm
-              hover:bg-grey-50
-              focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500
-              dark:bg-grey-500 dark:text-white dark:border-grey-600
-            "
+            class="mt-3 w-full inline-flex justify-center rounded-md border border-grey-300 px-4 py-2 bg-white text-base font-medium text-grey-700 shadow-sm hover:bg-grey-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-grey-500 dark:text-white dark:border-grey-600"
             @click="restoreAliasModalOpen = false"
           >
             Cancel
@@ -1596,16 +960,7 @@
       <div class="w-full bg-white dark:bg-grey-800 rounded-md shadow-2xl p-4">
         <div>
           <div
-            class="
-              mx-auto
-              flex-shrink-0 flex
-              items-center
-              justify-center
-              h-12
-              w-12
-              rounded-full
-              bg-red-100
-            "
+            class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100"
           >
             <exclamation class="text-red-600" />
           </div>
@@ -1628,22 +983,7 @@
         <div class="mt-5">
           <button
             type="button"
-            class="
-              inline-flex
-              justify-center
-              w-full
-              rounded-md
-              border border-transparent
-              shadow-sm
-              px-4
-              py-2
-              bg-red-600
-              text-base
-              font-medium
-              text-white
-              hover:bg-red-700
-              focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500
-            "
+            class="inline-flex justify-center w-full rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
             @click="deleteAlias(aliasToView)"
             :class="deleteAliasLoading ? 'cursor-not-allowed' : ''"
             :disabled="deleteAliasLoading"
@@ -1653,24 +993,7 @@
           </button>
           <button
             type="button"
-            class="
-              mt-3
-              w-full
-              inline-flex
-              justify-center
-              rounded-md
-              border border-grey-300
-              px-4
-              py-2
-              bg-white
-              text-base
-              font-medium
-              text-grey-700
-              shadow-sm
-              hover:bg-grey-50
-              focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500
-              dark:bg-grey-500 dark:text-white dark:border-grey-600
-            "
+            class="mt-3 w-full inline-flex justify-center rounded-md border border-grey-300 px-4 py-2 bg-white text-base font-medium text-grey-700 shadow-sm hover:bg-grey-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-grey-500 dark:text-white dark:border-grey-600"
             @click="deleteAliasModalOpen = false"
           >
             Cancel
@@ -1683,16 +1006,7 @@
       <div class="w-full bg-white dark:bg-grey-800 rounded-md shadow-2xl p-4">
         <div>
           <div
-            class="
-              mx-auto
-              flex-shrink-0 flex
-              items-center
-              justify-center
-              h-12
-              w-12
-              rounded-full
-              bg-red-100
-            "
+            class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100"
           >
             <exclamation class="text-red-600" />
           </div>
@@ -1729,22 +1043,7 @@
         <div class="mt-5">
           <button
             type="button"
-            class="
-              inline-flex
-              justify-center
-              w-full
-              rounded-md
-              border border-transparent
-              shadow-sm
-              px-4
-              py-2
-              bg-red-600
-              text-base
-              font-medium
-              text-white
-              hover:bg-red-700
-              focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500
-            "
+            class="inline-flex justify-center w-full rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
             @click="forgetAlias(aliasToView)"
             :class="forgetAliasLoading ? 'cursor-not-allowed' : ''"
             :disabled="forgetAliasLoading"
@@ -1754,24 +1053,7 @@
           </button>
           <button
             type="button"
-            class="
-              mt-3
-              w-full
-              inline-flex
-              justify-center
-              rounded-md
-              border border-grey-300
-              px-4
-              py-2
-              bg-white
-              text-base
-              font-medium
-              text-grey-700
-              shadow-sm
-              hover:bg-grey-50
-              focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500
-              dark:bg-grey-500 dark:text-white dark:border-grey-600
-            "
+            class="mt-3 w-full inline-flex justify-center rounded-md border border-grey-300 px-4 py-2 bg-white text-base font-medium text-grey-700 shadow-sm hover:bg-grey-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-grey-500 dark:text-white dark:border-grey-600"
             @click="forgetAliasModalOpen = false"
           >
             Cancel
@@ -2192,7 +1474,7 @@ export default {
 
       try {
         const response = await fetch(
-          `${this.instance}/api/v1/aliases?filter[deleted]=${this.showDeletedAliases}&filter[search]=${this.searchInput}&page[number]=${this.aliasesCurrentPage}`,
+          `${this.instance}/api/v1/aliases?filter[deleted]=${this.showDeletedAliases}&filter[search]=${this.searchInput}&page[number]=${this.aliasesCurrentPage}&page[size]=10`,
           {
             method: 'GET',
             headers: {
