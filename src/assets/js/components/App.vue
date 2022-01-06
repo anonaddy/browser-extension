@@ -186,7 +186,7 @@
                 >
                   <div
                     @click="viewAlias(alias)"
-                    class="flex-grow flex items-center h-full truncate py-1 pl-2 cursor-pointer"
+                    class="grow flex items-center h-full truncate py-1 pl-2 cursor-pointer"
                     title="View Alias Details"
                   >
                     <div
@@ -428,7 +428,7 @@
                     v-model="aliasDescriptionToEdit"
                     type="text"
                     id="description-input"
-                    class="flex-grow text-sm appearance-none bg-white border text-grey-700 focus:outline-none rounded-sm px-2 py-1 shadow dark:bg-grey-600 dark:text-white dark:placeholder-grey-200"
+                    class="grow text-sm appearance-none bg-white border text-grey-700 focus:outline-none rounded-sm px-2 py-1 shadow dark:bg-grey-600 dark:text-white dark:placeholder-grey-200"
                     :class="
                       aliasDescriptionToEdit.length > 200 ? 'border-red-500' : 'border-transparent'
                     "
@@ -915,7 +915,7 @@
       <div class="w-full bg-white dark:bg-grey-800 rounded-md shadow-2xl p-4">
         <div>
           <div
-            class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-cyan-50"
+            class="mx-auto shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-cyan-50"
           >
             <information class="text-cyan-600" />
           </div>
@@ -960,7 +960,7 @@
       <div class="w-full bg-white dark:bg-grey-800 rounded-md shadow-2xl p-4">
         <div>
           <div
-            class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100"
+            class="mx-auto shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100"
           >
             <exclamation class="text-red-600" />
           </div>
@@ -1006,7 +1006,7 @@
       <div class="w-full bg-white dark:bg-grey-800 rounded-md shadow-2xl p-4">
         <div>
           <div
-            class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100"
+            class="mx-auto shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100"
           >
             <exclamation class="text-red-600" />
           </div>

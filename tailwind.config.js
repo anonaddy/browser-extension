@@ -1,11 +1,9 @@
 module.exports = {
-  mode: 'jit',
   darkMode: 'class',
-  purge: {
-    content: ['./src/**/*.html', './src/**/*.vue'],
-  },
+  content: ['./src/**/*.html', './src/**/*.vue'],
   theme: {
     colors: {
+      current: 'currentColor',
       white: '#FFF',
       black: '#000',
       transparent: 'transparent',
