@@ -5,17 +5,19 @@ mix
     node: {
       global: false,
     },
-    resolve: {
-      alias: {
-        vue$: 'vue/dist/vue.runtime.js',
-      },
-    },
   })
   .copy('src/app.html', 'dist/')
   .copy('src/manifest.json', 'dist/')
   .copyDirectory('src/assets/img', 'dist/img')
   .js('src/assets/js/app.js', 'dist/')
-  .vue()
+  .vue({
+    options: {
+      compilerOptions: {
+        // Ignore our <content> tag in App.vue
+        isCustomElement: (tag) => tag === 'content',
+      },
+    },
+  })
   .postCss('src/assets/css/app.css', 'dist/', [
     require('postcss-import'),
     require('tailwindcss'),

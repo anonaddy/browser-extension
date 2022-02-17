@@ -1,8 +1,11 @@
-import Vue from 'vue'
+import { createApp } from 'vue'
+
 import App from './components/App.vue'
-import Clipboard from 'v-clipboard'
-import Notifications from 'vue-notification'
-window.dayjs = require('dayjs')
+
+import Clipboard from 'v-clipboard/src'
+import Notifications from '@kyvg/vue3-notification'
+
+import dayjs from 'dayjs'
 import advancedFormat from 'dayjs/plugin/advancedFormat'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import utc from 'dayjs/plugin/utc'
@@ -31,26 +34,29 @@ dayjs.updateLocale('en', {
   },
 })
 
+const app = createApp(App)
+
+app.use(Notifications)
+app.use(Clipboard)
+
 // Mozilla's polyfill
-Vue.prototype.$browser = require('webextension-polyfill')
+app.config.globalProperties.$browser = require('webextension-polyfill')
 
-Vue.use(Clipboard)
-Vue.use(Notifications)
+// Global filters
+app.config.globalProperties.$filters = {
+  formatDate(value) {
+    return dayjs(value).format('Do MMM YYYY')
+  },
+  timeAgo(value) {
+    // If it was less than an hour ago just display 1h
+    if (dayjs().utc().subtract(1, 'hour').isBefore(dayjs.utc(value))) {
+      return '1h'
+    }
+    return dayjs.utc(value).fromNow(true)
+  },
+  nowToString() {
+    return dayjs().toString()
+  },
+}
 
-Vue.filter('formatDate', (value) => {
-  return dayjs(value).format('Do MMM YYYY')
-})
-
-Vue.filter('timeAgo', (value) => {
-  // If it was less than an hour ago just display 1h
-  if (dayjs().utc().subtract(1, 'hour').isBefore(dayjs.utc(value))) {
-    return '1h'
-  }
-
-  return dayjs.utc(value).fromNow(true)
-})
-
-new Vue({
-  el: '#app',
-  render: (h) => h(App),
-})
+app.mount('#app')

@@ -115,7 +115,7 @@
             </svg>
             <cross
               v-if="searchInput"
-              @click.native="searchInput = ''"
+              @click="searchInput = ''"
               class="absolute right-0 inset-y-0 cursor-pointer mr-2 flex items-center text-grey-300 dark:text-white h-full w-5"
             />
           </div>
@@ -148,29 +148,38 @@
               class="px-3 py-2 uppercase shadow text-sm tracking-wide text-grey-600 bg-white flex justify-between items-center dark:bg-grey-700 dark:text-white"
             >
               {{ aliasesTitle }}
-              <div class="relative">
-                <select
-                  v-model="showDeletedAliases"
-                  id="show_deleted_aliases"
-                  class="block appearance-none text-grey-700 bg-white pl-2 py-1 pr-6 rounded shadow focus:ring dark:bg-grey-600 dark:text-white"
-                  required
+              <div class="flex items-center">
+                <label
+                  for="show_alias_status"
+                  class="capitalize block text-grey-700 dark:text-white mr-2"
+                  >Show:</label
                 >
-                  <option value="without">Hide Deleted</option>
-                  <option value="with">Show Deleted</option>
-                  <option value="only">Only Deleted</option>
-                </select>
-                <div
-                  class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-grey-700 dark:text-white"
-                >
-                  <svg
-                    class="fill-current h-4 w-4"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 20 20"
+                <div class="relative">
+                  <select
+                    v-model="showAliasStatus"
+                    id="show_alias_status"
+                    class="block appearance-none text-grey-700 bg-white pl-2 py-1 pr-6 rounded shadow focus:ring dark:bg-grey-600 dark:text-white"
+                    required
                   >
-                    <path
-                      d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"
-                    />
-                  </svg>
+                    <option value="all">All</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                    <option value="not_deleted">Not Deleted</option>
+                    <option value="deleted">Deleted</option>
+                  </select>
+                  <div
+                    class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-grey-700 dark:text-white"
+                  >
+                    <svg
+                      class="fill-current h-4 w-4"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"
+                      />
+                    </svg>
+                  </div>
                 </div>
               </div>
             </div>
@@ -191,9 +200,9 @@
                   >
                     <div
                       class="text-sm text-grey-500 dark:text-grey-50"
-                      :title="alias.created_at | formatDate"
+                      :title="$filters.formatDate(alias.created_at)"
                     >
-                      {{ alias.created_at | timeAgo }}
+                      {{ $filters.timeAgo(alias.created_at) }}
                     </div>
                     <span
                       :class="getAliasStatus(alias).backgroundColour"
@@ -291,6 +300,74 @@
                     d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"
                   />
                 </svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="w-full text-left p-3 border-b border-grey-200">
+            <div class="flex space-x-4">
+              <div class="w-full">
+                <label for="default_sort" class="block text-grey-700 dark:text-white mb-1"
+                  >Default Alias Sort By:</label
+                >
+                <div class="relative">
+                  <select
+                    v-model="defaultAliasSort"
+                    id="default_sort"
+                    class="block appearance-none w-full text-grey-700 bg-white p-2 pr-8 rounded shadow focus:ring dark:bg-grey-600 dark:text-white"
+                    required
+                  >
+                    <option
+                      v-for="sortOption in aliasSortOptions"
+                      :key="sortOption.value"
+                      :value="sortOption.value"
+                    >
+                      {{ sortOption.label }}
+                    </option>
+                  </select>
+                  <div
+                    class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-grey-700 dark:text-white"
+                  >
+                    <svg
+                      class="fill-current h-4 w-4"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"
+                      />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+              <div class="w-full">
+                <label for="default_sort_dir" class="block text-grey-700 dark:text-white mb-1"
+                  >Direction:</label
+                >
+                <div class="relative">
+                  <select
+                    v-model="defaultAliasSortDir"
+                    id="default_sort_dir"
+                    class="block appearance-none w-full text-grey-700 bg-white p-2 pr-8 rounded shadow focus:ring dark:bg-grey-600 dark:text-white"
+                    required
+                  >
+                    <option value="-">Descending</option>
+                    <option value="">Ascending</option>
+                  </select>
+                  <div
+                    class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-grey-700 dark:text-white"
+                  >
+                    <svg
+                      class="fill-current h-4 w-4"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"
+                      />
+                    </svg>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -438,11 +515,11 @@
                   />
                   <cross
                     class="inline-block w-6 h-6 text-red-300 cursor-pointer flex-none"
-                    @click.native="cancelEditDescription"
+                    @click="cancelEditDescription"
                   />
                   <check
                     class="inline-block w-6 h-6 text-cyan-500 cursor-pointer flex-none"
-                    @click.native="editAliasDescription(aliasToView)"
+                    @click="editAliasDescription(aliasToView)"
                   />
                 </div>
                 <div v-else-if="aliasToView.description" class="flex items-center">
@@ -456,7 +533,7 @@
                   </span>
                   <edit
                     class="inline-block w-6 h-6 ml-2 text-grey-300 cursor-pointer flex-none dark:text-grey-200"
-                    @click.native="
+                    @click="
                       ;(aliasToViewDescriptionEditing = true),
                         (aliasDescriptionToEdit = aliasToView.description)
                     "
@@ -855,25 +932,23 @@
             </label>
             <multiselect
               id="alias_recipient_ids"
-              class="mb-4"
               v-model="createAliasRecipientIds"
-              :options="recipients"
-              :multiple="true"
+              mode="tags"
+              value-prop="id"
+              track-by="email"
+              label="email"
+              :options="Object.values(recipients)"
               :close-on-select="true"
               :clear-on-select="false"
               :searchable="true"
               :max="10"
               placeholder="Select recipient(s)"
-              label="email"
-              track-by="email"
-              :preselect-first="false"
-              :show-labels="false"
             >
             </multiselect>
 
             <button
               @click="createAlias"
-              class="px-3 py-2 w-full text-cyan-900 font-semibold bg-cyan-400 hover:bg-cyan-300 border border-transparent rounded-sm focus:outline-none"
+              class="mt-4 px-3 py-2 w-full text-cyan-900 font-semibold bg-cyan-400 hover:bg-cyan-300 border border-transparent rounded-sm focus:outline-none"
               :class="createAliasLoading ? 'cursor-not-allowed' : ''"
               :disabled="createAliasLoading"
             >
@@ -1084,10 +1159,10 @@ import Edit from './../components/icons/Edit'
 import Check from './../components/icons/Check'
 import debounce from 'lodash/debounce'
 import Modal from './../components/Modal.vue'
-import Multiselect from 'vue-multiselect'
+import Multiselect from '@vueform/multiselect'
 
 export default {
-  data: function () {
+  data() {
     return {
       tabs: [
         { name: 'Aliases', icon: 'AtSign' },
@@ -1152,8 +1227,8 @@ export default {
         },
       ],
       aliases: [],
-      showDeletedAliases: 'without',
-      aliasesTitle: 'Latest Aliases',
+      showAliasStatus: 'all',
+      aliasesTitle: 'Aliases',
       aliasesHaveNextPage: false,
       aliasesMeta: {},
       aliasesCurrentPage: 1,
@@ -1162,7 +1237,56 @@ export default {
       aliasToView: {},
       theme: '',
       autoCopyNewAlias: true,
+      defaultAliasSort: 'created_at',
+      defaultAliasSortDir: '-',
+      aliasSortOptions: [
+        {
+          value: 'local_part',
+          label: 'Local Part',
+        },
+        {
+          value: 'domain',
+          label: 'Domain',
+        },
+        {
+          value: 'email',
+          label: 'Email',
+        },
+        {
+          value: 'emails_forwarded',
+          label: 'Emails Forwarded',
+        },
+        {
+          value: 'emails_blocked',
+          label: 'Emails Blocked',
+        },
+        {
+          value: 'emails_replied',
+          label: 'Emails Replied',
+        },
+        {
+          value: 'emails_sent',
+          label: 'Emails Sent',
+        },
+        {
+          value: 'active',
+          label: 'Active',
+        },
+        {
+          value: 'created_at',
+          label: 'Created At',
+        },
+        {
+          value: 'updated_at',
+          label: 'Updated At',
+        },
+        {
+          value: 'deleted_at',
+          label: 'Deleted At',
+        },
+      ],
       defaultSelected: 'Aliases',
+      abortController: null,
     }
   },
   components: {
@@ -1194,9 +1318,11 @@ export default {
     this.recipients = await this.getRecipients()
     this.domain = await this.getDomain()
     this.aliasFormat = await this.getAliasFormat()
-    this.showDeletedAliases = await this.getShowDeletedAliases()
+    this.showAliasStatus = await this.getShowAliasStatus()
     this.theme = await this.getTheme()
     this.autoCopyNewAlias = await this.getAutoCopyNewAlias()
+    this.defaultAliasSort = await this.getDefaultAliasSort()
+    this.defaultAliasSortDir = await this.getDefaultAliasSortDir()
     this.defaultSelected = await this.getDefaultSelected()
     this.selected = this.defaultSelected
 
@@ -1273,16 +1399,18 @@ export default {
         }
       },
     },
-    showDeletedAliases: {
+    showAliasStatus: {
       async handler(val) {
         try {
-          await this.$browser.storage.sync.set({ showDeletedAliases: val })
+          await this.$browser.storage.sync.set({ showAliasStatus: val })
         } catch (error) {
           console.log(error)
         }
 
-        this.aliasesCurrentPage = 1
-        this.getAliases()
+        if (this.aliases.length) {
+          this.aliasesCurrentPage = 1
+          this.getAliases()
+        }
       },
     },
     theme: {
@@ -1300,6 +1428,34 @@ export default {
           await this.$browser.storage.sync.set({ autoCopyNewAlias: val })
         } catch (error) {
           console.log(error)
+        }
+      },
+    },
+    defaultAliasSort: {
+      async handler(val) {
+        try {
+          await this.$browser.storage.sync.set({ defaultAliasSort: val })
+        } catch (error) {
+          console.log(error)
+        }
+
+        if (this.aliases.length) {
+          this.aliasesCurrentPage = 1
+          this.getAliases(true)
+        }
+      },
+    },
+    defaultAliasSortDir: {
+      async handler(val) {
+        try {
+          await this.$browser.storage.sync.set({ defaultAliasSortDir: val })
+        } catch (error) {
+          console.log(error)
+        }
+
+        if (this.aliases.length) {
+          this.aliasesCurrentPage = 1
+          this.getAliases(true)
         }
       },
     },
@@ -1328,6 +1484,10 @@ export default {
     searchInput: {
       handler: debounce(function (val) {
         if (val == '' || val.length > 2) {
+          // If there is already a request loading then abort it
+          if (this.getAliasesLoading || this.showMoreAliasesLoading) {
+            this.abortController.abort()
+          }
           this.aliasesCurrentPage = 1
           this.getAliases()
         }
@@ -1369,6 +1529,24 @@ export default {
         this.domain === 'mailer.me' ||
         this.domain === 'addymail.com'
       )
+    },
+    showDeletedAliases() {
+      if (this.showAliasStatus === 'all') {
+        return 'with'
+      } else if (this.showAliasStatus === 'deleted') {
+        return 'only'
+      } else {
+        return 'without'
+      }
+    },
+    showActiveAliases() {
+      if (this.showAliasStatus === 'inactive') {
+        return false
+      } else if (this.showAliasStatus === 'active') {
+        return true
+      } else {
+        return ''
+      }
     },
   },
   methods: {
@@ -1420,10 +1598,10 @@ export default {
         console.log(error)
       }
     },
-    async getShowDeletedAliases() {
+    async getShowAliasStatus() {
       try {
-        var result = await this.$browser.storage.sync.get({ showDeletedAliases: 'without' })
-        return result.showDeletedAliases
+        var result = await this.$browser.storage.sync.get({ showAliasStatus: 'all' })
+        return result.showAliasStatus
       } catch (error) {
         console.log(error)
       }
@@ -1440,6 +1618,22 @@ export default {
       try {
         var result = await this.$browser.storage.sync.get({ autoCopyNewAlias: true })
         return result.autoCopyNewAlias
+      } catch (error) {
+        console.log(error)
+      }
+    },
+    async getDefaultAliasSort() {
+      try {
+        var result = await this.$browser.storage.sync.get({ defaultAliasSort: 'created_at' })
+        return result.defaultAliasSort
+      } catch (error) {
+        console.log(error)
+      }
+    },
+    async getDefaultAliasSortDir() {
+      try {
+        var result = await this.$browser.storage.sync.get({ defaultAliasSortDir: '-' })
+        return result.defaultAliasSortDir
       } catch (error) {
         console.log(error)
       }
@@ -1472,9 +1666,12 @@ export default {
         this.getAliasesLoading = true
       }
 
+      this.abortController = new AbortController()
+      const signal = this.abortController.signal
+
       try {
         const response = await fetch(
-          `${this.instance}/api/v1/aliases?filter[deleted]=${this.showDeletedAliases}&filter[search]=${this.searchInput}&page[number]=${this.aliasesCurrentPage}&page[size]=10`,
+          `${this.instance}/api/v1/aliases?filter[deleted]=${this.showDeletedAliases}&filter[active]=${this.showActiveAliases}&filter[search]=${this.searchInput}&sort=${this.defaultAliasSortDir}${this.defaultAliasSort}&page[number]=${this.aliasesCurrentPage}&page[size]=10`,
           {
             method: 'GET',
             headers: {
@@ -1482,6 +1679,7 @@ export default {
               'X-Requested-With': 'XMLHttpRequest',
               Authorization: `Bearer ${this.apiToken}`,
             },
+            signal: signal,
           }
         )
 
@@ -1499,7 +1697,7 @@ export default {
 
             this.aliasesTitle += data.meta.total === 1 ? 'match)' : 'matches)'
           } else {
-            this.aliasesTitle = 'Latest Aliases'
+            this.aliasesTitle = 'Aliases'
           }
 
           if (data.links) {
@@ -1519,13 +1717,16 @@ export default {
           this.showMoreAliasesLoading = false
         }
       } catch (error) {
-        if (this.aliasesCurrentPage == 1) {
-          this.getAliasesLoading = false
-        } else {
-          this.showMoreAliasesLoading = false
+        if (error.name !== 'AbortError') {
+          if (this.aliasesCurrentPage == 1) {
+            this.getAliasesLoading = false
+          } else {
+            this.showMoreAliasesLoading = false
+          }
+
+          this.error = 'An Error Has Occurred'
+          console.log(error)
         }
-        this.error = 'An Error Has Occurred'
-        console.log(error)
       }
     },
     async getAliasDomainOptions(token, instance) {
@@ -1634,7 +1835,7 @@ export default {
         return (this.error = 'Description cannot be more than 200 characters')
       }
 
-      if (!this.domainOptions.find((domain) => domain === this.domain)) {
+      if (!Object.values(this.domainOptions).find((domain) => domain === this.domain)) {
         return (this.error = 'Invalid alias domain name')
       }
 
@@ -1654,7 +1855,7 @@ export default {
             local_part: this.localPart,
             description: this.description ? this.description : this.currentTabHostname,
             format: this.aliasFormat,
-            recipient_ids: this.createAliasRecipientIds.map((recipient) => recipient.id),
+            recipient_ids: this.createAliasRecipientIds,
           }),
         })
 
@@ -1801,7 +2002,7 @@ export default {
         this.deleteAliasLoading = false
 
         if (response.status === 204) {
-          alias.deleted_at = dayjs().toString()
+          alias.deleted_at = this.$filters.nowToString()
           alias.active = false
           this.success('Alias deleted successfully')
         } else {
@@ -1886,9 +2087,11 @@ export default {
           'recipients',
           'domain',
           'aliasFormat',
-          'showDeletedAliases',
+          'showAliasStatus',
           'theme',
           'autoCopyNewAlias',
+          'defaultAliasSort',
+          'defaultAliasSortDir',
           'defaultSelected',
         ])
         this.apiToken = await this.getApiToken()
@@ -1897,9 +2100,11 @@ export default {
         this.recipients = await this.getRecipients()
         this.domain = await this.getDomain()
         this.aliasFormat = await this.getAliasFormat()
-        this.showDeletedAliases = await this.getShowDeletedAliases()
+        this.showAliasStatus = await this.getShowAliasStatus()
         this.theme = await this.getTheme()
         this.autoCopyNewAlias = await this.getAutoCopyNewAlias()
+        this.defaultAliasSort = await this.getDefaultAliasSort()
+        this.defaultAliasSortDir = await this.getDefaultAliasSortDir()
         this.defaultSelected = await this.getDefaultSelected()
 
         this.success('Logged out successfully')
@@ -2009,4 +2214,4 @@ export default {
 }
 </script>
 
-<style src="vue-multiselect/dist/vue-multiselect.min.css"></style>
+<style src="@vueform/multiselect/themes/default.css"></style>

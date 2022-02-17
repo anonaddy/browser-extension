@@ -15,15 +15,18 @@ body {
   @apply absolute top-0 left-0 right-0 overflow-y-auto overflow-x-auto;
 }
 
-content::-webkit-scrollbar {
+content::-webkit-scrollbar,
+.multiselect .multiselect-dropdown::-webkit-scrollbar {
   @apply w-2 h-2;
 }
 
-content::-webkit-scrollbar-thumb {
+content::-webkit-scrollbar-thumb,
+.multiselect .multiselect-dropdown::-webkit-scrollbar-thumb {
   @apply bg-indigo-500 rounded-full;
 }
 
-content::-webkit-scrollbar-track {
+content::-webkit-scrollbar-track,
+.multiselect .multiselect-dropdown::-webkit-scrollbar-track {
   @apply bg-indigo-50;
 }
 
@@ -74,70 +77,31 @@ content {
   @apply bg-yellow-100 border-yellow-600 text-yellow-800;
 }
 
-.multiselect .multiselect__tag {
+.multiselect .multiselect-tag {
   @apply bg-indigo-100 text-indigo-900;
-
-  margin-bottom: 0 !important;
-  margin-top: 3px !important;
 }
 
-.multiselect .multiselect__tags {
-  padding: 5px 40px 0 8px;
+.dark .multiselect {
+  @apply bg-grey-700;
 }
 
-.multiselect,
-.multiselect__input,
-.multiselect__single {
-  font-size: unset !important;
+.dark .multiselect .multiselect-clear:hover .multiselect-clear-icon {
+  @apply bg-white;
 }
 
-.multiselect .multiselect__input {
-  padding: 3px 0 0 0 !important;
-}
-
-.multiselect .multiselect__tag-icon:focus,
-.multiselect .multiselect__tag-icon:hover {
-  @apply bg-indigo-400;
-}
-
-.multiselect .multiselect__option--highlight {
-  @apply bg-indigo-500;
-}
-
-.multiselect .multiselect__option--selected.multiselect__option--highlight {
-  @apply bg-red-500;
-}
-
-.dark .multiselect .multiselect__tags {
+.dark .multiselect .multiselect-tags {
   @apply bg-grey-700 text-white border-grey-500;
 }
 
-.dark .multiselect .multiselect__select::before {
-  @apply text-white;
-
-  border-color: #fff transparent transparent;
-}
-
-.dark .multiselect .multiselect__tags input {
+.dark .multiselect .multiselect-tags input {
   @apply bg-grey-700 text-white placeholder-grey-100;
 }
 
-.dark .multiselect .multiselect__content-wrapper {
+.dark .multiselect .multiselect-dropdown {
   @apply bg-grey-700 text-white border-grey-500;
 }
 
-.dark .multiselect .multiselect__content-wrapper .multiselect__option--selected {
-  @apply bg-grey-500 text-white;
-}
-
-.dark
-  .multiselect
-  .multiselect__content-wrapper
-  .multiselect__option--selected.multiselect__option--highlight {
-  @apply bg-red-600;
-}
-
-.dark .multiselect .multiselect__placeholder {
+.dark .multiselect .multiselect-placeholder {
   @apply text-grey-100;
 }
 

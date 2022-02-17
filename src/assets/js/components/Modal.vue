@@ -9,9 +9,9 @@
       @after-leave="backdropLeaving = false"
       enter-active-class="transition-all transition-fast ease-out-quad"
       leave-active-class="transition-all transition-medium ease-in-quad"
-      enter-class="opacity-0"
+      enter-from-class="opacity-0"
       enter-to-class="opacity-100"
-      leave-class="opacity-100"
+      leave-from-class="opacity-100"
       leave-to-class="opacity-0"
       appear
     >
@@ -29,9 +29,9 @@
       @after-leave="cardLeaving = false"
       enter-active-class="transition-all transition-fast ease-out-quad"
       leave-active-class="transition-all transition-medium ease-in-quad"
-      enter-class="opacity-0 scale-70"
+      enter-from-class="opacity-0 scale-70"
       enter-to-class="opacity-100 scale-100"
-      leave-class="opacity-100 scale-100"
+      leave-from-class="opacity-100 scale-100"
       leave-to-class="opacity-0 scale-70"
       appear
     >
@@ -55,6 +55,7 @@ export default {
       default: false,
     },
   },
+  emits: ['close'],
   data() {
     return {
       showModal: false,
@@ -71,9 +72,6 @@ export default {
       }
     }
     document.addEventListener('keydown', onEscape)
-    this.$once('hook:destroyed', () => {
-      document.removeEventListener('keydown', onEscape)
-    })
   },
   watch: {
     open: {
