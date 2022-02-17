@@ -1487,6 +1487,7 @@ export default {
           // If there is already a request loading then abort it
           if (this.getAliasesLoading || this.showMoreAliasesLoading) {
             this.abortController.abort()
+            this.showMoreAliasesLoading = false
           }
           this.aliasesCurrentPage = 1
           this.getAliases()
