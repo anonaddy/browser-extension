@@ -1504,7 +1504,7 @@ export default {
   },
   computed: {
     subscribed() {
-      return this.domainOptions.length > 3
+      return Object.values(this.domainOptions).length > 3
     },
     selfHosting() {
       return this.instance !== 'https://app.anonaddy.com'
