@@ -81,16 +81,15 @@
 
     <div class="logged-in" v-else>
       <header class="flex items-center justify-between bg-indigo-900 h-12">
-        <a
-          :href="instance"
-          target="_blank"
-          title="Visit AnonAddy Dashboard"
-          rel="nofollow noreferrer noopener"
-          class="h-12 w-20 px-4 flex justify-center items-center"
+        <button
+          v-if="extensionWindow"
+          @click="popout"
+          class="text-white h-12 w-20 px-4 hover:bg-indigo-800 flex justify-center items-center focus:outline-none"
+          title="Pop out to a new window"
         >
-          <img class="w-12" src="img/icon.png" alt="AnonAddy Logo" />
-        </a>
-        <div class="w-full">
+          <external-link style="transform: scaleX(-1)" />
+        </button>
+        <div :class="extensionWindow ? 'w-full' : 'w-full pl-2'">
           <div class="relative">
             <input
               v-model="searchInput"
@@ -1160,6 +1159,7 @@ import Clipboard from './../components/icons/Clipboard'
 import Cross from './../components/icons/Cross'
 import Edit from './../components/icons/Edit'
 import Check from './../components/icons/Check'
+import ExternalLink from './../components/icons/ExternalLink'
 import debounce from 'lodash/debounce'
 import Modal from './../components/Modal.vue'
 import Multiselect from '@vueform/multiselect'
@@ -1307,6 +1307,7 @@ export default {
     Sent,
     ChevronLeft,
     Exclamation,
+    ExternalLink,
     Information,
     Modal,
     Multiselect,
@@ -1334,6 +1335,7 @@ export default {
     }
 
     this.currentTabHostname = await this.getCurrentTabHostname()
+    this.extensionWindow = await this.getExtensionWindow()
 
     if (this.apiToken) {
       document.getElementById('search').focus()
@@ -1554,6 +1556,48 @@ export default {
     },
   },
   methods: {
+    popout() {
+      let href = this.extensionWindow.location.href
+
+      if (
+        typeof this.$browser !== 'undefined' &&
+        this.$browser.windows &&
+        this.$browser.windows.create
+      ) {
+        if (href.indexOf('?uilocation=') > -1) {
+          href = href
+            .replace('uilocation=popup', 'uilocation=popout')
+            .replace('uilocation=tab', 'uilocation=popout')
+            .replace('uilocation=sidebar', 'uilocation=popout')
+        } else {
+          const hrefParts = href.split('#')
+          href =
+            hrefParts[0] + '?uilocation=popout' + (hrefParts.length > 0 ? '#' + hrefParts[1] : '')
+        }
+
+        const bodyRect = document.querySelector('body').getBoundingClientRect()
+        chrome.windows.create({
+          url: href,
+          type: 'popup',
+          width: Math.round(bodyRect.width ? bodyRect.width + 60 : 375),
+          height: Math.round(bodyRect.height || 600),
+        })
+
+        this.$browser.tabs.update({ active: true }).finally(this.extensionWindow.close)
+      } else if (
+        typeof this.$browser !== 'undefined' &&
+        this.$browser.tabs &&
+        this.$browser.tabs.create
+      ) {
+        href = href
+          .replace('uilocation=popup', 'uilocation=tab')
+          .replace('uilocation=popout', 'uilocation=tab')
+          .replace('uilocation=sidebar', 'uilocation=tab')
+        this.$browser.tabs.create({
+          url: href,
+        })
+      }
+    },
     async getApiToken() {
       try {
         var result = await this.$browser.storage.sync.get({ apiToken: '' })
@@ -1653,8 +1697,20 @@ export default {
     async getCurrentTabHostname() {
       try {
         var result = await this.$browser.tabs.query({ active: true, currentWindow: true })
-        var url = new URL(result[0].url)
-        return url.hostname
+        if (result[0].url) {
+          var url = new URL(result[0].url)
+          return url.hostname
+        }
+        return null
+      } catch (error) {
+        console.log(error)
+      }
+    },
+    async getExtensionWindow() {
+      try {
+        let result = await this.$browser.extension.getViews({ type: 'popup' })
+
+        return result[0]
       } catch (error) {
         console.log(error)
       }

@@ -1,6 +1,6 @@
 {
   "name": "anonaddy-extension",
-  "version": "2.0.16",
+  "version": "2.0.17",
   "description": "AnonAddy browser extension.",
   "main": "app.js",
   "scripts": {
@@ -31,12 +31,12 @@
     "vue": "^3.0.0",
     "vue-loader": "^17.0.0",
     "vue-template-compiler": "^2.6.12",
-    "webextension-polyfill": "^0.8.0"
+    "webextension-polyfill": "^0.9.0"
   },
   "devDependencies": {
     "css-loader": "^6.0.0",
-    "husky": "^7.0.0",
-    "lint-staged": "^12.0.0",
+    "husky": "^8.0.0",
+    "lint-staged": "^13.0.0",
     "prettier": "^2.2.1"
   },
   "lint-staged": {
