@@ -1334,8 +1334,8 @@ export default {
       this.aliasFormat = 'random_characters'
     }
 
-    this.currentTabHostname = await this.getCurrentTabHostname()
     this.extensionWindow = await this.getExtensionWindow()
+    this.currentTabHostname = await this.getCurrentTabHostname()
 
     if (this.apiToken) {
       document.getElementById('search').focus()
@@ -1697,7 +1697,7 @@ export default {
     async getCurrentTabHostname() {
       try {
         var result = await this.$browser.tabs.query({ active: true, currentWindow: true })
-        if (result[0].url) {
+        if (result[0].url && this.extensionWindow) {
           var url = new URL(result[0].url)
           return url.hostname
         }
