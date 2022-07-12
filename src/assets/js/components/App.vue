@@ -962,11 +962,11 @@
       </content>
 
       <nav class="-mb-px flex h-14 w-full absolute bottom-0 bg-indigo-900" aria-label="Tabs">
-        <a
+        <button
           v-for="tab in tabs"
           :key="tab.name"
+          :title="tab.name"
           @click="selected = tab.name"
-          href="#"
           :class="[
             selected == tab.name
               ? 'border-white text-white'
@@ -984,7 +984,7 @@
             aria-hidden="true"
           />
           <span>{{ tab.name }}</span>
-        </a>
+        </button>
       </nav>
     </div>
 
@@ -1576,7 +1576,7 @@ export default {
         }
 
         const bodyRect = document.querySelector('body').getBoundingClientRect()
-        chrome.windows.create({
+        this.$browser.windows.create({
           url: href,
           type: 'popup',
           width: Math.round(bodyRect.width ? bodyRect.width + 60 : 375),
