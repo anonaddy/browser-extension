@@ -457,7 +457,7 @@
             Logout
           </button>
           <div class="w-full text-center p-3 border-grey-200 text-grey-600 dark:text-grey-100">
-            v2.0.16
+            v2.0.20
           </div>
         </div>
         <div v-else-if="selected == 'ViewAlias'">
