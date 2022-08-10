@@ -11,6 +11,8 @@ import relativeTime from 'dayjs/plugin/relativeTime'
 import utc from 'dayjs/plugin/utc'
 import updateLocale from 'dayjs/plugin/updateLocale'
 
+window.psl = require('psl')
+
 dayjs.extend(advancedFormat)
 dayjs.extend(relativeTime)
 dayjs.extend(utc)

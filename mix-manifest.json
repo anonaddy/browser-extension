@@ -5,6 +5,11 @@
     "/dist/manifest.json": "/dist/manifest.json",
     "/dist/img/icon.png": "/dist/img/icon.png",
     "/dist/img/icon@2x.png": "/dist/img/icon@2x.png",
+    "/dist/img/icon_128.png": "/dist/img/icon_128.png",
+    "/dist/img/icon_16.png": "/dist/img/icon_16.png",
+    "/dist/img/icon_32.png": "/dist/img/icon_32.png",
+    "/dist/img/icon_48.png": "/dist/img/icon_48.png",
+    "/dist/img/icon_96.png": "/dist/img/icon_96.png",
     "/dist/img/logo.png": "/dist/img/logo.png",
     "/dist/img/logo.svg": "/dist/img/logo.svg"
 }

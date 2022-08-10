@@ -17,9 +17,9 @@
         {{ error }}
       </div>
       <div v-if="changeInstance">
-        <label for="instance" class="block text-indigo-100 text-sm mb-1">
-          AnonAddy Instance:
-        </label>
+        <label for="instance" class="block text-indigo-100 mb-1">
+          AnonAddy Instance: (only change this is you are self-hosting AnonAddy)</label
+        >
         <input
           v-model="instanceInput"
           id="instance"
@@ -28,14 +28,14 @@
           class="appearance-none shadow bg-white rounded-sm w-full p-2 text-grey-700 focus:ring mb-4"
         />
       </div>
-      <label for="api_token" class="block text-indigo-100 text-sm mb-1">
-        API token (from the settings page):
+      <label for="api_token" class="block text-indigo-100 mb-1">
+        API token (from the AnonAddy settings page):
       </label>
       <textarea
         v-model="tokenInput"
         id="api_token"
         placeholder="Enter your API token"
-        rows="10"
+        rows="1"
         required="required"
         autofocus="autofocus"
         class="appearance-none shadow bg-white rounded-sm w-full p-2 text-grey-700 focus:ring mb-4"
@@ -87,7 +87,7 @@
           class="text-white h-12 w-20 px-4 hover:bg-indigo-800 flex justify-center items-center focus:outline-none"
           title="Pop out to a new window"
         >
-          <external-link style="transform: scaleX(-1)" />
+          <external-link class="h-6 w-6" style="transform: scaleX(-1)" />
         </button>
         <div :class="extensionWindow ? 'w-full' : 'w-full pl-2'">
           <div class="relative">
@@ -264,7 +264,15 @@
           <div
             class="p-3 uppercase shadow text-sm tracking-wide text-grey-600 bg-white flex justify-between dark:bg-grey-700 dark:text-white"
           >
-            Settings
+            <div class="flex">
+              Settings (<a
+                :href="`${instance}/settings`"
+                target="_blank"
+                rel="noopener noreferrer nofollow"
+                class="flex text-indigo-700 hover:text-indigo-500 cursor-pointer"
+                >Visit Dashboard <external-link class="h-4 w-4 ml-1" /></a
+              >)
+            </div>
             <button
               @click="selected = 'Aliases'"
               class="back-icon text-grey-600 hover:bg-grey-50 -m-3 flex justify-center items-center focus:outline-none dark:text-white dark:hover:bg-grey-800"
@@ -456,8 +464,11 @@
           >
             Logout
           </button>
-          <div class="w-full text-center p-3 border-grey-200 text-grey-600 dark:text-grey-100">
-            v2.0.20
+          <div
+            v-if="extensionVersion"
+            class="w-full text-center p-3 border-grey-200 text-grey-600 dark:text-grey-100"
+          >
+            v{{ extensionVersion }}
           </div>
         </div>
         <div v-else-if="selected == 'ViewAlias'">
@@ -911,8 +922,21 @@
                 id="alias_local_part"
                 type="text"
                 placeholder="Enter local part"
-                class="appearance-none shadow bg-white rounded-sm w-full p-2 text-grey-700 focus:ring mb-4 dark:bg-grey-600 dark:text-white dark:placeholder-grey-200"
+                class="appearance-none shadow bg-white rounded-sm w-full p-2 text-grey-700 focus:ring dark:bg-grey-600 dark:text-white dark:placeholder-grey-200"
+                :class="localPartSuggestions.length ? '' : 'mb-4'"
               />
+              <p
+                v-if="localPartSuggestions.length"
+                class="text-sm mt-1 mb-4 text-grey-600 dark:text-grey-100"
+              >
+                Suggestions: (click to use)
+                <span v-for="(suggestion, i) in localPartSuggestions" :key="suggestion">
+                  <span class="cursor-pointer text-indigo-700" @click="localPart = suggestion">{{
+                    suggestion
+                  }}</span
+                  >{{ i == localPartSuggestions.length - 1 ? '' : ', ' }}
+                </span>
+              </p>
             </div>
             <label for="alias_description" class="block text-grey-700 dark:text-grey-50 mb-1">
               Description: (optional)
@@ -1167,6 +1191,7 @@ import Multiselect from '@vueform/multiselect'
 export default {
   data() {
     return {
+      extensionVersion: null,
       tabs: [
         { name: 'Aliases', icon: 'AtSign' },
         { name: 'Settings', icon: 'Cog' },
@@ -1179,6 +1204,7 @@ export default {
       changeInstance: false,
       searchInput: '',
       currentTabHostname: '',
+      localPartSuggestions: [],
       description: '',
       localPart: '',
       sendFromAliasDestination: '',
@@ -1336,6 +1362,11 @@ export default {
 
     this.extensionWindow = await this.getExtensionWindow()
     this.currentTabHostname = await this.getCurrentTabHostname()
+
+    let manifest = this.$browser.runtime.getManifest()
+    if (manifest) {
+      this.extensionVersion = manifest.version
+    }
 
     if (this.apiToken) {
       document.getElementById('search').focus()
@@ -1699,6 +1730,18 @@ export default {
         var result = await this.$browser.tabs.query({ active: true, currentWindow: true })
         if (result[0].url && this.extensionWindow) {
           var url = new URL(result[0].url)
+
+          let parsed = window.psl.parse(url.hostname)
+          if (parsed.sld) {
+            this.localPartSuggestions.push(parsed.sld)
+          }
+          if (parsed.domain) {
+            this.localPartSuggestions.push(parsed.domain)
+          }
+          if (url.hostname && url.hostname !== parsed.domain) {
+            this.localPartSuggestions.push(url.hostname)
+          }
+
           return url.hostname
         }
         return null
@@ -1767,6 +1810,10 @@ export default {
           }
 
           this.aliasesMeta = data.meta
+        } else if (response.status === 401) {
+          this.logout(true)
+          this.error =
+            "Unauthenticated, your API token has either expired or been revoked. You've been automatically logged out."
         } else {
           this.error = 'An Error Has Occurred'
         }
@@ -1793,11 +1840,27 @@ export default {
       this.error = ''
 
       if (!token) {
-        return (this.error = 'API token is required')
+        return (this.error = 'An API token is required to login!')
+      }
+
+      if (!this.validToken(token)) {
+        return (this.error =
+          "Invalid API token format, please check that you've entered it correctly!")
+      }
+
+      if (token.length < 40) {
+        return (this.error =
+          "That API token is too short, please check that you've entered it correctly!")
+      }
+
+      if (token.length > 50) {
+        return (this.error =
+          "That API token is too long, please check that you've entered it correctly!")
       }
 
       if (!this.validInstance(instance) && this.changeInstance) {
-        return (this.error = 'Please enter a valid URL for the instance with no trailing slash')
+        return (this.error =
+          'Please enter a valid URL for the instance with no trailing slash, e.g. "https://app.example.com"')
       }
 
       this.domainOptionsLoading = true
@@ -1815,7 +1878,14 @@ export default {
         this.domainOptionsLoading = false
 
         if (response.status === 401) {
-          this.error = 'Unauthenticated, please check your API token'
+          if (!this.apiToken) {
+            this.error =
+              "Error, invalid API token, please check that you've entered it correctly and that you have the correct instance (if self-hosting)"
+          } else {
+            this.logout(true)
+            this.error =
+              "Unauthenticated, your API token has either expired or been revoked. You've been automatically logged out."
+          }
         } else if (response.status === 200) {
           if (!this.instance) {
             this.instance = instance
@@ -1929,7 +1999,9 @@ export default {
           let error = await response.json()
           this.error = error.errors[Object.keys(error.errors)[0]][0]
         } else if (response.status === 401) {
-          this.error = 'Unauthenticated, please check your API token'
+          this.logout(true)
+          this.error =
+            "Unauthenticated, your API token has either expired or been revoked. You've been automatically logged out."
         } else if (response.status === 201) {
           let data = await response.json()
           this.localPart = ''
@@ -2136,7 +2208,7 @@ export default {
 
       this.restoreAliasModalOpen = false
     },
-    async logout() {
+    async logout(expiredToken = false) {
       Object.assign(this.$data, this.$options.data.apply(this))
 
       try {
@@ -2167,7 +2239,9 @@ export default {
         this.defaultAliasSortDir = await this.getDefaultAliasSortDir()
         this.defaultSelected = await this.getDefaultSelected()
 
-        this.success('Logged out successfully')
+        if (!expiredToken) {
+          this.success('Logged out successfully')
+        }
       } catch (error) {
         console.log(error)
       }
@@ -2246,6 +2320,10 @@ export default {
       let re =
         /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
       return re.test(email)
+    },
+    validToken(token) {
+      let re = /^[a-zA-Z0-9]+$/
+      return re.test(token)
     },
     setNewAliasCopied() {
       this.newAliasCopied = true

@@ -1,6 +1,6 @@
 {
   "name": "anonaddy-extension",
-  "version": "2.0.20",
+  "version": "2.1.0",
   "description": "AnonAddy browser extension.",
   "main": "app.js",
   "scripts": {
@@ -26,6 +26,7 @@
     "lodash": "^4.17.21",
     "postcss": "^8.4.5",
     "postcss-import": "^14.0.0",
+    "psl": "^1.9.0",
     "tailwindcss": "^3.0.11",
     "v-clipboard": "github:euvl/v-clipboard",
     "vue": "^3.0.0",
