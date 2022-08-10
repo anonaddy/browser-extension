@@ -266,7 +266,7 @@
           >
             <div class="flex">
               Settings (<a
-                :href="`${instance}/settings`"
+                :href="`${instance}`"
                 target="_blank"
                 rel="noopener noreferrer nofollow"
                 class="flex text-indigo-700 hover:text-indigo-500 cursor-pointer"
