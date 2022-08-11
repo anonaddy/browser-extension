@@ -269,7 +269,7 @@
                 :href="`${instance}`"
                 target="_blank"
                 rel="noopener noreferrer nofollow"
-                class="flex text-indigo-700 hover:text-indigo-500 cursor-pointer"
+                class="flex text-indigo-700 hover:text-indigo-500 dark:text-white dark:hover:text-grey-50 cursor-pointer"
                 >Visit Dashboard <external-link class="h-4 w-4 ml-1" /></a
               >)
             </div>
@@ -931,9 +931,10 @@
               >
                 Suggestions: (click to use)
                 <span v-for="(suggestion, i) in localPartSuggestions" :key="suggestion">
-                  <span class="cursor-pointer text-indigo-700" @click="localPart = suggestion">{{
-                    suggestion
-                  }}</span
+                  <span
+                    class="cursor-pointer text-indigo-700 dark:text-white"
+                    @click="localPart = suggestion"
+                    >{{ suggestion }}</span
                   >{{ i == localPartSuggestions.length - 1 ? '' : ', ' }}
                 </span>
               </p>
@@ -1740,6 +1741,13 @@ export default {
           }
           if (url.hostname && url.hostname !== parsed.domain) {
             this.localPartSuggestions.push(url.hostname)
+          }
+
+          // Also add a suggestion with a random alphanumeric string appended
+          if (parsed.sld) {
+            this.localPartSuggestions.push(
+              parsed.sld + '.' + Math.random().toString(36).substr(2, 3)
+            )
           }
 
           return url.hostname
