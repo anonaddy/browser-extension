@@ -7,7 +7,7 @@ html {
 
 body {
   @apply overflow-hidden w-full;
-  width: 375px;
+  width: 400px;
   height: 600px;
 }
 

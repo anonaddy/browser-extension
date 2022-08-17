@@ -440,6 +440,41 @@
             </div>
           </div>
 
+          <div class="w-full text-left p-3 border-b border-grey-200">
+            <label
+              for="select_auto_fill_local_part"
+              class="block text-grey-700 dark:text-white mb-1"
+              >Automatically Fill New Alias Local Parts When Using Custom Format:</label
+            >
+            <div class="relative">
+              <select
+                v-model="autoFillLocalPart"
+                id="select_auto_fill_local_part"
+                class="block appearance-none w-full text-grey-700 bg-white p-2 pr-8 rounded shadow focus:ring dark:bg-grey-600 dark:text-white"
+                required
+              >
+                <option value="">Disabled</option>
+                <option value="sld">Domain with no extension (example)</option>
+                <option value="domain">Domain (example.com)</option>
+                <option value="full">Full domain (app.example.com)</option>
+                <option value="random">Domain with random extension (example.5ra)</option>
+              </select>
+              <div
+                class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-grey-700 dark:text-white"
+              >
+                <svg
+                  class="fill-current h-4 w-4"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"
+                  />
+                </svg>
+              </div>
+            </div>
+          </div>
+
           <button
             @click="getAliasDomainOptions(apiToken, instance)"
             class="w-full text-left p-3 focus:outline-none hover:bg-indigo-50 border-b border-grey-200 dark:hover:bg-grey-800"
@@ -927,12 +962,13 @@
               />
               <p
                 v-if="localPartSuggestions.length"
-                class="text-sm mt-1 mb-4 text-grey-600 dark:text-grey-100"
+                class="text-sm mt-1 mb-3 text-grey-600 dark:text-grey-100"
               >
-                Suggestions: (click to use)
+                Click to use:
                 <span v-for="(suggestion, i) in localPartSuggestions" :key="suggestion">
                   <span
-                    class="cursor-pointer text-indigo-700 dark:text-white"
+                    class="cursor-pointer text-indigo-700 hover:text-indigo-900 dark:text-white dark:hover:text-grey-100"
+                    title="Click to use suggestion"
                     @click="localPart = suggestion"
                     >{{ suggestion }}</span
                   >{{ i == localPartSuggestions.length - 1 ? '' : ', ' }}
@@ -950,7 +986,7 @@
               autofocus="autofocus"
               class="appearance-none shadow bg-white rounded-sm w-full p-2 text-grey-700 focus:ring dark:bg-grey-600 dark:text-white dark:placeholder-grey-200"
             />
-            <p class="text-xs mt-1 mb-4 text-grey-600 dark:text-grey-100">
+            <p class="text-xs mt-1 mb-3 text-grey-600 dark:text-grey-100">
               If left empty the description will default to the current tab's hostname.
             </p>
 
@@ -1267,6 +1303,7 @@ export default {
       aliasToView: {},
       theme: '',
       autoCopyNewAlias: true,
+      autoFillLocalPart: '',
       defaultAliasSort: 'created_at',
       defaultAliasSortDir: '-',
       aliasSortOptions: [
@@ -1352,6 +1389,7 @@ export default {
     this.showAliasStatus = await this.getShowAliasStatus()
     this.theme = await this.getTheme()
     this.autoCopyNewAlias = await this.getAutoCopyNewAlias()
+    this.autoFillLocalPart = await this.getAutoFillLocalPart()
     this.defaultAliasSort = await this.getDefaultAliasSort()
     this.defaultAliasSortDir = await this.getDefaultAliasSortDir()
     this.defaultSelected = await this.getDefaultSelected()
@@ -1463,6 +1501,15 @@ export default {
       async handler(val) {
         try {
           await this.$browser.storage.sync.set({ autoCopyNewAlias: val })
+        } catch (error) {
+          console.log(error)
+        }
+      },
+    },
+    autoFillLocalPart: {
+      async handler(val) {
+        try {
+          await this.$browser.storage.sync.set({ autoFillLocalPart: val })
         } catch (error) {
           console.log(error)
         }
@@ -1702,6 +1749,14 @@ export default {
         console.log(error)
       }
     },
+    async getAutoFillLocalPart() {
+      try {
+        var result = await this.$browser.storage.sync.get({ autoFillLocalPart: '' })
+        return result.autoFillLocalPart
+      } catch (error) {
+        console.log(error)
+      }
+    },
     async getDefaultAliasSort() {
       try {
         var result = await this.$browser.storage.sync.get({ defaultAliasSort: 'created_at' })
@@ -1732,22 +1787,42 @@ export default {
         if (result[0].url && this.extensionWindow) {
           var url = new URL(result[0].url)
 
+          let isUsingCustomFormat = this.aliasFormat === 'custom'
           let parsed = window.psl.parse(url.hostname)
           if (parsed.sld) {
             this.localPartSuggestions.push(parsed.sld)
+            if (isUsingCustomFormat && this.autoFillLocalPart === 'sld') {
+              this.localPart = parsed.sld
+            }
           }
           if (parsed.domain) {
             this.localPartSuggestions.push(parsed.domain)
+            if (isUsingCustomFormat && this.autoFillLocalPart === 'domain') {
+              this.localPart = parsed.domain
+            }
           }
           if (url.hostname && url.hostname !== parsed.domain) {
             this.localPartSuggestions.push(url.hostname)
+            if (isUsingCustomFormat && this.autoFillLocalPart === 'full') {
+              this.localPart = url.hostname
+            }
+          }
+
+          if (
+            isUsingCustomFormat &&
+            url.hostname === parsed.domain &&
+            this.autoFillLocalPart === 'full'
+          ) {
+            this.localPart = url.hostname
           }
 
           // Also add a suggestion with a random alphanumeric string appended
           if (parsed.sld) {
-            this.localPartSuggestions.push(
-              parsed.sld + '.' + Math.random().toString(36).substr(2, 3)
-            )
+            let random = parsed.sld + '.' + Math.random().toString(36).substr(2, 3)
+            this.localPartSuggestions.push(random)
+            if (isUsingCustomFormat && this.autoFillLocalPart === 'random') {
+              this.localPart = random
+            }
           }
 
           return url.hostname
@@ -2230,6 +2305,7 @@ export default {
           'showAliasStatus',
           'theme',
           'autoCopyNewAlias',
+          'autoFillLocalPart',
           'defaultAliasSort',
           'defaultAliasSortDir',
           'defaultSelected',
@@ -2243,6 +2319,7 @@ export default {
         this.showAliasStatus = await this.getShowAliasStatus()
         this.theme = await this.getTheme()
         this.autoCopyNewAlias = await this.getAutoCopyNewAlias()
+        this.autoFillLocalPart = await this.getAutoFillLocalPart()
         this.defaultAliasSort = await this.getDefaultAliasSort()
         this.defaultAliasSortDir = await this.getDefaultAliasSortDir()
         this.defaultSelected = await this.getDefaultSelected()

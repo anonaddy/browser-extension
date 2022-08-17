@@ -1,6 +1,6 @@
 {
   "name": "anonaddy-extension",
-  "version": "2.1.2",
+  "version": "2.1.3",
   "description": "AnonAddy browser extension.",
   "main": "app.js",
   "scripts": {
@@ -32,7 +32,7 @@
     "vue": "^3.0.0",
     "vue-loader": "^17.0.0",
     "vue-template-compiler": "^2.6.12",
-    "webextension-polyfill": "^0.9.0"
+    "webextension-polyfill": "^0.10.0"
   },
   "devDependencies": {
     "css-loader": "^6.0.0",
