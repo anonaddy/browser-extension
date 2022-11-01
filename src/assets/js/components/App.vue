@@ -444,7 +444,7 @@
             <label
               for="select_auto_fill_local_part"
               class="block text-grey-700 dark:text-white mb-1"
-              >Automatically Fill New Alias Local Parts When Using Custom Format:</label
+              >Automatically Fill New Alias Local Parts When Using The Custom Alias Format:</label
             >
             <div class="relative">
               <select
@@ -1244,6 +1244,7 @@ export default {
       localPartSuggestions: [],
       description: '',
       localPart: '',
+      localPartAutoFill: {},
       sendFromAliasDestination: '',
       sendFromAliasEmailToSendTo: '',
       domainOptionsLoading: false,
@@ -1308,24 +1309,32 @@ export default {
       defaultAliasSortDir: '-',
       aliasSortOptions: [
         {
-          value: 'local_part',
-          label: 'Local Part',
+          value: 'active',
+          label: 'Active',
+        },
+        {
+          value: 'email',
+          label: 'Alias',
+        },
+        {
+          value: 'created_at',
+          label: 'Created At',
+        },
+        {
+          value: 'deleted_at',
+          label: 'Deleted At',
         },
         {
           value: 'domain',
           label: 'Domain',
         },
         {
-          value: 'email',
-          label: 'Email',
+          value: 'emails_blocked',
+          label: 'Emails Blocked',
         },
         {
           value: 'emails_forwarded',
           label: 'Emails Forwarded',
-        },
-        {
-          value: 'emails_blocked',
-          label: 'Emails Blocked',
         },
         {
           value: 'emails_replied',
@@ -1336,20 +1345,8 @@ export default {
           label: 'Emails Sent',
         },
         {
-          value: 'active',
-          label: 'Active',
-        },
-        {
-          value: 'created_at',
-          label: 'Created At',
-        },
-        {
           value: 'updated_at',
           label: 'Updated At',
-        },
-        {
-          value: 'deleted_at',
-          label: 'Deleted At',
         },
       ],
       defaultSelected: 'Aliases',
@@ -1467,6 +1464,13 @@ export default {
     },
     aliasFormat: {
       async handler(val) {
+        // If alias format changes to custom and autoFillLocalPart is enabled then update localPart
+        if (val === 'custom' && this.autoFillLocalPart !== '') {
+          this.localPart = this.localPartAutoFill[this.autoFillLocalPart]
+        } else {
+          this.localPart = ''
+        }
+
         try {
           await this.$browser.storage.sync.set({ aliasFormat: val })
         } catch (error) {
@@ -1508,6 +1512,9 @@ export default {
     },
     autoFillLocalPart: {
       async handler(val) {
+        if (this.aliasFormat === 'custom' && val !== '') {
+          this.localPart = this.localPartAutoFill[val]
+        }
         try {
           await this.$browser.storage.sync.set({ autoFillLocalPart: val })
         } catch (error) {
@@ -1787,42 +1794,34 @@ export default {
         if (result[0].url && this.extensionWindow) {
           var url = new URL(result[0].url)
 
-          let isUsingCustomFormat = this.aliasFormat === 'custom'
           let parsed = window.psl.parse(url.hostname)
           if (parsed.sld) {
             this.localPartSuggestions.push(parsed.sld)
-            if (isUsingCustomFormat && this.autoFillLocalPart === 'sld') {
-              this.localPart = parsed.sld
-            }
+            this.localPartAutoFill.sld = parsed.sld
           }
           if (parsed.domain) {
             this.localPartSuggestions.push(parsed.domain)
-            if (isUsingCustomFormat && this.autoFillLocalPart === 'domain') {
-              this.localPart = parsed.domain
-            }
+            this.localPartAutoFill.domain = parsed.domain
           }
           if (url.hostname && url.hostname !== parsed.domain) {
             this.localPartSuggestions.push(url.hostname)
-            if (isUsingCustomFormat && this.autoFillLocalPart === 'full') {
-              this.localPart = url.hostname
-            }
+            this.localPartAutoFill.full = url.hostname
           }
 
-          if (
-            isUsingCustomFormat &&
-            url.hostname === parsed.domain &&
-            this.autoFillLocalPart === 'full'
-          ) {
-            this.localPart = url.hostname
+          if (url.hostname === parsed.domain) {
+            this.localPartAutoFill.full = url.hostname
           }
 
           // Also add a suggestion with a random alphanumeric string appended
           if (parsed.sld) {
             let random = parsed.sld + '.' + Math.random().toString(36).substr(2, 3)
             this.localPartSuggestions.push(random)
-            if (isUsingCustomFormat && this.autoFillLocalPart === 'random') {
-              this.localPart = random
-            }
+            this.localPartAutoFill.random = random
+          }
+
+          // Set the alias local part if the format is custom and autoFill is enabled
+          if (this.aliasFormat === 'custom' && this.autoFillLocalPart !== '') {
+            this.localPart = this.localPartAutoFill[this.autoFillLocalPart]
           }
 
           return url.hostname
