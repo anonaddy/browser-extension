@@ -17,7 +17,7 @@
         {{ error }}
       </div>
       <div v-if="changeInstance">
-        <label for="instance" class="block text-indigo-100 mb-1">
+        <label for="instance" class="block text-indigo-100 mb-1 text-base">
           AnonAddy Instance: (only change this is you are self-hosting AnonAddy)</label
         >
         <input
@@ -25,11 +25,19 @@
           id="instance"
           type="text"
           required="required"
-          class="appearance-none shadow bg-white rounded-sm w-full p-2 text-grey-700 focus:ring mb-4"
+          class="appearance-none shadow bg-white rounded-sm text-base w-full p-2 text-grey-700 focus:ring mb-4"
         />
       </div>
-      <label for="api_token" class="block text-indigo-100 mb-1">
-        API token (from the AnonAddy settings page):
+      <label for="api_token" class="block text-indigo-100 mb-1 text-base">
+        API token (from the AnonAddy
+        <a
+          href="https://app.anonaddy.com/settings"
+          target="_blank"
+          rel="noopener noreferrer nofollow"
+          class="text-white hover:text-indigo-50 cursor-pointer"
+          >settings</a
+        >
+        page):
       </label>
       <textarea
         v-model="tokenInput"
@@ -38,7 +46,7 @@
         rows="1"
         required="required"
         autofocus="autofocus"
-        class="appearance-none shadow bg-white rounded-sm w-full p-2 text-grey-700 focus:ring mb-4"
+        class="appearance-none shadow bg-white rounded-sm text-base w-full p-2 text-grey-700 focus:ring mb-4"
       >
       </textarea>
       <button
@@ -50,8 +58,8 @@
         Sign In
         <loader class="h-5 w-5" v-if="domainOptionsLoading" />
       </button>
-      <div class="flex justify-between mt-3">
-        <p class="text-sm text-indigo-100">
+      <div class="flex justify-between mt-3 text-base">
+        <p class="text-indigo-100">
           Don't have an account?
           <a
             href="https://app.anonaddy.com/register"
@@ -65,14 +73,14 @@
         <span
           v-if="!changeInstance"
           @click="changeInstance = true"
-          class="block text-sm text-white hover:text-indigo-50 cursor-pointer"
+          class="block text-white hover:text-indigo-50 cursor-pointer"
         >
           Change Instance
         </span>
         <span
           v-else
           @click="cancelChangeInstance"
-          class="block text-sm text-white hover:text-indigo-50 cursor-pointer"
+          class="block text-white hover:text-indigo-50 cursor-pointer"
         >
           Cancel
         </span>
@@ -493,6 +501,17 @@
             Refresh Recipients
             <loader class="h-5 w-5" v-if="recipientsLoading" />
           </button>
+          <a
+            :href="`${extensionUrl}`"
+            target="_blank"
+            rel="noopener noreferrer nofollow"
+            class="w-full flex items-center justify-between text-left p-3 focus:outline-none hover:bg-indigo-50 border-b border-grey-200 dark:hover:bg-grey-800"
+          >
+            <span class="flex items-center"
+              >Rate the Extension<heart class="h-5 w-5 ml-1 text-cyan-500"
+            /></span>
+            <external-link class="h-5 w-5" />
+          </a>
           <button
             @click="logout"
             class="w-full text-left p-3 focus:outline-none hover:bg-indigo-50 border-b border-grey-200 dark:hover:bg-grey-800"
@@ -1221,6 +1240,7 @@ import Cross from './../components/icons/Cross'
 import Edit from './../components/icons/Edit'
 import Check from './../components/icons/Check'
 import ExternalLink from './../components/icons/ExternalLink'
+import Heart from './../components/icons/Heart'
 import debounce from 'lodash/debounce'
 import Modal from './../components/Modal.vue'
 import Multiselect from '@vueform/multiselect'
@@ -1307,6 +1327,8 @@ export default {
       autoFillLocalPart: '',
       defaultAliasSort: 'created_at',
       defaultAliasSortDir: '-',
+      extensionUrl:
+        'https://chrome.google.com/webstore/detail/anonaddy/iadbdpnoknmbdeolbapdackdcogdmjpe',
       aliasSortOptions: [
         {
           value: 'active',
@@ -1369,6 +1391,7 @@ export default {
     ChevronLeft,
     Exclamation,
     ExternalLink,
+    Heart,
     Information,
     Modal,
     Multiselect,
@@ -1400,6 +1423,12 @@ export default {
     this.currentTabHostname = await this.getCurrentTabHostname()
 
     let manifest = this.$browser.runtime.getManifest()
+
+    // Check if Gecko based
+    if (/rv:([^\)]+)\) Gecko\/\d{8}/.test(navigator.userAgent)) {
+      this.extensionUrl = 'https://addons.mozilla.org/en-GB/firefox/addon/anonaddy/'
+    }
+
     if (manifest) {
       this.extensionVersion = manifest.version
     }
@@ -1843,6 +1872,7 @@ export default {
     async getAliases(calledFromMounted = false) {
       this.error = ''
 
+      // To prevent overriding the users choice of tab to display on extension open
       if (!calledFromMounted) {
         this.selected = 'Aliases'
       }
@@ -1862,6 +1892,7 @@ export default {
             headers: {
               'Content-Type': 'application/json',
               'X-Requested-With': 'XMLHttpRequest',
+              'X-Requested-From': 'browser-extension',
               Authorization: `Bearer ${this.apiToken}`,
             },
             signal: signal,
@@ -1953,6 +1984,7 @@ export default {
           headers: {
             'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest',
+            'X-Requested-From': 'browser-extension',
             Authorization: `Bearer ${token}`,
           },
         })
@@ -2009,6 +2041,7 @@ export default {
           headers: {
             'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest',
+            'X-Requested-From': 'browser-extension',
             Authorization: `Bearer ${this.apiToken}`,
           },
         })
@@ -2060,6 +2093,7 @@ export default {
           headers: {
             'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest',
+            'X-Requested-From': 'browser-extension',
             Authorization: `Bearer ${this.apiToken}`,
           },
           body: JSON.stringify({
@@ -2116,6 +2150,7 @@ export default {
           headers: {
             'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest',
+            'X-Requested-From': 'browser-extension',
             Authorization: `Bearer ${this.apiToken}`,
           },
           body: JSON.stringify({
@@ -2150,6 +2185,7 @@ export default {
           headers: {
             'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest',
+            'X-Requested-From': 'browser-extension',
             Authorization: `Bearer ${this.apiToken}`,
           },
           body: JSON.stringify({
@@ -2182,6 +2218,7 @@ export default {
           headers: {
             'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest',
+            'X-Requested-From': 'browser-extension',
             Authorization: `Bearer ${this.apiToken}`,
           },
         })
@@ -2209,6 +2246,7 @@ export default {
           headers: {
             'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest',
+            'X-Requested-From': 'browser-extension',
             Authorization: `Bearer ${this.apiToken}`,
           },
         })
@@ -2239,6 +2277,7 @@ export default {
           headers: {
             'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest',
+            'X-Requested-From': 'browser-extension',
             Authorization: `Bearer ${this.apiToken}`,
           },
         })
@@ -2269,6 +2308,7 @@ export default {
           headers: {
             'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest',
+            'X-Requested-From': 'browser-extension',
             Authorization: `Bearer ${this.apiToken}`,
           },
         })

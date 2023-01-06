@@ -2,7 +2,7 @@ import { createApp } from 'vue'
 
 import App from './components/App.vue'
 
-import Clipboard from 'v-clipboard/src'
+import Clipboard from 'v-clipboard'
 import Notifications from '@kyvg/vue3-notification'
 
 import dayjs from 'dayjs'
