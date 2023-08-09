@@ -4,8 +4,8 @@
       <header
         class="flex items-center justify-between border-b bg-indigo-900 border-indigo-700 pb-3 mb-4"
       >
-        <a href="https://app.anonaddy.com" target="_blank" rel="nofollow noreferrer noopener">
-          <img class="h-6" src="img/logo.png" alt="AnonAddy Logo" />
+        <a href="https://app.addy.io" target="_blank" rel="nofollow noreferrer noopener">
+          <img class="h-6" src="img/logo.png" alt="addy.io Logo" />
         </a>
         <span class="text-grey-50 text-sm self-center">Anonymous Email Forwarding</span>
       </header>
@@ -18,7 +18,7 @@
       </div>
       <div v-if="changeInstance">
         <label for="instance" class="block text-indigo-100 mb-1 text-base">
-          AnonAddy Instance: (only change this is you are self-hosting AnonAddy)</label
+          addy.io Instance: (only change this is you are self-hosting addy.io)</label
         >
         <input
           v-model="instanceInput"
@@ -29,9 +29,9 @@
         />
       </div>
       <label for="api_token" class="block text-indigo-100 mb-1 text-base">
-        API token (from the AnonAddy
+        API token (from the addy.io
         <a
-          href="https://app.anonaddy.com/settings"
+          href="https://app.addy.io/settings/api"
           target="_blank"
           rel="noopener noreferrer nofollow"
           class="text-white hover:text-indigo-50 cursor-pointer"
@@ -62,7 +62,7 @@
         <p class="text-indigo-100">
           Don't have an account?
           <a
-            href="https://app.anonaddy.com/register"
+            href="https://app.addy.io/register"
             target="_blank"
             rel="noopener noreferrer nofollow"
             class="text-white hover:text-indigo-50 cursor-pointer"
@@ -749,7 +749,7 @@
               role="alert"
             >
               <information class="text-indigo-800 mr-2 flex-none" />
-              You must send the email from a verified recipient on your AnonAddy account.
+              You must send the email from a verified recipient on your addy.io account.
             </div>
 
             <label for="send_from_alias" class="block text-grey-700 dark:text-grey-50 mb-1">
@@ -1256,7 +1256,7 @@ export default {
       selected: 'Aliases',
       tokenInput: '',
       apiToken: '',
-      instanceInput: 'https://app.anonaddy.com',
+      instanceInput: 'https://app.addy.io',
       instance: '',
       changeInstance: false,
       searchInput: '',
@@ -1400,7 +1400,7 @@ export default {
     this.apiToken = await this.getApiToken()
     this.instance = await this.getInstance()
     if (this.apiToken && !this.instance) {
-      this.instance = 'https://app.anonaddy.com'
+      this.instance = 'https://app.addy.com'
     }
     this.domainOptions = await this.getDomainOptions()
     this.recipients = await this.getRecipients()
@@ -1627,7 +1627,7 @@ export default {
       return Object.values(this.domainOptions).length > 3
     },
     selfHosting() {
-      return this.instance !== 'https://app.anonaddy.com'
+      return !['https://app.anonaddy.com', 'https://app.addy.io'].includes(this.instance)
     },
     subscribedOrSelfHosting() {
       return this.subscribed || this.selfHosting
@@ -2428,7 +2428,7 @@ export default {
       this.aliasDescriptionToEdit = ''
     },
     cancelChangeInstance() {
-      this.instanceInput = 'https://app.anonaddy.com'
+      this.instanceInput = 'https://app.addy.io'
       this.changeInstance = false
     },
     validInstance(instance) {

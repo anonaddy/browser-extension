@@ -1,6 +1,6 @@
 # Anonymous Email Forwarding
 
-This is the source code for the AnonAddy browser extension.
+This is the source code for the addy.io browser extension.
 
 ## Build
 

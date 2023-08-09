@@ -1,7 +1,7 @@
 {
-  "name": "anonaddy-extension",
-  "version": "2.1.7",
-  "description": "AnonAddy browser extension.",
+  "name": "addy-io-extension",
+  "version": "2.2.0",
+  "description": "addy.io browser extension.",
   "main": "app.js",
   "scripts": {
     "dev": "mix",
@@ -38,7 +38,7 @@
     "css-loader": "^6.0.0",
     "husky": "^8.0.0",
     "lint-staged": "^13.0.0",
-    "prettier": "^2.2.1"
+    "prettier": "^3.0.0"
   },
   "lint-staged": {
     "*.{css,js,vue}": [

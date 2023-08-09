@@ -1,11 +1,11 @@
 {
   "manifest_version": 2,
-  "name": "AnonAddy - Anonymous Email Forwarding",
-  "short_name": "AnonAddy",
+  "name": "addy.io - Anonymous Email Forwarding",
+  "short_name": "addy.io",
   "author": "Will Browning",
   "description": "Open-source Anonymous Email Forwarding, create unlimited email aliases for free",
-  "homepage_url": "https://anonaddy.com",
-  "version": "2.1.7",
+  "homepage_url": "https://addy.io",
+  "version": "2.2.0",
   "icons": {
     "16": "img/icon_16.png",
     "32": "img/icon_32.png",
@@ -14,7 +14,7 @@
     "128": "img/icon_128.png"
   },
   "browser_action": {
-    "default_title": "AnonAddy",
+    "default_title": "addy.io",
     "default_popup": "app.html"
   },
   "permissions": [
@@ -22,7 +22,7 @@
     "activeTab"
   ],
   "content_security_policy": "script-src 'self' ; object-src 'self'",
-  "applications": {
+  "browser_specific_settings": {
     "gecko": {
       "id": "browser-extension@anonaddy"
     }
@@ -35,7 +35,7 @@
       "96": "img/icon_96.png",
       "128": "img/icon_128.png"
     },
-    "default_title": "AnonAddy",
+    "default_title": "addy.io",
     "default_panel": "app.html"
   }
 }
