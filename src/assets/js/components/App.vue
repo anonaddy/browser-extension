@@ -1328,7 +1328,7 @@ export default {
       defaultAliasSort: 'created_at',
       defaultAliasSortDir: '-',
       extensionUrl:
-        'https://chrome.google.com/webstore/detail/anonaddy/iadbdpnoknmbdeolbapdackdcogdmjpe',
+        'https://chrome.google.com/webstore/detail/addyio-anonymous-email-fo/iadbdpnoknmbdeolbapdackdcogdmjpe',
       aliasSortOptions: [
         {
           value: 'active',
@@ -1399,8 +1399,11 @@ export default {
   async mounted() {
     this.apiToken = await this.getApiToken()
     this.instance = await this.getInstance()
+    if (this.instance == 'https://app.anonaddy.com') {
+      this.instance = 'https://app.addy.io'
+    }
     if (this.apiToken && !this.instance) {
-      this.instance = 'https://app.addy.com'
+      this.instance = 'https://app.addy.io'
     }
     this.domainOptions = await this.getDomainOptions()
     this.recipients = await this.getRecipients()
@@ -1426,7 +1429,7 @@ export default {
 
     // Check if Gecko based
     if (/rv:([^\)]+)\) Gecko\/\d{8}/.test(navigator.userAgent)) {
-      this.extensionUrl = 'https://addons.mozilla.org/en-GB/firefox/addon/anonaddy/'
+      this.extensionUrl = 'https://addons.mozilla.org/en-GB/firefox/addon/addy_io/'
     }
 
     if (manifest) {
