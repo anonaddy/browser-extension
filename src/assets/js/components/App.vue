@@ -1969,7 +1969,7 @@ export default {
           "That API token is too short, please check that you've entered it correctly!")
       }
 
-      if (token.length > 50) {
+      if (token.length > 60) {
         return (this.error =
           "That API token is too long, please check that you've entered it correctly!")
       }
