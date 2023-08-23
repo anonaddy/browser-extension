@@ -2449,7 +2449,7 @@ export default {
       return re.test(email)
     },
     validToken(token) {
-      let re = /^[a-zA-Z0-9]+$/
+      let re = /^laravel_sanctum_[a-zA-Z0-9]+$/
       return re.test(token)
     },
     setNewAliasCopied() {
