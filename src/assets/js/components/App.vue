@@ -43,7 +43,7 @@
         v-model="tokenInput"
         id="api_token"
         placeholder="Enter your API token"
-        rows="1"
+        rows="2"
         required="required"
         autofocus="autofocus"
         class="appearance-none shadow bg-white rounded-sm text-base w-full p-2 text-grey-700 focus:ring mb-4"
@@ -1373,6 +1373,7 @@ export default {
       ],
       defaultSelected: 'Aliases',
       abortController: null,
+      sharedDomains: ['anonaddy.me', '4wrd.cc', 'mailer.me', 'addymail.com', 'addy.io', 'addy.to'],
     }
   },
   components: {
@@ -1639,20 +1640,10 @@ export default {
       if (!this.aliasToView.domain) {
         return false
       }
-      return (
-        this.aliasToView.domain === 'anonaddy.me' ||
-        this.aliasToView.domain === '4wrd.cc' ||
-        this.aliasToView.domain === 'mailer.me' ||
-        this.aliasToView.domain === 'addymail.com'
-      )
+      return this.sharedDomains.includes(this.aliasToView.domain)
     },
     sharedDomainSelected() {
-      return (
-        this.domain === 'anonaddy.me' ||
-        this.domain === '4wrd.cc' ||
-        this.domain === 'mailer.me' ||
-        this.domain === 'addymail.com'
-      )
+      return this.sharedDomains.includes(this.domain)
     },
     showDeletedAliases() {
       if (this.showAliasStatus === 'all') {
