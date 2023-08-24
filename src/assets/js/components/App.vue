@@ -1880,7 +1880,13 @@ export default {
 
       try {
         const response = await fetch(
-          `${this.instance}/api/v1/aliases?filter[deleted]=${this.showDeletedAliases}&filter[active]=${this.showActiveAliases}&filter[search]=${this.searchInput}&sort=${this.defaultAliasSortDir}${this.defaultAliasSort}&page[number]=${this.aliasesCurrentPage}&page[size]=10`,
+          `${this.instance}/api/v1/aliases?filter[deleted]=${
+            this.showDeletedAliases
+          }&filter[active]=${this.showActiveAliases}&filter[search]=${
+            this.searchInput > 2 ? this.searchInput : ''
+          }&sort=${this.defaultAliasSortDir}${this.defaultAliasSort}&page[number]=${
+            this.aliasesCurrentPage
+          }&page[size]=10`,
           {
             method: 'GET',
             headers: {
