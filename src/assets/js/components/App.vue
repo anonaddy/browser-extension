@@ -1956,7 +1956,7 @@ export default {
         return (this.error = 'An API token is required to login!')
       }
 
-      if (!this.validToken(token)) {
+      if (!this.validToken(token, instance)) {
         return (this.error =
           "Invalid API token format, please check that you've entered it correctly!")
       }
@@ -2445,9 +2445,15 @@ export default {
         /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
       return re.test(email)
     },
-    validToken(token) {
+    validToken(token, instance) {
       let re = /^addy_io_[a-zA-Z0-9]+$/
-      return re.test(token)
+      let shRe = /^[a-zA-Z0-9]+$/
+
+      if (instance === 'https://app.addy.io') { // Test with the new token format on the default instance
+        return re.test(token)
+      }
+
+      return shRe.test(token) // Otherwise use the legacy filter since they don't have the new format yet
     },
     setNewAliasCopied() {
       this.newAliasCopied = true
