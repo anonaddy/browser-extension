@@ -2446,7 +2446,8 @@ export default {
       return re.test(email)
     },
     validToken(token) {
-      let re = /^addy_io_[a-zA-Z0-9]+$/
+      let re = /^(addy_io_)?[a-zA-Z0-9]+$/
+
       return re.test(token)
     },
     setNewAliasCopied() {
