@@ -1,6 +1,6 @@
 {
   "name": "addy-io-extension",
-  "version": "2.2.6",
+  "version": "2.2.7",
   "description": "addy.io browser extension.",
   "main": "app.js",
   "scripts": {

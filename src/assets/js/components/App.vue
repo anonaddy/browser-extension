@@ -29,7 +29,7 @@
         />
       </div>
       <label for="api_token" class="block text-indigo-100 mb-1 text-base">
-        API token (from the addy.io
+        API key (from the addy.io
         <a
           href="https://app.addy.io/settings/api"
           target="_blank"
@@ -42,7 +42,7 @@
       <textarea
         v-model="tokenInput"
         id="api_token"
-        placeholder="Enter your API token"
+        placeholder="Enter your API key"
         rows="2"
         required="required"
         autofocus="autofocus"
@@ -1512,14 +1512,16 @@ export default {
       },
     },
     showAliasStatus: {
-      async handler(val) {
+      async handler(val, oldVal) {
         try {
           await this.$browser.storage.sync.set({ showAliasStatus: val })
         } catch (error) {
           console.log(error)
         }
 
-        if (this.aliases.length) {
+        if (!this.aliases.length && oldVal === 'all') {
+          // No need to make another request if there are no aliases when the status is 'all'
+        } else {
           this.aliasesCurrentPage = 1
           this.getAliases()
         }
@@ -1765,7 +1767,13 @@ export default {
     },
     async getTheme() {
       try {
-        var result = await this.$browser.storage.sync.get({ theme: '' })
+        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          var preferredTheme = 'dark'
+        } else {
+          var preferredTheme = ''
+        }
+
+        var result = await this.$browser.storage.sync.get({ theme: preferredTheme })
         return result.theme
       } catch (error) {
         console.log(error)
@@ -1926,7 +1934,7 @@ export default {
         } else if (response.status === 401) {
           this.logout(true)
           this.error =
-            "Unauthenticated, your API token has either expired or been revoked. You've been automatically logged out."
+            "Unauthenticated, your API key has either expired or been revoked. You've been automatically logged out."
         } else {
           this.error = 'An Error Has Occurred'
         }
@@ -1953,22 +1961,22 @@ export default {
       this.error = ''
 
       if (!token) {
-        return (this.error = 'An API token is required to login!')
+        return (this.error = 'An API key is required to login!')
       }
 
       if (!this.validToken(token)) {
         return (this.error =
-          "Invalid API token format, please check that you've entered it correctly!")
+          "Invalid API key format, please check that you've entered it correctly!")
       }
 
       if (token.length < 40) {
         return (this.error =
-          "That API token is too short, please check that you've entered it correctly!")
+          "That API key is too short, please check that you've entered it correctly!")
       }
 
       if (token.length > 60) {
         return (this.error =
-          "That API token is too long, please check that you've entered it correctly!")
+          "That API key is too long, please check that you've entered it correctly!")
       }
 
       if (!this.validInstance(instance) && this.changeInstance) {
@@ -1994,11 +2002,11 @@ export default {
         if (response.status === 401) {
           if (!this.apiToken) {
             this.error =
-              "Error, invalid API token, please check that you've entered it correctly and that you have the correct instance (if self-hosting)"
+              "Error, invalid API key, please check that you've entered it correctly and that you have the correct instance (if self-hosting)"
           } else {
             this.logout(true)
             this.error =
-              "Unauthenticated, your API token has either expired or been revoked. You've been automatically logged out."
+              "Unauthenticated, your API key has either expired or been revoked. You've been automatically logged out."
           }
         } else if (response.status === 200) {
           if (!this.instance) {
@@ -2117,7 +2125,7 @@ export default {
         } else if (response.status === 401) {
           this.logout(true)
           this.error =
-            "Unauthenticated, your API token has either expired or been revoked. You've been automatically logged out."
+            "Unauthenticated, your API key has either expired or been revoked. You've been automatically logged out."
         } else if (response.status === 201) {
           let data = await response.json()
           this.localPart = ''
