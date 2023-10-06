@@ -1,5 +1,5 @@
 <template>
-  <div :class="theme">
+  <div :class="activeTheme">
     <div v-if="!apiToken" class="login p-3 bg-indigo-900">
       <header
         class="flex items-center justify-between border-b bg-indigo-900 border-indigo-700 pb-3 mb-4"
@@ -300,7 +300,8 @@
                 class="block appearance-none w-full text-grey-700 bg-white p-2 pr-8 rounded shadow focus:ring dark:bg-grey-600 dark:text-white"
                 required
               >
-                <option value="">Light</option>
+                <option value="system">System</option>
+                <option value="light">Light</option>
                 <option value="dark">Dark</option>
               </select>
               <div
@@ -1322,7 +1323,7 @@ export default {
       getAliasesLoading: false,
       showMoreAliasesLoading: false,
       aliasToView: {},
-      theme: '',
+      theme: 'system',
       autoCopyNewAlias: true,
       autoFillLocalPart: '',
       defaultAliasSort: 'created_at',
@@ -1412,6 +1413,10 @@ export default {
     this.aliasFormat = await this.getAliasFormat()
     this.showAliasStatus = await this.getShowAliasStatus()
     this.theme = await this.getTheme()
+    // Force update any old theme values
+    if (this.theme == '') {
+      this.theme = 'light'
+    }
     this.autoCopyNewAlias = await this.getAutoCopyNewAlias()
     this.autoFillLocalPart = await this.getAutoFillLocalPart()
     this.defaultAliasSort = await this.getDefaultAliasSort()
@@ -1665,6 +1670,20 @@ export default {
         return ''
       }
     },
+    activeTheme() {
+      // If the user has chosen system theme then return this here
+      if (this.theme === 'system') {
+        // Detect system theme
+        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          return 'dark'
+        } else {
+          return 'light'
+        }
+      }
+
+      // light or dark
+      return this.theme
+    },
   },
   methods: {
     popout() {
@@ -1767,13 +1786,7 @@ export default {
     },
     async getTheme() {
       try {
-        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-          var preferredTheme = 'dark'
-        } else {
-          var preferredTheme = ''
-        }
-
-        var result = await this.$browser.storage.sync.get({ theme: preferredTheme })
+        var result = await this.$browser.storage.sync.get({ theme: 'system' })
         return result.theme
       } catch (error) {
         console.log(error)
