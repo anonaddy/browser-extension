@@ -1,6 +1,6 @@
 {
   "name": "addy-io-extension",
-  "version": "2.2.8",
+  "version": "2.2.9",
   "description": "addy.io browser extension.",
   "main": "app.js",
   "scripts": {
@@ -11,7 +11,7 @@
     "format": "prettier --write 'src/assets/**/*.{css,js,vue}'",
     "zip": "node scripts/build-zip.js",
     "pre-commit": "lint-staged",
-    "prepare": "husky install"
+    "prepare": "husky"
   },
   "keywords": [],
   "author": "",
@@ -25,7 +25,7 @@
     "laravel-mix": "^6.0.11",
     "lodash": "^4.17.21",
     "postcss": "^8.4.5",
-    "postcss-import": "^15.0.0",
+    "postcss-import": "^16.0.0",
     "psl": "^1.9.0",
     "tailwindcss": "^3.0.11",
     "v-clipboard": "^3.0.0-next.1",
@@ -36,8 +36,8 @@
   },
   "devDependencies": {
     "css-loader": "^6.0.0",
-    "husky": "^8.0.0",
-    "lint-staged": "^14.0.0",
+    "husky": "^9.0.0",
+    "lint-staged": "^15.0.0",
     "prettier": "^3.0.0"
   },
   "lint-staged": {
