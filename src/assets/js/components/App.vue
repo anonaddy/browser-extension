@@ -153,12 +153,22 @@
           <div v-else>
             <div
               v-if="
-                currentTabHostname && showSearchSuggestions && searchInput !== currentTabHostname
+                currentTabHostname &&
+                showSearchSuggestions &&
+                !localPartSuggestions.includes(searchInput)
               "
               class="px-3 py-2 shadow text-sm tracking-wide text-grey-600 bg-white dark:bg-grey-700 dark:text-white border-b border-grey-200 dark:border-grey-600"
             >
-              Search "<span
-                @click="searchInput = currentTabHostname"
+              Search
+              <span v-if="localPartSuggestions[0] && localPartSuggestions[0] !== currentTabHostname"
+                >"<span
+                  @click=";(getAliasesLoading = true), (searchInput = localPartSuggestions[0])"
+                  class="text-indigo-700 hover:text-indigo-500 dark:text-white dark:hover:text-grey-50 cursor-pointer"
+                  >{{ localPartSuggestions[0] }}</span
+                >" or</span
+              >
+              "<span
+                @click=";(getAliasesLoading = true), (searchInput = currentTabHostname)"
                 class="text-indigo-700 hover:text-indigo-500 dark:text-white dark:hover:text-grey-50 cursor-pointer"
                 >{{ currentTabHostname }}</span
               >"?
@@ -1315,7 +1325,8 @@
             <div class="mt-2">
               <p class="text-sm text-grey-500 dark:text-white">
                 Are you sure you want to logout? Logging out <b>will not remove the API key</b> from
-                your addy.io account that is currently being used to access it.
+                your addy.io account that is currently being used by the browser extension to access
+                it.
               </p>
             </div>
           </div>
@@ -2017,7 +2028,7 @@ export default {
 
           // Also add a suggestion with a random alphanumeric string appended
           if (parsed.sld) {
-            let random = parsed.sld + '.' + Math.random().toString(36).substr(2, 3)
+            let random = parsed.sld + '.' + Math.random().toString(36).substring(2, 5)
             this.localPartSuggestions.push(random)
             this.localPartAutoFill.random = random
           }
