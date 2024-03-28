@@ -1,6 +1,6 @@
 {
   "name": "addy-io-extension",
-  "version": "2.2.9",
+  "version": "2.2.10",
   "description": "addy.io browser extension.",
   "main": "app.js",
   "scripts": {
@@ -19,7 +19,7 @@
   "dependencies": {
     "@kyvg/vue3-notification": "^3.0.0",
     "@vueform/multiselect": "^2.3.2",
-    "archiver": "^6.0.0",
+    "archiver": "^7.0.0",
     "autoprefixer": "^10.4.1",
     "dayjs": "^1.10.5",
     "laravel-mix": "^6.0.11",

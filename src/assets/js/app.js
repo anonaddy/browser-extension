@@ -9,32 +9,32 @@ import dayjs from 'dayjs'
 import advancedFormat from 'dayjs/plugin/advancedFormat'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import utc from 'dayjs/plugin/utc'
-import updateLocale from 'dayjs/plugin/updateLocale'
 
 window.psl = require('psl')
 
 dayjs.extend(advancedFormat)
 dayjs.extend(relativeTime)
 dayjs.extend(utc)
-dayjs.extend(updateLocale)
 
-dayjs.updateLocale('en', {
-  relativeTime: {
-    future: 'in %s',
-    past: '%s ago',
-    s: '1s',
-    m: '1m',
-    mm: '%dm',
-    h: '1h',
-    hh: '%dh',
-    d: '1d',
-    dd: '%dd',
-    M: '1m',
-    MM: '%dm',
-    y: '1y',
-    yy: '%dy',
-  },
-})
+var locale_en = require('dayjs/locale/en')
+locale_en.name = 'en-min'
+locale_en.relativeTime = {
+  future: 'in %s',
+  past: '%s ago',
+  s: '1s',
+  m: '1m',
+  mm: '%dm',
+  h: '1h',
+  hh: '%dh',
+  d: '1d',
+  dd: '%dd',
+  M: '1m',
+  MM: '%dm',
+  y: '1y',
+  yy: '%dy',
+}
+
+dayjs.locale('en-min', locale_en)
 
 const app = createApp(App)
 
@@ -47,7 +47,7 @@ app.config.globalProperties.$browser = require('webextension-polyfill')
 // Global filters
 app.config.globalProperties.$filters = {
   formatDate(value) {
-    return dayjs(value).format('Do MMM YYYY')
+    return dayjs.utc(value).local().format('Do MMM YYYY')
   },
   timeAgo(value) {
     // If it was less than an hour ago just display 1h
@@ -58,6 +58,12 @@ app.config.globalProperties.$filters = {
   },
   nowToString() {
     return dayjs().toString()
+  },
+  formatDateTime(value) {
+    return dayjs.utc(value).local().format('Do MMM YYYY h:mm A')
+  },
+  timeAgoHuman(value) {
+    return dayjs.utc(value).locale('en').fromNow()
   },
 }
 

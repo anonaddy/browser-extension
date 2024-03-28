@@ -152,6 +152,19 @@
 
           <div v-else>
             <div
+              v-if="
+                currentTabHostname && showSearchSuggestions && searchInput !== currentTabHostname
+              "
+              class="px-3 py-2 shadow text-sm tracking-wide text-grey-600 bg-white dark:bg-grey-700 dark:text-white border-b border-grey-200 dark:border-grey-600"
+            >
+              Search "<span
+                @click="searchInput = currentTabHostname"
+                class="text-indigo-700 hover:text-indigo-500 dark:text-white dark:hover:text-grey-50 cursor-pointer"
+                >{{ currentTabHostname }}</span
+              >"?
+            </div>
+
+            <div
               class="px-3 py-2 uppercase shadow text-sm tracking-wide text-grey-600 bg-white flex justify-between items-center dark:bg-grey-700 dark:text-white"
             >
               {{ aliasesTitle }}
@@ -451,6 +464,38 @@
 
           <div class="w-full text-left p-3 border-b border-grey-200">
             <label
+              for="select_show_search_suggestions"
+              class="block text-grey-700 dark:text-white mb-1"
+              >Show Search Suggestions:</label
+            >
+            <div class="relative">
+              <select
+                v-model="showSearchSuggestions"
+                id="select_show_search_suggestions"
+                class="block appearance-none w-full text-grey-700 bg-white p-2 pr-8 rounded shadow focus:ring dark:bg-grey-600 dark:text-white"
+                required
+              >
+                <option :value="true">Enabled</option>
+                <option :value="false">Disabled</option>
+              </select>
+              <div
+                class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-grey-700 dark:text-white"
+              >
+                <svg
+                  class="fill-current h-4 w-4"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"
+                  />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="w-full text-left p-3 border-b border-grey-200">
+            <label
               for="select_auto_fill_local_part"
               class="block text-grey-700 dark:text-white mb-1"
               >Automatically Fill New Alias Local Parts When Using The Custom Alias Format:</label
@@ -514,7 +559,7 @@
             <external-link class="h-5 w-5" />
           </a>
           <button
-            @click="logout"
+            @click="logoutModalOpen = true"
             class="w-full text-left p-3 focus:outline-none hover:bg-indigo-50 border-b border-grey-200 dark:hover:bg-grey-800"
           >
             Logout
@@ -626,7 +671,15 @@
                 </dt>
                 <dd class="ml-16 flex items-baseline">
                   <p class="text-2xl font-semibold text-grey-900 dark:text-white">
-                    {{ aliasToView.emails_forwarded }}
+                    {{ aliasToView.emails_forwarded.toLocaleString() }}
+                  </p>
+                </dd>
+                <dd v-if="aliasToView.last_forwarded">
+                  <p
+                    class="text-sm text-grey-500 dark:text-grey-50 leading-none"
+                    :title="$filters.formatDateTime(aliasToView.last_forwarded)"
+                  >
+                    {{ $filters.timeAgoHuman(aliasToView.last_forwarded) }}
                   </p>
                 </dd>
               </div>
@@ -639,7 +692,15 @@
                 </dt>
                 <dd class="ml-16 flex items-baseline">
                   <p class="text-2xl font-semibold text-grey-900 dark:text-white">
-                    {{ aliasToView.emails_replied }}
+                    {{ aliasToView.emails_replied.toLocaleString() }}
+                  </p>
+                </dd>
+                <dd v-if="aliasToView.last_replied">
+                  <p
+                    class="text-sm text-grey-500 dark:text-grey-50 leading-none"
+                    :title="$filters.formatDateTime(aliasToView.last_replied)"
+                  >
+                    {{ $filters.timeAgoHuman(aliasToView.last_replied) }}
                   </p>
                 </dd>
               </div>
@@ -652,7 +713,15 @@
                 </dt>
                 <dd class="ml-16 flex items-baseline">
                   <p class="text-2xl font-semibold text-grey-900 dark:text-white">
-                    {{ aliasToView.emails_sent }}
+                    {{ aliasToView.emails_sent.toLocaleString() }}
+                  </p>
+                </dd>
+                <dd v-if="aliasToView.last_sent">
+                  <p
+                    class="text-sm text-grey-500 dark:text-grey-50 leading-none"
+                    :title="$filters.formatDateTime(aliasToView.last_sent)"
+                  >
+                    {{ $filters.timeAgoHuman(aliasToView.last_sent) }}
                   </p>
                 </dd>
               </div>
@@ -665,7 +734,15 @@
                 </dt>
                 <dd class="ml-16 flex items-baseline">
                   <p class="text-2xl font-semibold text-grey-900 dark:text-white">
-                    {{ aliasToView.emails_blocked }}
+                    {{ aliasToView.emails_blocked.toLocaleString() }}
+                  </p>
+                </dd>
+                <dd v-if="aliasToView.last_blocked">
+                  <p
+                    class="text-sm text-grey-500 dark:text-grey-50 leading-none"
+                    :title="$filters.formatDateTime(aliasToView.last_blocked)"
+                  >
+                    {{ $filters.timeAgoHuman(aliasToView.last_blocked) }}
                   </p>
                 </dd>
               </div>
@@ -1220,6 +1297,51 @@
       </div>
     </Modal>
 
+    <Modal :open="logoutModalOpen" @close="logoutModalOpen = false" class="px-3">
+      <div class="w-full bg-white dark:bg-grey-800 rounded-md shadow-2xl p-4">
+        <div>
+          <div
+            class="mx-auto shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-cyan-50"
+          >
+            <information class="text-cyan-600" />
+          </div>
+          <div class="mt-3 text-center">
+            <h3
+              class="text-lg leading-6 font-medium text-grey-900 dark:text-white"
+              id="modal-title"
+            >
+              Logout
+            </h3>
+            <div class="mt-2">
+              <p class="text-sm text-grey-500 dark:text-white">
+                Are you sure you want to logout? Logging out <b>will not remove the API key</b> from
+                your addy.io account that is currently being used to access it.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="mt-5">
+          <button
+            type="button"
+            class="inline-flex justify-center w-full rounded-md border border-transparent shadow-sm px-4 py-2 bg-cyan-400 text-base font-medium text-cyan-900 hover:bg-cyan-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-300"
+            @click="logout()"
+            :class="logoutLoading ? 'cursor-not-allowed' : ''"
+            :disabled="logoutLoading"
+          >
+            Logout
+            <loader class="h-5 w-5" v-if="logoutLoading" />
+          </button>
+          <button
+            type="button"
+            class="mt-3 w-full inline-flex justify-center rounded-md border border-grey-300 px-4 py-2 bg-white text-base font-medium text-grey-700 shadow-sm hover:bg-grey-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-grey-500 dark:text-white dark:border-grey-600"
+            @click="logoutModalOpen = false"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </Modal>
+
     <notifications position="bottom center" width="100%" />
   </div>
 </template>
@@ -1276,10 +1398,12 @@ export default {
       deleteAliasLoading: false,
       forgetAliasLoading: false,
       restoreAliasLoading: false,
+      logoutLoading: false,
       editAliasDescriptionLoading: false,
       deleteAliasModalOpen: false,
       forgetAliasModalOpen: false,
       restoreAliasModalOpen: false,
+      logoutModalOpen: false,
       aliasToViewDescriptionEditing: false,
       aliasDescriptionToEdit: '',
       newAlias: '',
@@ -1325,6 +1449,7 @@ export default {
       aliasToView: {},
       theme: 'system',
       autoCopyNewAlias: true,
+      showSearchSuggestions: true,
       autoFillLocalPart: '',
       defaultAliasSort: 'created_at',
       defaultAliasSortDir: '-',
@@ -1366,6 +1491,22 @@ export default {
         {
           value: 'emails_sent',
           label: 'Emails Sent',
+        },
+        {
+          value: 'last_blocked',
+          label: 'Last Blocked At',
+        },
+        {
+          value: 'last_forwarded',
+          label: 'Last Forwarded At',
+        },
+        {
+          value: 'last_replied',
+          label: 'Last Replied At',
+        },
+        {
+          value: 'last_sent',
+          label: 'Last Sent At',
         },
         {
           value: 'updated_at',
@@ -1418,6 +1559,7 @@ export default {
       this.theme = 'light'
     }
     this.autoCopyNewAlias = await this.getAutoCopyNewAlias()
+    this.showSearchSuggestions = await this.getShowSearchSuggestions()
     this.autoFillLocalPart = await this.getAutoFillLocalPart()
     this.defaultAliasSort = await this.getDefaultAliasSort()
     this.defaultAliasSortDir = await this.getDefaultAliasSortDir()
@@ -1545,6 +1687,15 @@ export default {
       async handler(val) {
         try {
           await this.$browser.storage.sync.set({ autoCopyNewAlias: val })
+        } catch (error) {
+          console.log(error)
+        }
+      },
+    },
+    showSearchSuggestions: {
+      async handler(val) {
+        try {
+          await this.$browser.storage.sync.set({ showSearchSuggestions: val })
         } catch (error) {
           console.log(error)
         }
@@ -1796,6 +1947,14 @@ export default {
       try {
         var result = await this.$browser.storage.sync.get({ autoCopyNewAlias: true })
         return result.autoCopyNewAlias
+      } catch (error) {
+        console.log(error)
+      }
+    },
+    async getShowSearchSuggestions() {
+      try {
+        var result = await this.$browser.storage.sync.get({ showSearchSuggestions: true })
+        return result.showSearchSuggestions
       } catch (error) {
         console.log(error)
       }
@@ -2352,6 +2511,10 @@ export default {
       this.restoreAliasModalOpen = false
     },
     async logout(expiredToken = false) {
+      if (!expiredToken) {
+        this.logoutLoading = true
+      }
+
       Object.assign(this.$data, this.$options.data.apply(this))
 
       try {
@@ -2365,6 +2528,7 @@ export default {
           'showAliasStatus',
           'theme',
           'autoCopyNewAlias',
+          'showSearchSuggestions',
           'autoFillLocalPart',
           'defaultAliasSort',
           'defaultAliasSortDir',
@@ -2379,15 +2543,18 @@ export default {
         this.showAliasStatus = await this.getShowAliasStatus()
         this.theme = await this.getTheme()
         this.autoCopyNewAlias = await this.getAutoCopyNewAlias()
+        this.showSearchSuggestions = await this.getShowSearchSuggestions()
         this.autoFillLocalPart = await this.getAutoFillLocalPart()
         this.defaultAliasSort = await this.getDefaultAliasSort()
         this.defaultAliasSortDir = await this.getDefaultAliasSortDir()
         this.defaultSelected = await this.getDefaultSelected()
 
         if (!expiredToken) {
+          this.logoutLoading = false
           this.success('Logged out successfully')
         }
       } catch (error) {
+        this.logoutLoading = false
         console.log(error)
       }
     },

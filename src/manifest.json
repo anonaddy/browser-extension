@@ -5,7 +5,7 @@
   "author": "Will Browning",
   "description": "Open-source Anonymous Email Forwarding, create unlimited email aliases for free",
   "homepage_url": "https://addy.io",
-  "version": "2.2.9",
+  "version": "2.2.10",
   "icons": {
     "16": "img/icon_16.png",
     "32": "img/icon_32.png",
