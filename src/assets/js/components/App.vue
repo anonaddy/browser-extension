@@ -122,7 +122,7 @@
             </svg>
             <cross
               v-if="searchInput"
-              @click="searchInput = ''"
+              @click=";(getAliasesLoading = true), (searchInput = '')"
               class="absolute right-0 inset-y-0 cursor-pointer mr-2 flex items-center text-grey-300 dark:text-white h-full w-5"
             />
           </div>
@@ -188,7 +188,7 @@
                   <select
                     v-model="showAliasStatus"
                     id="show_alias_status"
-                    class="block appearance-none text-grey-700 bg-white pl-2 py-1 pr-6 rounded shadow focus:ring dark:bg-grey-600 dark:text-white"
+                    class="block appearance-none text-grey-700 bg-white pl-2 py-1 pr-8 rounded shadow focus:ring dark:bg-grey-600 dark:text-white"
                     required
                   >
                     <option value="all">All</option>
