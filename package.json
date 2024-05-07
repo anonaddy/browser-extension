@@ -1,6 +1,6 @@
 {
   "name": "addy-io-extension",
-  "version": "2.2.12",
+  "version": "2.3.0",
   "description": "addy.io browser extension.",
   "main": "app.js",
   "scripts": {
@@ -32,10 +32,10 @@
     "vue": "^3.0.0",
     "vue-loader": "^17.0.0",
     "vue-template-compiler": "^2.6.12",
-    "webextension-polyfill": "^0.10.0"
+    "webextension-polyfill": "^0.11.0"
   },
   "devDependencies": {
-    "css-loader": "^6.0.0",
+    "css-loader": "^7.0.0",
     "husky": "^9.0.0",
     "lint-staged": "^15.0.0",
     "prettier": "^3.0.0"
