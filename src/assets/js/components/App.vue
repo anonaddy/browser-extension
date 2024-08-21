@@ -1330,13 +1330,13 @@
             </h3>
             <div class="mt-2">
               <p class="text-sm text-grey-500 dark:text-white">
-                If your current API Key is expiring soon please enter your new API key (from the
-                addy.io
+                If your current API Key is <b>expiring soon</b> please enter your new API key (from
+                the addy.io
                 <a
                   href="https://app.addy.io/settings/api"
                   target="_blank"
                   rel="noopener noreferrer nofollow"
-                  class="text-white hover:text-indigo-50 cursor-pointer"
+                  class="text-indigo-700 hover:text-indigo-500 dark:text-white dark:hover:text-grey-50 cursor-pointer"
                   >settings</a
                 >
                 page) below.
@@ -2280,6 +2280,9 @@ export default {
               "Unauthenticated, your API key has either expired or been revoked. You've been automatically logged out."
           }
         } else if (response.status === 200) {
+          // Clear token input
+          this.tokenInput = ''
+
           if (!this.instance) {
             this.instance = instance
           }
@@ -2292,9 +2295,8 @@ export default {
             this.success('Logged in successfully')
           } else if (renew) {
             this.apiToken = token
-
             this.renewApiKeyModalOpen = false
-            this.tokenInput = ''
+
             this.success('Renewed API Key successfully')
           } else {
             this.success('Domains and defaults refreshed')
