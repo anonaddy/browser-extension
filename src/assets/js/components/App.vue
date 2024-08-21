@@ -569,6 +569,12 @@
             <external-link class="h-5 w-5" />
           </a>
           <button
+            @click="renewApiKeyModalOpen = true"
+            class="w-full text-left p-3 focus:outline-none hover:bg-indigo-50 border-b border-grey-200 dark:hover:bg-grey-800"
+          >
+            Renew API Key
+          </button>
+          <button
             @click="logoutModalOpen = true"
             class="w-full text-left p-3 focus:outline-none hover:bg-indigo-50 border-b border-grey-200 dark:hover:bg-grey-800"
           >
@@ -1307,6 +1313,69 @@
       </div>
     </Modal>
 
+    <Modal :open="renewApiKeyModalOpen" @close="renewApiKeyModalOpen = false" class="px-3">
+      <div class="w-full bg-white dark:bg-grey-800 rounded-md shadow-2xl p-4">
+        <div>
+          <div
+            class="mx-auto shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-cyan-50"
+          >
+            <information class="text-cyan-600" />
+          </div>
+          <div class="mt-3 text-center">
+            <h3
+              class="text-lg leading-6 font-medium text-grey-900 dark:text-white"
+              id="modal-title"
+            >
+              Renew API Key
+            </h3>
+            <div class="mt-2">
+              <p class="text-sm text-grey-500 dark:text-white">
+                If your current API Key is expiring soon please enter your new API key (from the
+                addy.io
+                <a
+                  href="https://app.addy.io/settings/api"
+                  target="_blank"
+                  rel="noopener noreferrer nofollow"
+                  class="text-white hover:text-indigo-50 cursor-pointer"
+                  >settings</a
+                >
+                page) below.
+              </p>
+            </div>
+            <textarea
+              v-model="tokenInput"
+              id="api_token"
+              placeholder="Enter your new API key"
+              rows="2"
+              required="required"
+              autofocus="autofocus"
+              class="appearance-none shadow bg-white rounded-sm text-base w-full p-2 text-grey-700 focus:ring mt-5"
+            >
+            </textarea>
+          </div>
+        </div>
+        <div class="mt-5">
+          <button
+            type="button"
+            class="inline-flex justify-center w-full rounded-md border border-transparent shadow-sm px-4 py-2 bg-cyan-400 text-base font-medium text-cyan-900 hover:bg-cyan-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-300"
+            @click="getAliasDomainOptions(tokenInput, instance, true)"
+            :class="domainOptionsLoading ? 'cursor-not-allowed' : ''"
+            :disabled="domainOptionsLoading"
+          >
+            Renew API Key
+            <loader class="h-5 w-5" v-if="domainOptionsLoading" />
+          </button>
+          <button
+            type="button"
+            class="mt-3 w-full inline-flex justify-center rounded-md border border-grey-300 px-4 py-2 bg-white text-base font-medium text-grey-700 shadow-sm hover:bg-grey-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-grey-500 dark:text-white dark:border-grey-600"
+            @click="renewApiKeyModalOpen = false"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </Modal>
+
     <Modal :open="logoutModalOpen" @close="logoutModalOpen = false" class="px-3">
       <div class="w-full bg-white dark:bg-grey-800 rounded-md shadow-2xl p-4">
         <div>
@@ -1414,6 +1483,7 @@ export default {
       deleteAliasModalOpen: false,
       forgetAliasModalOpen: false,
       restoreAliasModalOpen: false,
+      renewApiKeyModalOpen: false,
       logoutModalOpen: false,
       aliasToViewDescriptionEditing: false,
       aliasDescriptionToEdit: '',
@@ -1520,13 +1590,25 @@ export default {
           label: 'Last Sent At',
         },
         {
+          value: 'last_used',
+          label: 'Last Used At',
+        },
+        {
           value: 'updated_at',
           label: 'Updated At',
         },
       ],
       defaultSelected: 'Aliases',
       abortController: null,
-      sharedDomains: ['anonaddy.me', '4wrd.cc', 'mailer.me', 'addymail.com', 'addy.io', 'addy.to'],
+      sharedDomains: [
+        'anonaddy.me',
+        'anonaddy.com',
+        '4wrd.cc',
+        'mailer.me',
+        'addymail.com',
+        'addy.io',
+        'addy.to',
+      ],
     }
   },
   components: {
@@ -2140,31 +2222,33 @@ export default {
         }
       }
     },
-    async getAliasDomainOptions(token, instance) {
+    async getAliasDomainOptions(token, instance, renew = false) {
       this.error = ''
 
       if (!token) {
-        return (this.error = 'An API key is required to login!')
+        let message = 'An API key is required to login!'
+        return renew ? this.errorNotification(message) : (this.error = message)
       }
 
       if (!this.validToken(token)) {
-        return (this.error =
-          "Invalid API key format, please check that you've entered it correctly!")
+        let message = "Invalid API key format, please check that you've entered it correctly!"
+        return renew ? this.errorNotification(message) : (this.error = message)
       }
 
       if (token.length < 40) {
-        return (this.error =
-          "That API key is too short, please check that you've entered it correctly!")
+        let message = "That API key is too short, please check that you've entered it correctly!"
+        return renew ? this.errorNotification(message) : (this.error = message)
       }
 
       if (token.length > 60) {
-        return (this.error =
-          "That API key is too long, please check that you've entered it correctly!")
+        let message = "That API key is too long, please check that you've entered it correctly!"
+        return renew ? this.errorNotification(message) : (this.error = message)
       }
 
       if (!this.validInstance(instance) && this.changeInstance) {
-        return (this.error =
-          'Please enter a valid URL for the instance with no trailing slash, e.g. "https://app.example.com"')
+        let message =
+          'Please enter a valid URL for the instance with no trailing slash, e.g. "https://app.example.com"'
+        return renew ? this.errorNotification(message) : (this.error = message)
       }
 
       this.domainOptionsLoading = true
@@ -2183,7 +2267,11 @@ export default {
         this.domainOptionsLoading = false
 
         if (response.status === 401) {
-          if (!this.apiToken) {
+          if (renew) {
+            this.errorNotification(
+              "Error, invalid API key, please check that you've entered it correctly"
+            )
+          } else if (!this.apiToken) {
             this.error =
               "Error, invalid API key, please check that you've entered it correctly and that you have the correct instance (if self-hosting)"
           } else {
@@ -2202,6 +2290,12 @@ export default {
             this.getRecipientsRequest()
 
             this.success('Logged in successfully')
+          } else if (renew) {
+            this.apiToken = token
+
+            this.renewApiKeyModalOpen = false
+            this.tokenInput = ''
+            this.success('Renewed API Key successfully')
           } else {
             this.success('Domains and defaults refreshed')
           }
@@ -2215,11 +2309,15 @@ export default {
             this.aliasFormat = 'random_characters'
           }
         } else {
-          this.error = 'An Error Has Occurred'
+          renew
+            ? this.errorNotification('An Error Has Occurred')
+            : (this.error = 'An Error Has Occurred')
         }
       } catch (error) {
         this.domainOptionsLoading = false
-        this.error = 'An Error Has Occurred'
+        renew
+          ? this.errorNotification('An Error Has Occurred')
+          : (this.error = 'An Error Has Occurred')
         console.log(error)
       }
     },
@@ -2670,6 +2768,12 @@ export default {
       this.$notify({
         text: text,
         type: 'success',
+      })
+    },
+    errorNotification(text = '') {
+      this.$notify({
+        text: text,
+        type: 'error',
       })
     },
   },
