@@ -1668,9 +1668,30 @@ export default {
 
     let manifest = this.$browser.runtime.getManifest()
 
+    // Browser checks
+    let ua = navigator.userAgent
+
     // Check if Gecko based
-    if (/rv:([^\)]+)\) Gecko\/\d{8}/.test(navigator.userAgent)) {
+    if (/rv:([^\)]+)\) Gecko\/\d{8}/.test(ua)) {
       this.extensionUrl = 'https://addons.mozilla.org/en-GB/firefox/addon/addy_io/'
+    }
+
+    // Check if Safari
+    let iOS = ua.match(/Macintosh/i) || ua.match(/iPad/i) || ua.match(/iPhone/i)
+
+    // Check if Edge
+    if (ua.match(/Edg/i)) {
+      this.extensionUrl =
+        'https://microsoftedge.microsoft.com/addons/detail/addyio-anonymous-email/ohjlgpcfncgkijjfmabldlgnccmgcehl'
+    } else if (
+      iOS &&
+      ua.match(/WebKit/i) &&
+      !ua.match(/CriOS/i) &&
+      !ua.match(/EdgiOS/i) &&
+      !ua.match(/Chrome/i) &&
+      !ua.match(/Edg/i)
+    ) {
+      this.extensionUrl = 'https://apps.apple.com/app/addy-io-safari-extension/id6670220050'
     }
 
     if (manifest) {
