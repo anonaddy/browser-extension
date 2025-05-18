@@ -249,7 +249,7 @@
                     <span class="block truncate">
                       <div class="truncate">
                         <span class="font-semibold text-indigo-800 dark:text-indigo-100">{{
-                          alias.local_part
+                          getAliasLocalPart(alias)
                         }}</span
                         ><span>@{{ alias.domain }}</span>
                       </div>
@@ -264,11 +264,12 @@
                   </div>
 
                   <div class="flex items-center flex-none py-1 pr-2 h-full">
-                    <div class="cursor-pointer text-grey-400 dark:text-grey-200" title="Copy Alias">
-                      <clipboard
-                        v-clipboard="() => alias.email"
-                        v-clipboard:success="aliasCopied"
-                      />
+                    <div
+                      class="cursor-pointer text-grey-400 dark:text-grey-200"
+                      title="Copy Alias"
+                      @click="copyToClipboard(getAliasEmail(alias))"
+                    >
+                      <clipboard />
                     </div>
                   </div>
                 </div>
@@ -618,11 +619,10 @@
                 <div
                   class="break-words cursor-pointer"
                   title="Click To Copy Alias"
-                  v-clipboard="() => aliasToView.email"
-                  v-clipboard:success="aliasCopied"
+                  @click="copyToClipboard(getAliasEmail(aliasToView))"
                 >
                   <span class="font-semibold text-indigo-800 dark:text-indigo-100">{{
-                    aliasToView.local_part
+                    getAliasLocalPart(aliasToView)
                   }}</span
                   ><span>@{{ aliasToView.domain }}</span>
                 </div>
@@ -655,8 +655,7 @@
                   <span
                     class="inline-block break-words cursor-pointer text-grey-400 text-sm py-1 border border-transparent dark:text-grey-50"
                     title="Click To Copy Description"
-                    v-clipboard="() => aliasToView.description"
-                    v-clipboard:success="aliasCopied"
+                    @click="copyToClipboard(aliasToView.description)"
                   >
                     {{ aliasToView.description }}
                   </span>
@@ -874,8 +873,7 @@
             <div v-if="sendFromAliasEmailToSendTo">
               <p class="mb-1 text-grey-700 dark:text-white">Send your message to this email:</p>
               <div
-                v-clipboard="() => sendFromAliasEmailToSendTo"
-                v-clipboard:success="setSendFromAddressCopied"
+                @click="copyToClipboard(sendFromAliasEmailToSendTo)"
                 class="flex items-center justify-between cursor-pointer text-sm border-t-4 rounded-sm text-green-800 border-green-600 bg-green-100 p-2 mb-4"
                 role="alert"
                 title="Click To Copy"
@@ -948,8 +946,7 @@
                 {{ autoCopyNewAlias ? 'This is' : 'Click To Copy' }} Your New Alias:
               </p>
               <div
-                v-clipboard="() => newAlias"
-                v-clipboard:success="setNewAliasCopied"
+                @click="copyToClipboard(newAlias)"
                 class="flex items-center justify-between cursor-pointer text-sm border-t-4 rounded-sm text-green-800 border-green-600 bg-green-100 p-2 mb-4"
                 role="alert"
               >
@@ -2435,12 +2432,11 @@ export default {
           this.localPart = ''
           this.description = ''
           this.createAliasRecipientIds = []
-          this.newAlias = data.data.email
+          this.newAlias = this.getAliasEmail(data.data)
 
           // If auto copy is enabled
           if (this.autoCopyNewAlias) {
-            this.$clipboard(data.data.email)
-            this.success('New alias copied to clipboard')
+            await this.copyToClipboard(this.getAliasEmail(data.data))
           }
 
           this.aliases = [data.data].concat(this.aliases)
@@ -2798,6 +2794,53 @@ export default {
         text: text,
         type: 'error',
       })
+    },
+    getAliasEmail(alias) {
+      return alias.extension
+        ? `${alias.local_part}+${alias.extension}@${alias.domain}`
+        : alias.email
+    },
+    getAliasLocalPart(alias) {
+      return alias.extension ? `${alias.local_part}+${alias.extension}` : alias.local_part
+    },
+    async copyToClipboard(text) {
+      try {
+        // Try using the modern Clipboard API first
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(text)
+          this.success('Copied to clipboard')
+          return true
+        }
+
+        // Fallback for older browsers and Safari
+        const textArea = document.createElement('textarea')
+        textArea.value = text
+
+        // Make the textarea out of viewport
+        textArea.style.position = 'fixed'
+        textArea.style.left = '-999999px'
+        textArea.style.top = '-999999px'
+        document.body.appendChild(textArea)
+
+        textArea.focus()
+        textArea.select()
+
+        try {
+          document.execCommand('copy')
+          this.success('Copied to clipboard')
+          return true
+        } catch (err) {
+          console.error('Failed to copy text: ', err)
+          this.errorNotification('Failed to copy to clipboard')
+          return false
+        } finally {
+          textArea.remove()
+        }
+      } catch (err) {
+        console.error('Failed to copy text: ', err)
+        this.errorNotification('Failed to copy to clipboard')
+        return false
+      }
     },
   },
 }
