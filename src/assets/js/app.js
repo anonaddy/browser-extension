@@ -2,7 +2,6 @@ import { createApp } from 'vue'
 
 import App from './components/App.vue'
 
-import Clipboard from 'v-clipboard'
 import Notifications from '@kyvg/vue3-notification'
 
 import dayjs from 'dayjs'
@@ -39,7 +38,6 @@ dayjs.locale('en-min', locale_en)
 const app = createApp(App)
 
 app.use(Notifications)
-app.use(Clipboard)
 
 // Mozilla's polyfill
 app.config.globalProperties.$browser = require('webextension-polyfill')
