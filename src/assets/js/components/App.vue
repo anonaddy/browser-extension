@@ -122,7 +122,7 @@
             </svg>
             <cross
               v-if="searchInput"
-              @click=";(getAliasesLoading = true), (searchInput = '')"
+              @click="((getAliasesLoading = true), (searchInput = ''))"
               class="absolute right-0 inset-y-0 cursor-pointer mr-2 flex items-center text-grey-300 dark:text-white h-full w-5"
             />
           </div>
@@ -162,13 +162,13 @@
               Search
               <span v-if="localPartSuggestions[0] && localPartSuggestions[0] !== currentTabHostname"
                 >"<span
-                  @click=";(getAliasesLoading = true), (searchInput = localPartSuggestions[0])"
+                  @click="((getAliasesLoading = true), (searchInput = localPartSuggestions[0]))"
                   class="text-indigo-700 hover:text-indigo-500 dark:text-white dark:hover:text-grey-50 cursor-pointer"
                   >{{ localPartSuggestions[0] }}</span
                 >" or</span
               >
               "<span
-                @click=";(getAliasesLoading = true), (searchInput = currentTabHostname)"
+                @click="((getAliasesLoading = true), (searchInput = currentTabHostname))"
                 class="text-indigo-700 hover:text-indigo-500 dark:text-white dark:hover:text-grey-50 cursor-pointer"
                 >{{ currentTabHostname }}</span
               >"?
@@ -662,15 +662,15 @@
                   <edit
                     class="inline-block w-6 h-6 ml-2 text-grey-300 cursor-pointer flex-none dark:text-grey-200"
                     @click="
-                      ;(aliasToViewDescriptionEditing = true),
-                        (aliasDescriptionToEdit = aliasToView.description)
+                      ((aliasToViewDescriptionEditing = true),
+                      (aliasDescriptionToEdit = aliasToView.description))
                     "
                   />
                 </div>
                 <div v-else>
                   <span
                     class="inline-block text-grey-300 dark:text-grey-200 text-sm cursor-pointer py-1 border border-transparent"
-                    @click=";(aliasToViewDescriptionEditing = true), (aliasDescriptionToEdit = '')"
+                    @click="((aliasToViewDescriptionEditing = true), (aliasDescriptionToEdit = ''))"
                     >Add description</span
                   >
                 </div>
@@ -873,7 +873,7 @@
             <div v-if="sendFromAliasEmailToSendTo">
               <p class="mb-1 text-grey-700 dark:text-white">Send your message to this email:</p>
               <div
-                @click="copyToClipboard(sendFromAliasEmailToSendTo)"
+                @click="copyToClipboard(sendFromAliasEmailToSendTo, setSendFromAddressCopied)"
                 class="flex items-center justify-between cursor-pointer text-sm border-t-4 rounded-sm text-green-800 border-green-600 bg-green-100 p-2 mb-4"
                 role="alert"
                 title="Click To Copy"
@@ -946,7 +946,7 @@
                 {{ autoCopyNewAlias ? 'This is' : 'Click To Copy' }} Your New Alias:
               </p>
               <div
-                @click="copyToClipboard(newAlias)"
+                @click="copyToClipboard(newAlias, setNewAliasCopied)"
                 class="flex items-center justify-between cursor-pointer text-sm border-t-4 rounded-sm text-green-800 border-green-600 bg-green-100 p-2 mb-4"
                 role="alert"
               >
@@ -1419,11 +1419,13 @@
       </div>
     </Modal>
 
-    <notifications position="bottom center" width="100%" />
+    <Notifications position="bottom center" width="100%" />
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, computed, watch, onMounted } from 'vue'
+import debounce from 'lodash/debounce'
 import Loader from './Loader'
 import Plus from './../components/icons/Plus'
 import AtSign from './../components/icons/AtSign'
@@ -1441,1408 +1443,1352 @@ import Edit from './../components/icons/Edit'
 import Check from './../components/icons/Check'
 import ExternalLink from './../components/icons/ExternalLink'
 import Heart from './../components/icons/Heart'
-import debounce from 'lodash/debounce'
 import Modal from './../components/Modal.vue'
 import Multiselect from '@vueform/multiselect'
+import { useNotification, Notifications } from '@kyvg/vue3-notification'
+const { notify } = useNotification()
 
-export default {
-  data() {
+// State
+const browser = require('webextension-polyfill')
+const extensionWindow = ref('')
+const extensionVersion = ref(null)
+const tabs = ref([
+  { name: 'Aliases', icon: 'AtSign' },
+  { name: 'Settings', icon: 'Cog' },
+])
+const selected = ref('Aliases')
+const tokenInput = ref('')
+const apiToken = ref('')
+const instanceInput = ref('https://app.addy.io')
+const instance = ref('')
+const changeInstance = ref(false)
+const searchInput = ref('')
+const currentTabHostname = ref('')
+const localPartSuggestions = ref([])
+const description = ref('')
+const localPart = ref('')
+const localPartAutoFill = ref({})
+const sendFromAliasDestination = ref('')
+const sendFromAliasEmailToSendTo = ref('')
+const domainOptionsLoading = ref(false)
+const recipientsLoading = ref(false)
+const createAliasLoading = ref(false)
+const activateAliasLoading = ref(false)
+const deactivateAliasLoading = ref(false)
+const deleteAliasLoading = ref(false)
+const forgetAliasLoading = ref(false)
+const restoreAliasLoading = ref(false)
+const logoutLoading = ref(false)
+const editAliasDescriptionLoading = ref(false)
+const deleteAliasModalOpen = ref(false)
+const forgetAliasModalOpen = ref(false)
+const restoreAliasModalOpen = ref(false)
+const renewApiKeyModalOpen = ref(false)
+const logoutModalOpen = ref(false)
+const aliasToViewDescriptionEditing = ref(false)
+const aliasDescriptionToEdit = ref('')
+const newAlias = ref('')
+const newAliasCopied = ref(false)
+const sendFromAddressCopied = ref(false)
+const error = ref('')
+const domain = ref('')
+const domainOptions = ref([])
+const recipients = ref([])
+const createAliasRecipientIds = ref([])
+const aliasFormat = ref('random_characters')
+const aliasFormatOptions = ref([
+  {
+    value: 'random_characters',
+    label: 'Random Characters',
+    paid: false,
+  },
+  {
+    value: 'uuid',
+    label: 'UUID',
+    paid: false,
+  },
+  {
+    value: 'random_words',
+    label: 'Random Words',
+    paid: true,
+  },
+  {
+    value: 'custom',
+    label: 'Custom',
+    paid: false,
+  },
+])
+const aliases = ref([])
+const showAliasStatus = ref('all')
+const aliasesTitle = ref('Aliases')
+const aliasesHaveNextPage = ref(false)
+const aliasesMeta = ref({})
+const aliasesCurrentPage = ref(1)
+const getAliasesLoading = ref(false)
+const showMoreAliasesLoading = ref(false)
+const aliasToView = ref({})
+const theme = ref('system')
+const autoCopyNewAlias = ref(true)
+const showSearchSuggestions = ref(true)
+const autoFillLocalPart = ref('')
+const defaultAliasSort = ref('created_at')
+const defaultAliasSortDir = ref('-')
+const extensionUrl = ref(
+  'https://chrome.google.com/webstore/detail/addyio-anonymous-email-fo/iadbdpnoknmbdeolbapdackdcogdmjpe'
+)
+const aliasSortOptions = ref([
+  {
+    value: 'active',
+    label: 'Active',
+  },
+  {
+    value: 'email',
+    label: 'Alias',
+  },
+  {
+    value: 'created_at',
+    label: 'Created At',
+  },
+  {
+    value: 'deleted_at',
+    label: 'Deleted At',
+  },
+  {
+    value: 'domain',
+    label: 'Domain',
+  },
+  {
+    value: 'emails_blocked',
+    label: 'Emails Blocked',
+  },
+  {
+    value: 'emails_forwarded',
+    label: 'Emails Forwarded',
+  },
+  {
+    value: 'emails_replied',
+    label: 'Emails Replied',
+  },
+  {
+    value: 'emails_sent',
+    label: 'Emails Sent',
+  },
+  {
+    value: 'last_blocked',
+    label: 'Last Blocked At',
+  },
+  {
+    value: 'last_forwarded',
+    label: 'Last Forwarded At',
+  },
+  {
+    value: 'last_replied',
+    label: 'Last Replied At',
+  },
+  {
+    value: 'last_sent',
+    label: 'Last Sent At',
+  },
+  {
+    value: 'last_used',
+    label: 'Last Used At',
+  },
+  {
+    value: 'updated_at',
+    label: 'Updated At',
+  },
+])
+const defaultSelected = ref('Aliases')
+const abortController = ref(null)
+const sharedDomains = ref([
+  'anonaddy.me',
+  'anonaddy.com',
+  '4wrd.cc',
+  'mailer.me',
+  'addymail.com',
+  'addy.io',
+  'addy.to',
+])
+
+onMounted(async () => {
+  apiToken.value = await getApiToken()
+  instance.value = await getInstance()
+  if (instance.value == 'https://app.anonaddy.com') {
+    instance.value = 'https://app.addy.io'
+  }
+  if (apiToken.value && !instance.value) {
+    instance.value = 'https://app.addy.io'
+  }
+  domainOptions.value = await getDomainOptions()
+  recipients.value = await getRecipients()
+  domain.value = await getDomain()
+  aliasFormat.value = await getAliasFormat()
+  showAliasStatus.value = await getShowAliasStatus()
+  theme.value = await getTheme()
+  if (theme.value == '') {
+    theme.value = 'light'
+  }
+  autoCopyNewAlias.value = await getAutoCopyNewAlias()
+  showSearchSuggestions.value = await getShowSearchSuggestions()
+  autoFillLocalPart.value = await getAutoFillLocalPart()
+  defaultAliasSort.value = await getDefaultAliasSort()
+  defaultAliasSortDir.value = await getDefaultAliasSortDir()
+  defaultSelected.value = await getDefaultSelected()
+  selected.value = defaultSelected.value
+
+  if (sharedDomainSelected.value && aliasFormat.value === 'custom' && !selfHosting.value) {
+    aliasFormat.value = 'random_characters'
+  }
+
+  extensionWindow.value = await getExtensionWindow()
+  currentTabHostname.value = await getCurrentTabHostname()
+
+  let manifest = browser.runtime.getManifest()
+
+  // Browser checks
+  let ua = navigator.userAgent
+
+  // Check if Gecko based
+  if (/rv:([^\)]+)\) Gecko\/\d{8}/.test(ua)) {
+    extensionUrl.value = 'https://addons.mozilla.org/en-GB/firefox/addon/addy_io/'
+  }
+
+  // Check if Safari
+  let iOS = ua.match(/Macintosh/i) || ua.match(/iPad/i) || ua.match(/iPhone/i)
+
+  // Check if Edge
+  if (ua.match(/Edg/i)) {
+    extensionUrl.value =
+      'https://microsoftedge.microsoft.com/addons/detail/addyio-anonymous-email/ohjlgpcfncgkijjfmabldlgnccmgcehl'
+  } else if (
+    iOS &&
+    ua.match(/WebKit/i) &&
+    !ua.match(/CriOS/i) &&
+    !ua.match(/EdgiOS/i) &&
+    !ua.match(/Chrome/i) &&
+    !ua.match(/Edg/i)
+  ) {
+    extensionUrl.value = 'https://apps.apple.com/app/addy-io-safari-extension/id6670220050'
+  }
+
+  if (manifest) {
+    extensionVersion.value = manifest.version
+  }
+
+  if (apiToken.value) {
+    document.getElementById('search').focus()
+    getAliases(true)
+
+    if (recipients.value.length == 0) {
+      getRecipientsRequest()
+    }
+  }
+})
+
+// Computed properties
+const subscribed = computed(() => Object.values(domainOptions.value).length > 3)
+const selfHosting = computed(
+  () => !['https://app.anonaddy.com', 'https://app.addy.io'].includes(instance.value)
+)
+const subscribedOrSelfHosting = computed(() => subscribed.value || selfHosting.value)
+const aliasToViewHasSharedDomain = computed(() => {
+  if (!aliasToView.value.domain) {
+    return false
+  }
+  return sharedDomains.value.includes(aliasToView.value.domain)
+})
+const sharedDomainSelected = computed(() => sharedDomains.value.includes(domain.value))
+const showDeletedAliases = computed(() => {
+  if (showAliasStatus.value === 'all') {
+    return 'with'
+  } else if (showAliasStatus.value === 'deleted') {
+    return 'only'
+  } else {
+    return 'without'
+  }
+})
+const showActiveAliases = computed(() => {
+  if (showAliasStatus.value === 'inactive') {
+    return false
+  } else if (showAliasStatus.value === 'active') {
+    return true
+  } else {
+    return ''
+  }
+})
+const activeTheme = computed(() => {
+  if (theme.value === 'system') {
+    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      return 'dark'
+    } else {
+      return 'light'
+    }
+  }
+  return theme.value
+})
+
+// --- Watchers ---
+watch(apiToken, async (val) => {
+  try {
+    await browser.storage.sync.set({ apiToken: val })
+  } catch (error) {
+    console.log(error)
+  }
+})
+
+watch(instance, async (val) => {
+  try {
+    await browser.storage.sync.set({ instance: val })
+  } catch (error) {
+    console.log(error)
+  }
+})
+
+watch(domainOptions, async (val) => {
+  try {
+    await browser.storage.sync.set({ domainOptions: val })
+  } catch (error) {
+    console.log(error)
+  }
+})
+
+watch(recipients, async (val) => {
+  try {
+    await browser.storage.sync.set({ recipients: val })
+  } catch (error) {
+    console.log(error)
+  }
+})
+
+watch(domain, async (val) => {
+  if (sharedDomainSelected.value) {
+    aliasFormat.value = 'random_characters'
+  }
+  try {
+    await browser.storage.sync.set({ domain: val })
+  } catch (error) {
+    console.log(error)
+  }
+})
+
+watch(aliasFormat, async (val) => {
+  // If alias format changes to custom and autoFillLocalPart is enabled then update localPart
+  if (val === 'custom' && autoFillLocalPart.value !== '') {
+    localPart.value = localPartAutoFill.value[autoFillLocalPart.value]
+  } else {
+    localPart.value = ''
+  }
+  try {
+    await browser.storage.sync.set({ aliasFormat: val })
+  } catch (error) {
+    console.log(error)
+  }
+})
+
+watch(showAliasStatus, async (val, oldVal) => {
+  try {
+    await browser.storage.sync.set({ showAliasStatus: val })
+  } catch (error) {
+    console.log(error)
+  }
+  if (!aliases.value.length && oldVal === 'all') {
+    // No need to make another request if there are no aliases when the status is 'all'
+  } else {
+    aliasesCurrentPage.value = 1
+    getAliases()
+  }
+})
+
+watch(theme, async (val) => {
+  try {
+    await browser.storage.sync.set({ theme: val })
+  } catch (error) {
+    console.log(error)
+  }
+})
+
+watch(autoCopyNewAlias, async (val) => {
+  try {
+    await browser.storage.sync.set({ autoCopyNewAlias: val })
+  } catch (error) {
+    console.log(error)
+  }
+})
+
+watch(showSearchSuggestions, async (val) => {
+  try {
+    await browser.storage.sync.set({ showSearchSuggestions: val })
+  } catch (error) {
+    console.log(error)
+  }
+})
+
+watch(autoFillLocalPart, async (val) => {
+  if (aliasFormat.value === 'custom' && val !== '') {
+    localPart.value = localPartAutoFill.value[val]
+  }
+  try {
+    await browser.storage.sync.set({ autoFillLocalPart: val })
+  } catch (error) {
+    console.log(error)
+  }
+})
+
+watch(defaultAliasSort, async (val) => {
+  try {
+    await browser.storage.sync.set({ defaultAliasSort: val })
+  } catch (error) {
+    console.log(error)
+  }
+  if (aliases.value.length) {
+    aliasesCurrentPage.value = 1
+    getAliases(true)
+  }
+})
+
+watch(defaultAliasSortDir, async (val) => {
+  try {
+    await browser.storage.sync.set({ defaultAliasSortDir: val })
+  } catch (error) {
+    console.log(error)
+  }
+  if (aliases.value.length) {
+    aliasesCurrentPage.value = 1
+    getAliases(true)
+  }
+})
+
+watch(defaultSelected, async (val) => {
+  try {
+    await browser.storage.sync.set({ defaultSelected: val })
+  } catch (error) {
+    console.log(error)
+  }
+})
+
+watch(tokenInput, () => {
+  error.value = ''
+})
+
+watch(description, () => {
+  error.value = ''
+})
+
+watch(localPart, () => {
+  error.value = ''
+})
+
+watch(selected, (val) => {
+  error.value = ''
+  cancelEditDescription()
+})
+
+watch(
+  searchInput,
+  debounce((val) => {
+    if (val == '' || val.length > 2) {
+      // If there is already a request loading then abort it
+      if (getAliasesLoading.value || showMoreAliasesLoading.value) {
+        abortController.value.abort()
+        showMoreAliasesLoading.value = false
+      }
+      aliasesCurrentPage.value = 1
+      getAliases()
+    }
+  }, 300)
+)
+
+watch(
+  aliasToViewDescriptionEditing,
+  debounce((val) => {
+    if (val === true) {
+      document.getElementById('description-input').focus()
+    }
+  }, 100)
+)
+
+// Methods
+const getApiToken = async () => {
+  try {
+    const result = await browser.storage.sync.get({ apiToken: '' })
+    return result.apiToken
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+const getInstance = async () => {
+  try {
+    const result = await browser.storage.sync.get({ instance: '' })
+    return result.instance
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+const getDomainOptions = async () => {
+  try {
+    const result = await browser.storage.sync.get({ domainOptions: [''] })
+    return result.domainOptions
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+const getRecipients = async () => {
+  try {
+    const result = await browser.storage.sync.get({ recipients: [''] })
+    return result.recipients
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+const getDomain = async () => {
+  try {
+    const result = await browser.storage.sync.get({ domain: '' })
+    return result.domain
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+const getAliasFormat = async () => {
+  try {
+    const result = await browser.storage.sync.get({ aliasFormat: 'random_characters' })
+    return result.aliasFormat
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+const getShowAliasStatus = async () => {
+  try {
+    const result = await browser.storage.sync.get({ showAliasStatus: 'all' })
+    return result.showAliasStatus
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+const getTheme = async () => {
+  try {
+    const result = await browser.storage.sync.get({ theme: 'system' })
+    return result.theme
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+const getAutoCopyNewAlias = async () => {
+  try {
+    const result = await browser.storage.sync.get({ autoCopyNewAlias: true })
+    return result.autoCopyNewAlias
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+const getShowSearchSuggestions = async () => {
+  try {
+    const result = await browser.storage.sync.get({ showSearchSuggestions: true })
+    return result.showSearchSuggestions
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+const getAutoFillLocalPart = async () => {
+  try {
+    const result = await browser.storage.sync.get({ autoFillLocalPart: '' })
+    return result.autoFillLocalPart
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+const getDefaultAliasSort = async () => {
+  try {
+    const result = await browser.storage.sync.get({ defaultAliasSort: 'created_at' })
+    return result.defaultAliasSort
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+const getDefaultAliasSortDir = async () => {
+  try {
+    const result = await browser.storage.sync.get({ defaultAliasSortDir: '-' })
+    return result.defaultAliasSortDir
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+const getDefaultSelected = async () => {
+  try {
+    const result = await browser.storage.sync.get({ defaultSelected: 'Aliases' })
+    return result.defaultSelected
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+const getCurrentTabHostname = async () => {
+  try {
+    const result = await browser.tabs.query({ active: true, currentWindow: true })
+    if (result[0].url && extensionWindow.value) {
+      const url = new URL(result[0].url)
+
+      let parsed = window.psl.parse(url.hostname)
+      if (parsed.sld) {
+        localPartSuggestions.value.push(parsed.sld)
+        localPartAutoFill.value.sld = parsed.sld
+      }
+      if (parsed.domain) {
+        localPartSuggestions.value.push(parsed.domain)
+        localPartAutoFill.value.domain = parsed.domain
+      }
+      if (url.hostname && url.hostname !== parsed.domain) {
+        localPartSuggestions.value.push(url.hostname)
+        localPartAutoFill.value.full = url.hostname
+      }
+
+      if (url.hostname === parsed.domain) {
+        localPartAutoFill.value.full = url.hostname
+      }
+
+      // Also add a suggestion with a random alphanumeric string appended
+      if (parsed.sld) {
+        let random = parsed.sld + '.' + Math.random().toString(36).substring(2, 5)
+        localPartSuggestions.value.push(random)
+        localPartAutoFill.value.random = random
+      }
+
+      // Set the alias local part if the format is custom and autoFill is enabled
+      if (aliasFormat.value === 'custom' && autoFillLocalPart.value !== '') {
+        localPart.value = localPartAutoFill.value[autoFillLocalPart.value]
+      }
+
+      return url.hostname
+    }
+    return null
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+const getExtensionWindow = async () => {
+  try {
+    let result = await browser.extension.getViews({ type: 'popup' })
+    return result[0]
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+const getAliases = async (calledFromMounted = false) => {
+  error.value = ''
+
+  // To prevent overriding the users choice of tab to display on extension open
+  if (!calledFromMounted) {
+    selected.value = 'Aliases'
+  }
+
+  if (aliasesCurrentPage.value == 1) {
+    getAliasesLoading.value = true
+  }
+
+  abortController.value = new AbortController()
+  const signal = abortController.value.signal
+
+  try {
+    const response = await fetch(
+      `${instance.value}/api/v1/aliases?filter[deleted]=${showDeletedAliases.value}&filter[active]=${showActiveAliases.value}&filter[search]=${
+        searchInput.value.length > 2 ? searchInput.value : ''
+      }&sort=${defaultAliasSortDir.value}${defaultAliasSort.value}&page[number]=${
+        aliasesCurrentPage.value
+      }&page[size]=10`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-Requested-From': 'browser-extension',
+          Authorization: `Bearer ${apiToken.value}`,
+        },
+        signal: signal,
+      }
+    )
+
+    if (response.status === 200) {
+      let data = await response.json()
+
+      if (aliasesCurrentPage.value > 1) {
+        aliases.value = aliases.value.concat(data.data)
+      } else {
+        aliases.value = data.data
+      }
+
+      if (searchInput.value) {
+        aliasesTitle.value = `Search Results (${data.meta.total} `
+        aliasesTitle.value += data.meta.total === 1 ? 'match)' : 'matches)'
+      } else {
+        aliasesTitle.value = 'Aliases'
+      }
+
+      if (data.links) {
+        aliasesHaveNextPage.value = data.links.next ? true : false
+      } else {
+        aliasesHaveNextPage.value = false
+      }
+
+      aliasesMeta.value = data.meta
+    } else if (response.status === 401) {
+      logout(true)
+      error.value =
+        "Unauthenticated, your API key has either expired or been revoked. You've been automatically logged out."
+    } else {
+      error.value = 'An Error Has Occurred'
+    }
+
+    if (aliasesCurrentPage.value == 1) {
+      getAliasesLoading.value = false
+    } else {
+      showMoreAliasesLoading.value = false
+    }
+  } catch (error) {
+    if (error.name !== 'AbortError') {
+      if (aliasesCurrentPage.value == 1) {
+        getAliasesLoading.value = false
+      } else {
+        showMoreAliasesLoading.value = false
+      }
+
+      error.value = 'An Error Has Occurred'
+      console.log(error)
+    }
+  }
+}
+
+const getAliasDomainOptions = async (token, instanceArgument, renew = false) => {
+  error.value = ''
+
+  if (!token) {
+    let message = 'An API key is required to login!'
+    return renew ? errorNotification(message) : (error.value = message)
+  }
+
+  if (!validToken(token)) {
+    let message = "Invalid API key format, please check that you've entered it correctly!"
+    return renew ? errorNotification(message) : (error.value = message)
+  }
+
+  if (token.length < 40) {
+    let message = "That API key is too short, please check that you've entered it correctly!"
+    return renew ? errorNotification(message) : (error.value = message)
+  }
+
+  if (token.length > 60) {
+    let message = "That API key is too long, please check that you've entered it correctly!"
+    return renew ? errorNotification(message) : (error.value = message)
+  }
+
+  if (!validInstance(instanceArgument) && changeInstance.value) {
+    let message =
+      'Please enter a valid URL for the instance with no trailing slash, e.g. "https://app.example.com"'
+    return renew ? errorNotification(message) : (error.value = message)
+  }
+
+  domainOptionsLoading.value = true
+
+  try {
+    const response = await fetch(`${instanceArgument}/api/v1/domain-options`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-Requested-From': 'browser-extension',
+        Authorization: `Bearer ${token}`,
+      },
+    })
+
+    domainOptionsLoading.value = false
+
+    if (response.status === 401) {
+      if (renew) {
+        errorNotification("Error, invalid API key, please check that you've entered it correctly")
+      } else if (!apiToken.value) {
+        error.value =
+          "Error, invalid API key, please check that you've entered it correctly and that you have the correct instance (if self-hosting)"
+      } else {
+        logout(true)
+        error.value =
+          "Unauthenticated, your API key has either expired or been revoked. You've been automatically logged out."
+      }
+    } else if (response.status === 200) {
+      // Clear token input
+      tokenInput.value = ''
+
+      if (!instance.value) {
+        instance.value = instanceArgument
+      }
+
+      if (!apiToken.value) {
+        apiToken.value = token
+        getAliases()
+        getRecipientsRequest()
+
+        success('Logged in successfully')
+      } else if (renew) {
+        apiToken.value = token
+        renewApiKeyModalOpen.value = false
+
+        success('Renewed API Key successfully')
+      } else {
+        success('Domains and defaults refreshed')
+      }
+
+      let data = await response.json()
+      domainOptions.value = data.data
+      domain.value = data.defaultAliasDomain ? data.defaultAliasDomain : data.data[0]
+      aliasFormat.value = data.defaultAliasFormat ? data.defaultAliasFormat : 'random_characters'
+
+      if (sharedDomainSelected.value && aliasFormat.value === 'custom' && !selfHosting.value) {
+        aliasFormat.value = 'random_characters'
+      }
+    } else {
+      renew ? errorNotification('An Error Has Occurred') : (error.value = 'An Error Has Occurred')
+    }
+  } catch (error) {
+    domainOptionsLoading.value = false
+    renew ? errorNotification('An Error Has Occurred') : (error.value = 'An Error Has Occurred')
+    console.log(error)
+  }
+}
+
+const getRecipientsRequest = async () => {
+  recipientsLoading.value = true
+
+  try {
+    const response = await fetch(`${instance.value}/api/v1/recipients?filter[verified]=true`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-Requested-From': 'browser-extension',
+        Authorization: `Bearer ${apiToken.value}`,
+      },
+    })
+
+    let data = await response.json()
+
+    recipients.value = data.data.map(function (recipient) {
+      return {
+        id: recipient.id,
+        email: recipient.email,
+      }
+    })
+
+    if (selected.value == 'Settings') {
+      success('Recipients refreshed')
+    }
+
+    recipientsLoading.value = false
+  } catch (error) {
+    recipientsLoading.value = false
+    error.value = 'An Error Has Occurred'
+    console.log(error)
+  }
+}
+
+const createAlias = async () => {
+  // Validate alias local part
+  if (
+    !sharedDomainSelected.value &&
+    aliasFormat.value === 'custom' &&
+    !validLocalPart(localPart.value)
+  ) {
+    return (error.value = 'Valid local part required')
+  }
+
+  if (description.value.length > 200) {
+    return (error.value = 'Description cannot be more than 200 characters')
+  }
+
+  if (!Object.values(domainOptions.value).find((domainOption) => domainOption === domain.value)) {
+    return (error.value = 'Invalid alias domain name')
+  }
+
+  createAliasLoading.value = true
+  error.value = ''
+
+  try {
+    const response = await fetch(`${instance.value}/api/v1/aliases`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-Requested-From': 'browser-extension',
+        Authorization: `Bearer ${apiToken.value}`,
+      },
+      body: JSON.stringify({
+        domain: domain.value,
+        local_part: localPart.value,
+        description: description.value ? description.value : currentTabHostname.value,
+        format: aliasFormat.value,
+        recipient_ids: createAliasRecipientIds.value,
+      }),
+    })
+
+    createAliasLoading.value = false
+
+    if (response.status === 403) {
+      error.value = 'You have reached your active shared domain alias limit'
+    } else if (response.status === 429) {
+      error.value = 'You have reached your hourly limit for creating new aliases'
+    } else if (response.status === 422) {
+      let error = await response.json()
+      error.value = error.errors[Object.keys(error.errors)[0]][0]
+    } else if (response.status === 401) {
+      logout(true)
+      error.value =
+        "Unauthenticated, your API key has either expired or been revoked. You've been automatically logged out."
+    } else if (response.status === 201) {
+      let data = await response.json()
+      localPart.value = ''
+      description.value = ''
+      createAliasRecipientIds.value = []
+      newAlias.value = getAliasEmail(data.data)
+
+      // If auto copy is enabled
+      if (autoCopyNewAlias.value) {
+        await copyToClipboard(getAliasEmail(data.data))
+      }
+
+      aliases.value = [data.data].concat(aliases.value)
+    } else {
+      error.value = 'An Error Has Occurred'
+    }
+  } catch (error) {
+    createAliasLoading.value = false
+    error.value = 'An Error Has Occurred'
+    console.log(error)
+  }
+}
+
+const editAliasDescription = async (alias) => {
+  editAliasDescriptionLoading.value = true
+
+  try {
+    const response = await fetch(`${instance.value}/api/v1/aliases/${alias.id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-Requested-From': 'browser-extension',
+        Authorization: `Bearer ${apiToken.value}`,
+      },
+      body: JSON.stringify({
+        description: aliasDescriptionToEdit.value,
+      }),
+    })
+
+    editAliasDescriptionLoading.value = false
+
+    if (response.status === 200) {
+      alias.description = aliasDescriptionToEdit.value
+      aliasDescriptionToEdit.value = ''
+      aliasToViewDescriptionEditing.value = false
+      success('Alias description updated successfully')
+    } else {
+      error.value = 'An Error Has Occurred'
+    }
+  } catch (error) {
+    editAliasDescriptionLoading.value = false
+    aliasDescriptionToEdit.value = ''
+    aliasToViewDescriptionEditing.value = false
+    error.value = 'An Error Has Occurred'
+    console.log(error)
+  }
+}
+
+const activateAlias = async (alias) => {
+  activateAliasLoading.value = true
+
+  try {
+    const response = await fetch(`${instance.value}/api/v1/active-aliases`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-Requested-From': 'browser-extension',
+        Authorization: `Bearer ${apiToken.value}`,
+      },
+      body: JSON.stringify({
+        id: alias.id,
+      }),
+    })
+
+    activateAliasLoading.value = false
+
+    if (response.status === 403) {
+      error.value = 'You have reached your active shared domain alias limit'
+    } else if (response.status === 200) {
+      alias.active = true
+      success('Alias activated successfully')
+    } else {
+      error.value = 'An Error Has Occurred'
+    }
+  } catch (error) {
+    activateAliasLoading.value = false
+    error.value = 'An Error Has Occurred'
+    console.log(error)
+  }
+}
+
+const deactivateAlias = async (alias) => {
+  deactivateAliasLoading.value = true
+
+  try {
+    const response = await fetch(`${instance.value}/api/v1/active-aliases/${alias.id}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-Requested-From': 'browser-extension',
+        Authorization: `Bearer ${apiToken.value}`,
+      },
+    })
+
+    deactivateAliasLoading.value = false
+
+    if (response.status === 204) {
+      alias.active = false
+      success('Alias deactivated successfully')
+    } else {
+      error.value = 'An Error Has Occurred'
+    }
+  } catch (error) {
+    deactivateAliasLoading.value = false
+    error.value = 'An Error Has Occurred'
+    console.log(error)
+  }
+}
+
+const deleteAlias = async (alias) => {
+  deleteAliasLoading.value = true
+
+  try {
+    const response = await fetch(`${instance.value}/api/v1/aliases/${alias.id}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-Requested-From': 'browser-extension',
+        Authorization: `Bearer ${apiToken.value}`,
+      },
+    })
+
+    deleteAliasLoading.value = false
+
+    if (response.status === 204) {
+      alias.deleted_at = new Date().toISOString()
+      alias.active = false
+      success('Alias deleted successfully')
+    } else {
+      error.value = 'An Error Has Occurred'
+    }
+  } catch (error) {
+    deleteAliasLoading.value = false
+    error.value = 'An Error Has Occurred'
+    console.log(error)
+  }
+
+  deleteAliasModalOpen.value = false
+}
+
+const forgetAlias = async (alias) => {
+  forgetAliasLoading.value = true
+
+  try {
+    const response = await fetch(`${instance.value}/api/v1/aliases/${alias.id}/forget`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-Requested-From': 'browser-extension',
+        Authorization: `Bearer ${apiToken.value}`,
+      },
+    })
+
+    forgetAliasLoading.value = false
+
+    if (response.status === 204) {
+      aliases.value = aliases.value.filter((a) => a.id !== alias.id)
+      success('Alias forgotten successfully')
+    } else {
+      error.value = 'An Error Has Occurred'
+    }
+  } catch (error) {
+    forgetAliasLoading.value = false
+    error.value = 'An Error Has Occurred'
+    console.log(error)
+  }
+
+  selected.value = 'Aliases'
+  forgetAliasModalOpen.value = false
+}
+
+const restoreAlias = async (alias) => {
+  restoreAliasLoading.value = true
+
+  try {
+    const response = await fetch(`${instance.value}/api/v1/aliases/${alias.id}/restore`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-Requested-From': 'browser-extension',
+        Authorization: `Bearer ${apiToken.value}`,
+      },
+    })
+
+    restoreAliasLoading.value = false
+
+    if (response.status === 200) {
+      alias.deleted_at = null
+      alias.active = true
+      success('Alias restored successfully')
+    } else {
+      error.value = 'An Error Has Occurred'
+    }
+  } catch (error) {
+    restoreAliasLoading.value = false
+    error.value = 'An Error Has Occurred'
+    console.log(error)
+  }
+
+  restoreAliasModalOpen.value = false
+}
+
+const displaySendFromAddress = () => {
+  error.value = ''
+  sendFromAddressCopied.value = false
+  if (!validEmail(sendFromAliasDestination.value)) {
+    error.value = 'Valid Email required'
+    return
+  }
+  sendFromAliasEmailToSendTo.value = `${aliasToView.value.local_part}+${sendFromAliasDestination.value.replace('@', '=')}@${aliasToView.value.domain}`
+}
+
+const openSendFromAlias = () => {
+  if (aliasToView.value.deleted_at) {
+    return (error.value = 'You must restore this alias first')
+  }
+  if (!aliasToView.value.active) {
+    return (error.value = 'You must activate this alias first')
+  }
+  sendFromAliasDestination.value = ''
+  sendFromAliasEmailToSendTo.value = ''
+  sendFromAddressCopied.value = false
+  selected.value = 'SendFromAlias'
+}
+
+const viewAlias = (alias) => {
+  selected.value = 'ViewAlias'
+  aliasToView.value = alias
+}
+
+const getAliasStatus = (alias) => {
+  if (alias.deleted_at) {
     return {
-      extensionVersion: null,
-      tabs: [
-        { name: 'Aliases', icon: 'AtSign' },
-        { name: 'Settings', icon: 'Cog' },
-      ],
-      selected: 'Aliases',
-      tokenInput: '',
-      apiToken: '',
-      instanceInput: 'https://app.addy.io',
-      instance: '',
-      changeInstance: false,
-      searchInput: '',
-      currentTabHostname: '',
-      localPartSuggestions: [],
-      description: '',
-      localPart: '',
-      localPartAutoFill: {},
-      sendFromAliasDestination: '',
-      sendFromAliasEmailToSendTo: '',
-      domainOptionsLoading: false,
-      recipientsLoading: false,
-      createAliasLoading: false,
-      activateAliasLoading: false,
-      deactivateAliasLoading: false,
-      deleteAliasLoading: false,
-      forgetAliasLoading: false,
-      restoreAliasLoading: false,
-      logoutLoading: false,
-      editAliasDescriptionLoading: false,
-      deleteAliasModalOpen: false,
-      forgetAliasModalOpen: false,
-      restoreAliasModalOpen: false,
-      renewApiKeyModalOpen: false,
-      logoutModalOpen: false,
-      aliasToViewDescriptionEditing: false,
-      aliasDescriptionToEdit: '',
-      newAlias: '',
-      newAliasCopied: false,
-      sendFromAddressCopied: false,
-      clipboardButtonText: 'Copy',
-      error: '',
-      domain: '',
-      domainOptions: [],
-      recipients: [],
-      createAliasRecipientIds: [],
-      aliasFormat: 'random_characters',
-      aliasFormatOptions: [
-        {
-          value: 'random_characters',
-          label: 'Random Characters',
-          paid: false,
-        },
-        {
-          value: 'uuid',
-          label: 'UUID',
-          paid: false,
-        },
-        {
-          value: 'random_words',
-          label: 'Random Words',
-          paid: true,
-        },
-        {
-          value: 'custom',
-          label: 'Custom',
-          paid: false,
-        },
-      ],
-      aliases: [],
-      showAliasStatus: 'all',
-      aliasesTitle: 'Aliases',
-      aliasesHaveNextPage: false,
-      aliasesMeta: {},
-      aliasesCurrentPage: 1,
-      getAliasesLoading: false,
-      showMoreAliasesLoading: false,
-      aliasToView: {},
-      theme: 'system',
-      autoCopyNewAlias: true,
-      showSearchSuggestions: true,
-      autoFillLocalPart: '',
-      defaultAliasSort: 'created_at',
-      defaultAliasSortDir: '-',
-      extensionUrl:
-        'https://chrome.google.com/webstore/detail/addyio-anonymous-email-fo/iadbdpnoknmbdeolbapdackdcogdmjpe',
-      aliasSortOptions: [
-        {
-          value: 'active',
-          label: 'Active',
-        },
-        {
-          value: 'email',
-          label: 'Alias',
-        },
-        {
-          value: 'created_at',
-          label: 'Created At',
-        },
-        {
-          value: 'deleted_at',
-          label: 'Deleted At',
-        },
-        {
-          value: 'domain',
-          label: 'Domain',
-        },
-        {
-          value: 'emails_blocked',
-          label: 'Emails Blocked',
-        },
-        {
-          value: 'emails_forwarded',
-          label: 'Emails Forwarded',
-        },
-        {
-          value: 'emails_replied',
-          label: 'Emails Replied',
-        },
-        {
-          value: 'emails_sent',
-          label: 'Emails Sent',
-        },
-        {
-          value: 'last_blocked',
-          label: 'Last Blocked At',
-        },
-        {
-          value: 'last_forwarded',
-          label: 'Last Forwarded At',
-        },
-        {
-          value: 'last_replied',
-          label: 'Last Replied At',
-        },
-        {
-          value: 'last_sent',
-          label: 'Last Sent At',
-        },
-        {
-          value: 'last_used',
-          label: 'Last Used At',
-        },
-        {
-          value: 'updated_at',
-          label: 'Updated At',
-        },
-      ],
-      defaultSelected: 'Aliases',
-      abortController: null,
-      sharedDomains: [
-        'anonaddy.me',
-        'anonaddy.com',
-        '4wrd.cc',
-        'mailer.me',
-        'addymail.com',
-        'addy.io',
-        'addy.to',
-      ],
+      foregroundColour: 'bg-red-400',
+      backgroundColour: 'bg-red-100',
+      status: 'Deleted',
     }
-  },
-  components: {
-    Loader,
-    Plus,
-    AtSign,
-    Cog,
-    Clipboard,
-    Cross,
-    Edit,
-    Check,
-    Block,
-    Forward,
-    Reply,
-    Sent,
-    ChevronLeft,
-    Exclamation,
-    ExternalLink,
-    Heart,
-    Information,
-    Modal,
-    Multiselect,
-  },
-  async mounted() {
-    this.apiToken = await this.getApiToken()
-    this.instance = await this.getInstance()
-    if (this.instance == 'https://app.anonaddy.com') {
-      this.instance = 'https://app.addy.io'
+  } else {
+    return {
+      foregroundColour: alias.active ? 'bg-green-400' : 'bg-grey-400',
+      backgroundColour: alias.active ? 'bg-green-100' : 'bg-grey-100',
+      status: alias.active ? 'Active' : 'Inactive',
     }
-    if (this.apiToken && !this.instance) {
-      this.instance = 'https://app.addy.io'
-    }
-    this.domainOptions = await this.getDomainOptions()
-    this.recipients = await this.getRecipients()
-    this.domain = await this.getDomain()
-    this.aliasFormat = await this.getAliasFormat()
-    this.showAliasStatus = await this.getShowAliasStatus()
-    this.theme = await this.getTheme()
-    // Force update any old theme values
-    if (this.theme == '') {
-      this.theme = 'light'
-    }
-    this.autoCopyNewAlias = await this.getAutoCopyNewAlias()
-    this.showSearchSuggestions = await this.getShowSearchSuggestions()
-    this.autoFillLocalPart = await this.getAutoFillLocalPart()
-    this.defaultAliasSort = await this.getDefaultAliasSort()
-    this.defaultAliasSortDir = await this.getDefaultAliasSortDir()
-    this.defaultSelected = await this.getDefaultSelected()
-    this.selected = this.defaultSelected
+  }
+}
 
-    if (this.sharedDomainSelected && this.aliasFormat === 'custom' && !this.selfHosting) {
-      this.aliasFormat = 'random_characters'
+const showMoreAliases = () => {
+  aliasesCurrentPage.value += 1
+  showMoreAliasesLoading.value = true
+  getAliases()
+}
+
+const cancelEditDescription = () => {
+  aliasToViewDescriptionEditing.value = false
+  aliasDescriptionToEdit.value = ''
+}
+
+const cancelChangeInstance = () => {
+  changeInstance.value = false
+  instanceInput.value = 'https://app.addy.io'
+}
+
+const validInstance = (instance) => {
+  let re = /^(?:http(s)?:\/\/)[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+(?<!\/)$/
+  return re.test(instance)
+}
+
+const validLocalPart = (part) => {
+  let re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))$/
+  return re.test(part)
+}
+
+const validEmail = (email) => {
+  let re =
+    /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+  return re.test(email)
+}
+
+const validToken = (token) => {
+  let re = /^(addy_io_)?[a-zA-Z0-9]+$/
+  return re.test(token)
+}
+
+const setNewAliasCopied = () => {
+  newAliasCopied.value = true
+}
+
+const setSendFromAddressCopied = () => {
+  sendFromAddressCopied.value = true
+}
+
+const getAliasEmail = (alias) => {
+  if (!alias) return ''
+  return alias.extension
+    ? `${alias.local_part}+${alias.extension}@${alias.domain}`
+    : `${alias.local_part}@${alias.domain}`
+}
+
+const getAliasLocalPart = (alias) => {
+  return alias.extension ? `${alias.local_part}+${alias.extension}` : alias.local_part
+}
+
+const copyToClipboard = (text, onSuccessCallback = null) => {
+  try {
+    // Try using the modern Clipboard API first
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text)
+      if (onSuccessCallback) {
+        onSuccessCallback()
+      }
+      success('Copied to clipboard')
+      return true
     }
 
-    this.extensionWindow = await this.getExtensionWindow()
-    this.currentTabHostname = await this.getCurrentTabHostname()
+    // Fallback for older browsers and Safari
+    const textArea = document.createElement('textarea')
+    textArea.value = text
 
-    let manifest = this.$browser.runtime.getManifest()
+    // Make the textarea out of viewport
+    textArea.style.position = 'fixed'
+    textArea.style.left = '-999999px'
+    textArea.style.top = '-999999px'
+    document.body.appendChild(textArea)
 
-    // Browser checks
-    let ua = navigator.userAgent
+    textArea.focus()
+    textArea.select()
 
-    // Check if Gecko based
-    if (/rv:([^\)]+)\) Gecko\/\d{8}/.test(ua)) {
-      this.extensionUrl = 'https://addons.mozilla.org/en-GB/firefox/addon/addy_io/'
+    try {
+      document.execCommand('copy')
+      if (onSuccessCallback) {
+        onSuccessCallback()
+      }
+      success('Copied to clipboard')
+      return true
+    } catch (err) {
+      console.error('Failed to copy text: ', err)
+      errorNotification('Failed to copy to clipboard')
+      return false
+    } finally {
+      textArea.remove()
     }
+  } catch (err) {
+    console.error('Failed to copy text: ', err)
+    errorNotification('Failed to copy to clipboard')
+    return false
+  }
+}
 
-    // Check if Safari
-    let iOS = ua.match(/Macintosh/i) || ua.match(/iPad/i) || ua.match(/iPhone/i)
+const success = (text = '') => {
+  notify({ text, type: 'success' })
+}
 
-    // Check if Edge
-    if (ua.match(/Edg/i)) {
-      this.extensionUrl =
-        'https://microsoftedge.microsoft.com/addons/detail/addyio-anonymous-email/ohjlgpcfncgkijjfmabldlgnccmgcehl'
-    } else if (
-      iOS &&
-      ua.match(/WebKit/i) &&
-      !ua.match(/CriOS/i) &&
-      !ua.match(/EdgiOS/i) &&
-      !ua.match(/Chrome/i) &&
-      !ua.match(/Edg/i)
-    ) {
-      this.extensionUrl = 'https://apps.apple.com/app/addy-io-safari-extension/id6670220050'
+const errorNotification = (text = '') => {
+  notify({ text, type: 'error' })
+}
+
+const logout = async (expiredToken = false) => {
+  if (!expiredToken) {
+    logoutLoading.value = true
+  }
+
+  try {
+    await browser.storage.sync.remove([
+      'apiToken',
+      'instance',
+      'domainOptions',
+      'recipients',
+      'domain',
+      'aliasFormat',
+      'showAliasStatus',
+      'theme',
+      'autoCopyNewAlias',
+      'showSearchSuggestions',
+      'autoFillLocalPart',
+      'defaultAliasSort',
+      'defaultAliasSortDir',
+      'defaultSelected',
+    ])
+    apiToken.value = await getApiToken()
+    instance.value = await getInstance()
+    domainOptions.value = await getDomainOptions()
+    recipients.value = await getRecipients()
+    domain.value = await getDomain()
+    aliasFormat.value = await getAliasFormat()
+    showAliasStatus.value = await getShowAliasStatus()
+    theme.value = await getTheme()
+    autoCopyNewAlias.value = await getAutoCopyNewAlias()
+    showSearchSuggestions.value = await getShowSearchSuggestions()
+    autoFillLocalPart.value = await getAutoFillLocalPart()
+    defaultAliasSort.value = await getDefaultAliasSort()
+    defaultAliasSortDir.value = await getDefaultAliasSortDir()
+    defaultSelected.value = await getDefaultSelected()
+
+    logoutModalOpen.value = false
+    if (!expiredToken) {
+      logoutLoading.value = false
+      success('Logged out successfully')
     }
-
-    if (manifest) {
-      this.extensionVersion = manifest.version
-    }
-
-    if (this.apiToken) {
-      document.getElementById('search').focus()
-      this.getAliases(true)
-
-      if (this.recipients.length == 0) {
-        this.getRecipientsRequest()
-      }
-    }
-  },
-  watch: {
-    apiToken: {
-      async handler(val) {
-        try {
-          await this.$browser.storage.sync.set({ apiToken: val })
-        } catch (error) {
-          console.log(error)
-        }
-      },
-    },
-    instance: {
-      async handler(val) {
-        try {
-          await this.$browser.storage.sync.set({ instance: val })
-        } catch (error) {
-          console.log(error)
-        }
-      },
-    },
-    domainOptions: {
-      async handler(val) {
-        try {
-          await this.$browser.storage.sync.set({ domainOptions: val })
-        } catch (error) {
-          console.log(error)
-        }
-      },
-    },
-    recipients: {
-      async handler(val) {
-        try {
-          await this.$browser.storage.sync.set({ recipients: val })
-        } catch (error) {
-          console.log(error)
-        }
-      },
-    },
-    domain: {
-      async handler(val) {
-        if (this.sharedDomainSelected) {
-          this.aliasFormat = 'random_characters'
-        }
-        try {
-          await this.$browser.storage.sync.set({ domain: val })
-        } catch (error) {
-          console.log(error)
-        }
-      },
-    },
-    aliasFormat: {
-      async handler(val) {
-        // If alias format changes to custom and autoFillLocalPart is enabled then update localPart
-        if (val === 'custom' && this.autoFillLocalPart !== '') {
-          this.localPart = this.localPartAutoFill[this.autoFillLocalPart]
-        } else {
-          this.localPart = ''
-        }
-
-        try {
-          await this.$browser.storage.sync.set({ aliasFormat: val })
-        } catch (error) {
-          console.log(error)
-        }
-      },
-    },
-    showAliasStatus: {
-      async handler(val, oldVal) {
-        try {
-          await this.$browser.storage.sync.set({ showAliasStatus: val })
-        } catch (error) {
-          console.log(error)
-        }
-
-        if (!this.aliases.length && oldVal === 'all') {
-          // No need to make another request if there are no aliases when the status is 'all'
-        } else {
-          this.aliasesCurrentPage = 1
-          this.getAliases()
-        }
-      },
-    },
-    theme: {
-      async handler(val) {
-        try {
-          await this.$browser.storage.sync.set({ theme: val })
-        } catch (error) {
-          console.log(error)
-        }
-      },
-    },
-    autoCopyNewAlias: {
-      async handler(val) {
-        try {
-          await this.$browser.storage.sync.set({ autoCopyNewAlias: val })
-        } catch (error) {
-          console.log(error)
-        }
-      },
-    },
-    showSearchSuggestions: {
-      async handler(val) {
-        try {
-          await this.$browser.storage.sync.set({ showSearchSuggestions: val })
-        } catch (error) {
-          console.log(error)
-        }
-      },
-    },
-    autoFillLocalPart: {
-      async handler(val) {
-        if (this.aliasFormat === 'custom' && val !== '') {
-          this.localPart = this.localPartAutoFill[val]
-        }
-        try {
-          await this.$browser.storage.sync.set({ autoFillLocalPart: val })
-        } catch (error) {
-          console.log(error)
-        }
-      },
-    },
-    defaultAliasSort: {
-      async handler(val) {
-        try {
-          await this.$browser.storage.sync.set({ defaultAliasSort: val })
-        } catch (error) {
-          console.log(error)
-        }
-
-        if (this.aliases.length) {
-          this.aliasesCurrentPage = 1
-          this.getAliases(true)
-        }
-      },
-    },
-    defaultAliasSortDir: {
-      async handler(val) {
-        try {
-          await this.$browser.storage.sync.set({ defaultAliasSortDir: val })
-        } catch (error) {
-          console.log(error)
-        }
-
-        if (this.aliases.length) {
-          this.aliasesCurrentPage = 1
-          this.getAliases(true)
-        }
-      },
-    },
-    defaultSelected: {
-      async handler(val) {
-        try {
-          await this.$browser.storage.sync.set({ defaultSelected: val })
-        } catch (error) {
-          console.log(error)
-        }
-      },
-    },
-    tokenInput: function () {
-      this.error = ''
-    },
-    description: function () {
-      this.error = ''
-    },
-    localPart: function () {
-      this.error = ''
-    },
-    selected: function (val) {
-      this.error = ''
-      this.cancelEditDescription()
-    },
-    searchInput: {
-      handler: debounce(function (val) {
-        if (val == '' || val.length > 2) {
-          // If there is already a request loading then abort it
-          if (this.getAliasesLoading || this.showMoreAliasesLoading) {
-            this.abortController.abort()
-            this.showMoreAliasesLoading = false
-          }
-          this.aliasesCurrentPage = 1
-          this.getAliases()
-        }
-      }, 300),
-    },
-    aliasToViewDescriptionEditing: {
-      handler: debounce(function (val) {
-        if (val === true) {
-          document.getElementById('description-input').focus()
-        }
-      }, 100),
-    },
-  },
-  computed: {
-    subscribed() {
-      return Object.values(this.domainOptions).length > 3
-    },
-    selfHosting() {
-      return !['https://app.anonaddy.com', 'https://app.addy.io'].includes(this.instance)
-    },
-    subscribedOrSelfHosting() {
-      return this.subscribed || this.selfHosting
-    },
-    aliasToViewHasSharedDomain() {
-      if (!this.aliasToView.domain) {
-        return false
-      }
-      return this.sharedDomains.includes(this.aliasToView.domain)
-    },
-    sharedDomainSelected() {
-      return this.sharedDomains.includes(this.domain)
-    },
-    showDeletedAliases() {
-      if (this.showAliasStatus === 'all') {
-        return 'with'
-      } else if (this.showAliasStatus === 'deleted') {
-        return 'only'
-      } else {
-        return 'without'
-      }
-    },
-    showActiveAliases() {
-      if (this.showAliasStatus === 'inactive') {
-        return false
-      } else if (this.showAliasStatus === 'active') {
-        return true
-      } else {
-        return ''
-      }
-    },
-    activeTheme() {
-      // If the user has chosen system theme then return this here
-      if (this.theme === 'system') {
-        // Detect system theme
-        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-          return 'dark'
-        } else {
-          return 'light'
-        }
-      }
-
-      // light or dark
-      return this.theme
-    },
-  },
-  methods: {
-    popout() {
-      let href = this.extensionWindow.location.href
-
-      if (
-        typeof this.$browser !== 'undefined' &&
-        this.$browser.windows &&
-        this.$browser.windows.create
-      ) {
-        if (href.indexOf('?uilocation=') > -1) {
-          href = href
-            .replace('uilocation=popup', 'uilocation=popout')
-            .replace('uilocation=tab', 'uilocation=popout')
-            .replace('uilocation=sidebar', 'uilocation=popout')
-        } else {
-          const hrefParts = href.split('#')
-          href =
-            hrefParts[0] + '?uilocation=popout' + (hrefParts.length > 0 ? '#' + hrefParts[1] : '')
-        }
-
-        const bodyRect = document.querySelector('body').getBoundingClientRect()
-        this.$browser.windows.create({
-          url: href,
-          type: 'popup',
-          width: Math.round(bodyRect.width ? bodyRect.width + 60 : 375),
-          height: Math.round(bodyRect.height || 600),
-        })
-
-        this.$browser.tabs.update({ active: true }).finally(this.extensionWindow.close)
-      } else if (
-        typeof this.$browser !== 'undefined' &&
-        this.$browser.tabs &&
-        this.$browser.tabs.create
-      ) {
-        href = href
-          .replace('uilocation=popup', 'uilocation=tab')
-          .replace('uilocation=popout', 'uilocation=tab')
-          .replace('uilocation=sidebar', 'uilocation=tab')
-        this.$browser.tabs.create({
-          url: href,
-        })
-      }
-    },
-    async getApiToken() {
-      try {
-        var result = await this.$browser.storage.sync.get({ apiToken: '' })
-        return result.apiToken
-      } catch (error) {
-        console.log(error)
-      }
-    },
-    async getInstance() {
-      try {
-        var result = await this.$browser.storage.sync.get({ instance: '' })
-        return result.instance
-      } catch (error) {
-        console.log(error)
-      }
-    },
-    async getDomainOptions() {
-      try {
-        var result = await this.$browser.storage.sync.get({ domainOptions: [''] })
-        return result.domainOptions
-      } catch (error) {
-        console.log(error)
-      }
-    },
-    async getRecipients() {
-      try {
-        var result = await this.$browser.storage.sync.get({ recipients: [''] })
-        return result.recipients
-      } catch (error) {
-        console.log(error)
-      }
-    },
-    async getDomain() {
-      try {
-        var result = await this.$browser.storage.sync.get({ domain: '' })
-        return result.domain
-      } catch (error) {
-        console.log(error)
-      }
-    },
-    async getAliasFormat() {
-      try {
-        var result = await this.$browser.storage.sync.get({ aliasFormat: 'random_characters' })
-        return result.aliasFormat
-      } catch (error) {
-        console.log(error)
-      }
-    },
-    async getShowAliasStatus() {
-      try {
-        var result = await this.$browser.storage.sync.get({ showAliasStatus: 'all' })
-        return result.showAliasStatus
-      } catch (error) {
-        console.log(error)
-      }
-    },
-    async getTheme() {
-      try {
-        var result = await this.$browser.storage.sync.get({ theme: 'system' })
-        return result.theme
-      } catch (error) {
-        console.log(error)
-      }
-    },
-    async getAutoCopyNewAlias() {
-      try {
-        var result = await this.$browser.storage.sync.get({ autoCopyNewAlias: true })
-        return result.autoCopyNewAlias
-      } catch (error) {
-        console.log(error)
-      }
-    },
-    async getShowSearchSuggestions() {
-      try {
-        var result = await this.$browser.storage.sync.get({ showSearchSuggestions: true })
-        return result.showSearchSuggestions
-      } catch (error) {
-        console.log(error)
-      }
-    },
-    async getAutoFillLocalPart() {
-      try {
-        var result = await this.$browser.storage.sync.get({ autoFillLocalPart: '' })
-        return result.autoFillLocalPart
-      } catch (error) {
-        console.log(error)
-      }
-    },
-    async getDefaultAliasSort() {
-      try {
-        var result = await this.$browser.storage.sync.get({ defaultAliasSort: 'created_at' })
-        return result.defaultAliasSort
-      } catch (error) {
-        console.log(error)
-      }
-    },
-    async getDefaultAliasSortDir() {
-      try {
-        var result = await this.$browser.storage.sync.get({ defaultAliasSortDir: '-' })
-        return result.defaultAliasSortDir
-      } catch (error) {
-        console.log(error)
-      }
-    },
-    async getDefaultSelected() {
-      try {
-        var result = await this.$browser.storage.sync.get({ defaultSelected: 'Aliases' })
-        return result.defaultSelected
-      } catch (error) {
-        console.log(error)
-      }
-    },
-    async getCurrentTabHostname() {
-      try {
-        var result = await this.$browser.tabs.query({ active: true, currentWindow: true })
-        if (result[0].url && this.extensionWindow) {
-          var url = new URL(result[0].url)
-
-          let parsed = window.psl.parse(url.hostname)
-          if (parsed.sld) {
-            this.localPartSuggestions.push(parsed.sld)
-            this.localPartAutoFill.sld = parsed.sld
-          }
-          if (parsed.domain) {
-            this.localPartSuggestions.push(parsed.domain)
-            this.localPartAutoFill.domain = parsed.domain
-          }
-          if (url.hostname && url.hostname !== parsed.domain) {
-            this.localPartSuggestions.push(url.hostname)
-            this.localPartAutoFill.full = url.hostname
-          }
-
-          if (url.hostname === parsed.domain) {
-            this.localPartAutoFill.full = url.hostname
-          }
-
-          // Also add a suggestion with a random alphanumeric string appended
-          if (parsed.sld) {
-            let random = parsed.sld + '.' + Math.random().toString(36).substring(2, 5)
-            this.localPartSuggestions.push(random)
-            this.localPartAutoFill.random = random
-          }
-
-          // Set the alias local part if the format is custom and autoFill is enabled
-          if (this.aliasFormat === 'custom' && this.autoFillLocalPart !== '') {
-            this.localPart = this.localPartAutoFill[this.autoFillLocalPart]
-          }
-
-          return url.hostname
-        }
-        return null
-      } catch (error) {
-        console.log(error)
-      }
-    },
-    async getExtensionWindow() {
-      try {
-        let result = await this.$browser.extension.getViews({ type: 'popup' })
-
-        return result[0]
-      } catch (error) {
-        console.log(error)
-      }
-    },
-    async getAliases(calledFromMounted = false) {
-      this.error = ''
-
-      // To prevent overriding the users choice of tab to display on extension open
-      if (!calledFromMounted) {
-        this.selected = 'Aliases'
-      }
-
-      if (this.aliasesCurrentPage == 1) {
-        this.getAliasesLoading = true
-      }
-
-      this.abortController = new AbortController()
-      const signal = this.abortController.signal
-
-      try {
-        const response = await fetch(
-          `${this.instance}/api/v1/aliases?filter[deleted]=${
-            this.showDeletedAliases
-          }&filter[active]=${this.showActiveAliases}&filter[search]=${
-            this.searchInput.length > 2 ? this.searchInput : ''
-          }&sort=${this.defaultAliasSortDir}${this.defaultAliasSort}&page[number]=${
-            this.aliasesCurrentPage
-          }&page[size]=10`,
-          {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-Requested-With': 'XMLHttpRequest',
-              'X-Requested-From': 'browser-extension',
-              Authorization: `Bearer ${this.apiToken}`,
-            },
-            signal: signal,
-          }
-        )
-
-        if (response.status === 200) {
-          let data = await response.json()
-
-          if (this.aliasesCurrentPage > 1) {
-            this.aliases = this.aliases.concat(data.data)
-          } else {
-            this.aliases = data.data
-          }
-
-          if (this.searchInput) {
-            this.aliasesTitle = `Search Results (${data.meta.total} `
-
-            this.aliasesTitle += data.meta.total === 1 ? 'match)' : 'matches)'
-          } else {
-            this.aliasesTitle = 'Aliases'
-          }
-
-          if (data.links) {
-            this.aliasesHaveNextPage = data.links.next ? true : false
-          } else {
-            this.aliasesHaveNextPage = false
-          }
-
-          this.aliasesMeta = data.meta
-        } else if (response.status === 401) {
-          this.logout(true)
-          this.error =
-            "Unauthenticated, your API key has either expired or been revoked. You've been automatically logged out."
-        } else {
-          this.error = 'An Error Has Occurred'
-        }
-
-        if (this.aliasesCurrentPage == 1) {
-          this.getAliasesLoading = false
-        } else {
-          this.showMoreAliasesLoading = false
-        }
-      } catch (error) {
-        if (error.name !== 'AbortError') {
-          if (this.aliasesCurrentPage == 1) {
-            this.getAliasesLoading = false
-          } else {
-            this.showMoreAliasesLoading = false
-          }
-
-          this.error = 'An Error Has Occurred'
-          console.log(error)
-        }
-      }
-    },
-    async getAliasDomainOptions(token, instance, renew = false) {
-      this.error = ''
-
-      if (!token) {
-        let message = 'An API key is required to login!'
-        return renew ? this.errorNotification(message) : (this.error = message)
-      }
-
-      if (!this.validToken(token)) {
-        let message = "Invalid API key format, please check that you've entered it correctly!"
-        return renew ? this.errorNotification(message) : (this.error = message)
-      }
-
-      if (token.length < 40) {
-        let message = "That API key is too short, please check that you've entered it correctly!"
-        return renew ? this.errorNotification(message) : (this.error = message)
-      }
-
-      if (token.length > 60) {
-        let message = "That API key is too long, please check that you've entered it correctly!"
-        return renew ? this.errorNotification(message) : (this.error = message)
-      }
-
-      if (!this.validInstance(instance) && this.changeInstance) {
-        let message =
-          'Please enter a valid URL for the instance with no trailing slash, e.g. "https://app.example.com"'
-        return renew ? this.errorNotification(message) : (this.error = message)
-      }
-
-      this.domainOptionsLoading = true
-
-      try {
-        const response = await fetch(`${instance}/api/v1/domain-options`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
-            'X-Requested-From': 'browser-extension',
-            Authorization: `Bearer ${token}`,
-          },
-        })
-
-        this.domainOptionsLoading = false
-
-        if (response.status === 401) {
-          if (renew) {
-            this.errorNotification(
-              "Error, invalid API key, please check that you've entered it correctly"
-            )
-          } else if (!this.apiToken) {
-            this.error =
-              "Error, invalid API key, please check that you've entered it correctly and that you have the correct instance (if self-hosting)"
-          } else {
-            this.logout(true)
-            this.error =
-              "Unauthenticated, your API key has either expired or been revoked. You've been automatically logged out."
-          }
-        } else if (response.status === 200) {
-          // Clear token input
-          this.tokenInput = ''
-
-          if (!this.instance) {
-            this.instance = instance
-          }
-
-          if (!this.apiToken) {
-            this.apiToken = token
-            this.getAliases()
-            this.getRecipientsRequest()
-
-            this.success('Logged in successfully')
-          } else if (renew) {
-            this.apiToken = token
-            this.renewApiKeyModalOpen = false
-
-            this.success('Renewed API Key successfully')
-          } else {
-            this.success('Domains and defaults refreshed')
-          }
-
-          let data = await response.json()
-          this.domainOptions = data.data
-          this.domain = data.defaultAliasDomain ? data.defaultAliasDomain : data.data[0]
-          this.aliasFormat = data.defaultAliasFormat ? data.defaultAliasFormat : 'random_characters'
-
-          if (this.sharedDomainSelected && this.aliasFormat === 'custom' && !this.selfHosting) {
-            this.aliasFormat = 'random_characters'
-          }
-        } else {
-          renew
-            ? this.errorNotification('An Error Has Occurred')
-            : (this.error = 'An Error Has Occurred')
-        }
-      } catch (error) {
-        this.domainOptionsLoading = false
-        renew
-          ? this.errorNotification('An Error Has Occurred')
-          : (this.error = 'An Error Has Occurred')
-        console.log(error)
-      }
-    },
-    async getRecipientsRequest() {
-      this.recipientsLoading = true
-
-      try {
-        const response = await fetch(`${this.instance}/api/v1/recipients?filter[verified]=true`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
-            'X-Requested-From': 'browser-extension',
-            Authorization: `Bearer ${this.apiToken}`,
-          },
-        })
-
-        let data = await response.json()
-
-        this.recipients = data.data.map(function (recipient) {
-          return {
-            id: recipient.id,
-            email: recipient.email,
-          }
-        })
-
-        if (this.selected == 'Settings') {
-          this.success('Recipients refreshed')
-        }
-
-        this.recipientsLoading = false
-      } catch (error) {
-        this.recipientsLoading = false
-        this.error = 'An Error Has Occurred'
-        console.log(error)
-      }
-    },
-    async createAlias() {
-      // Validate alias local part
-      if (
-        !this.sharedDomainSelected &&
-        this.aliasFormat === 'custom' &&
-        !this.validLocalPart(this.localPart)
-      ) {
-        return (this.error = 'Valid local part required')
-      }
-
-      if (this.description.length > 200) {
-        return (this.error = 'Description cannot be more than 200 characters')
-      }
-
-      if (!Object.values(this.domainOptions).find((domain) => domain === this.domain)) {
-        return (this.error = 'Invalid alias domain name')
-      }
-
-      this.createAliasLoading = true
-      this.error = ''
-
-      try {
-        const response = await fetch(`${this.instance}/api/v1/aliases`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
-            'X-Requested-From': 'browser-extension',
-            Authorization: `Bearer ${this.apiToken}`,
-          },
-          body: JSON.stringify({
-            domain: this.domain,
-            local_part: this.localPart,
-            description: this.description ? this.description : this.currentTabHostname,
-            format: this.aliasFormat,
-            recipient_ids: this.createAliasRecipientIds,
-          }),
-        })
-
-        this.createAliasLoading = false
-
-        if (response.status === 403) {
-          this.error = 'You have reached your active shared domain alias limit'
-        } else if (response.status === 429) {
-          this.error = 'You have reached your hourly limit for creating new aliases'
-        } else if (response.status === 422) {
-          let error = await response.json()
-          this.error = error.errors[Object.keys(error.errors)[0]][0]
-        } else if (response.status === 401) {
-          this.logout(true)
-          this.error =
-            "Unauthenticated, your API key has either expired or been revoked. You've been automatically logged out."
-        } else if (response.status === 201) {
-          let data = await response.json()
-          this.localPart = ''
-          this.description = ''
-          this.createAliasRecipientIds = []
-          this.newAlias = this.getAliasEmail(data.data)
-
-          // If auto copy is enabled
-          if (this.autoCopyNewAlias) {
-            await this.copyToClipboard(this.getAliasEmail(data.data))
-          }
-
-          this.aliases = [data.data].concat(this.aliases)
-        } else {
-          this.error = 'An Error Has Occurred'
-        }
-      } catch (error) {
-        this.createAliasLoading = false
-        this.error = 'An Error Has Occurred'
-        console.log(error)
-      }
-    },
-    async editAliasDescription(alias) {
-      this.editAliasDescriptionLoading = true
-
-      try {
-        const response = await fetch(`${this.instance}/api/v1/aliases/${alias.id}`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
-            'X-Requested-From': 'browser-extension',
-            Authorization: `Bearer ${this.apiToken}`,
-          },
-          body: JSON.stringify({
-            description: this.aliasDescriptionToEdit,
-          }),
-        })
-
-        this.editAliasDescriptionLoading = false
-
-        if (response.status === 200) {
-          alias.description = this.aliasDescriptionToEdit
-          this.aliasDescriptionToEdit = ''
-          this.aliasToViewDescriptionEditing = false
-          this.success('Alias description updated successfully')
-        } else {
-          this.error = 'An Error Has Occurred'
-        }
-      } catch (error) {
-        this.editAliasDescriptionLoading = false
-        this.aliasDescriptionToEdit = ''
-        this.aliasToViewDescriptionEditing = false
-        this.error = 'An Error Has Occurred'
-        console.log(error)
-      }
-    },
-    async activateAlias(alias) {
-      this.activateAliasLoading = true
-
-      try {
-        const response = await fetch(`${this.instance}/api/v1/active-aliases`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
-            'X-Requested-From': 'browser-extension',
-            Authorization: `Bearer ${this.apiToken}`,
-          },
-          body: JSON.stringify({
-            id: alias.id,
-          }),
-        })
-
-        this.activateAliasLoading = false
-
-        if (response.status === 403) {
-          this.error = 'You have reached your active shared domain alias limit'
-        } else if (response.status === 200) {
-          alias.active = true
-          this.success('Alias activated successfully')
-        } else {
-          this.error = 'An Error Has Occurred'
-        }
-      } catch (error) {
-        this.activateAliasLoading = false
-        this.error = 'An Error Has Occurred'
-        console.log(error)
-      }
-    },
-    async deactivateAlias(alias) {
-      this.deactivateAliasLoading = true
-
-      try {
-        const response = await fetch(`${this.instance}/api/v1/active-aliases/${alias.id}`, {
-          method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
-            'X-Requested-From': 'browser-extension',
-            Authorization: `Bearer ${this.apiToken}`,
-          },
-        })
-
-        this.deactivateAliasLoading = false
-
-        if (response.status === 204) {
-          alias.active = false
-          this.success('Alias deactivated successfully')
-        } else {
-          this.error = 'An Error Has Occurred'
-        }
-      } catch (error) {
-        this.deactivateAliasLoading = false
-        this.error = 'An Error Has Occurred'
-        console.log(error)
-      }
-    },
-    async deleteAlias(alias) {
-      this.deleteAliasLoading = true
-
-      try {
-        const response = await fetch(`${this.instance}/api/v1/aliases/${alias.id}`, {
-          method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
-            'X-Requested-From': 'browser-extension',
-            Authorization: `Bearer ${this.apiToken}`,
-          },
-        })
-
-        this.deleteAliasLoading = false
-
-        if (response.status === 204) {
-          alias.deleted_at = this.$filters.nowToString()
-          alias.active = false
-          this.success('Alias deleted successfully')
-        } else {
-          this.error = 'An Error Has Occurred'
-        }
-      } catch (error) {
-        this.deleteAliasLoading = false
-        this.error = 'An Error Has Occurred'
-        console.log(error)
-      }
-
-      this.deleteAliasModalOpen = false
-    },
-    async forgetAlias(alias) {
-      this.forgetAliasLoading = true
-
-      try {
-        const response = await fetch(`${this.instance}/api/v1/aliases/${alias.id}/forget`, {
-          method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
-            'X-Requested-From': 'browser-extension',
-            Authorization: `Bearer ${this.apiToken}`,
-          },
-        })
-
-        this.forgetAliasLoading = false
-
-        if (response.status === 204) {
-          this.aliases = this.aliases.filter((a) => a.id !== alias.id)
-          this.success('Alias forgotten successfully')
-        } else {
-          this.error = 'An Error Has Occurred'
-        }
-      } catch (error) {
-        this.forgetAliasLoading = false
-        this.error = 'An Error Has Occurred'
-        console.log(error)
-      }
-
-      this.selected = 'Aliases'
-      this.forgetAliasModalOpen = false
-    },
-    async restoreAlias(alias) {
-      this.retoreAliasLoading = true
-
-      try {
-        const response = await fetch(`${this.instance}/api/v1/aliases/${alias.id}/restore`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
-            'X-Requested-From': 'browser-extension',
-            Authorization: `Bearer ${this.apiToken}`,
-          },
-        })
-
-        this.retoreAliasLoading = false
-
-        if (response.status === 200) {
-          alias.deleted_at = null
-          alias.active = true
-          this.success('Alias restored successfully')
-        } else {
-          this.error = 'An Error Has Occurred'
-        }
-      } catch (error) {
-        this.retoreAliasLoading = false
-        this.error = 'An Error Has Occurred'
-        console.log(error)
-      }
-
-      this.restoreAliasModalOpen = false
-    },
-    async logout(expiredToken = false) {
-      if (!expiredToken) {
-        this.logoutLoading = true
-      }
-
-      Object.assign(this.$data, this.$options.data.apply(this))
-
-      try {
-        await this.$browser.storage.sync.remove([
-          'apiToken',
-          'instance',
-          'domainOptions',
-          'recipients',
-          'domain',
-          'aliasFormat',
-          'showAliasStatus',
-          'theme',
-          'autoCopyNewAlias',
-          'showSearchSuggestions',
-          'autoFillLocalPart',
-          'defaultAliasSort',
-          'defaultAliasSortDir',
-          'defaultSelected',
-        ])
-        this.apiToken = await this.getApiToken()
-        this.instance = await this.getInstance()
-        this.domainOptions = await this.getDomainOptions()
-        this.recipients = await this.getRecipients()
-        this.domain = await this.getDomain()
-        this.aliasFormat = await this.getAliasFormat()
-        this.showAliasStatus = await this.getShowAliasStatus()
-        this.theme = await this.getTheme()
-        this.autoCopyNewAlias = await this.getAutoCopyNewAlias()
-        this.showSearchSuggestions = await this.getShowSearchSuggestions()
-        this.autoFillLocalPart = await this.getAutoFillLocalPart()
-        this.defaultAliasSort = await this.getDefaultAliasSort()
-        this.defaultAliasSortDir = await this.getDefaultAliasSortDir()
-        this.defaultSelected = await this.getDefaultSelected()
-
-        if (!expiredToken) {
-          this.logoutLoading = false
-          this.success('Logged out successfully')
-        }
-      } catch (error) {
-        this.logoutLoading = false
-        console.log(error)
-      }
-    },
-    displaySendFromAddress() {
-      this.error = ''
-      this.sendFromAddressCopied = false
-
-      if (!this.validEmail(this.sendFromAliasDestination)) {
-        this.error = 'Valid Email required'
-        return
-      }
-
-      this.sendFromAliasEmailToSendTo = `${
-        this.aliasToView.local_part
-      }+${this.sendFromAliasDestination.replace('@', '=')}@${this.aliasToView.domain}`
-    },
-    openSendFromAlias() {
-      if (this.aliasToView.deleted_at) {
-        return (this.error = 'You must restore this alias first')
-      }
-
-      if (!this.aliasToView.active) {
-        return (this.error = 'You must activate this alias first')
-      }
-
-      this.sendFromAliasDestination = ''
-      this.sendFromAliasEmailToSendTo = ''
-      this.sendFromAddressCopied = false
-      this.selected = 'SendFromAlias'
-    },
-    viewAlias(alias) {
-      this.selected = 'ViewAlias'
-
-      this.aliasToView = alias
-    },
-    getAliasStatus(alias) {
-      if (alias.deleted_at) {
-        return {
-          foregroundColour: 'bg-red-400',
-          backgroundColour: 'bg-red-100',
-          status: 'Deleted',
-        }
-      } else {
-        return {
-          foregroundColour: alias.active ? 'bg-green-400' : 'bg-grey-400',
-          backgroundColour: alias.active ? 'bg-green-100' : 'bg-grey-100',
-          status: alias.active ? 'Active' : 'Inactive',
-        }
-      }
-    },
-    showMoreAliases() {
-      this.aliasesCurrentPage++
-      this.showMoreAliasesLoading = true
-
-      this.getAliases()
-    },
-    cancelEditDescription() {
-      this.aliasToViewDescriptionEditing = false
-      this.aliasDescriptionToEdit = ''
-    },
-    cancelChangeInstance() {
-      this.instanceInput = 'https://app.addy.io'
-      this.changeInstance = false
-    },
-    validInstance(instance) {
-      let re =
-        /^(?:http(s)?:\/\/)[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+(?<!\/)$/
-      return re.test(instance)
-    },
-    validLocalPart(part) {
-      let re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))$/
-      return re.test(part)
-    },
-    validEmail(email) {
-      let re =
-        /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-      return re.test(email)
-    },
-    validToken(token) {
-      let re = /^(addy_io_)?[a-zA-Z0-9]+$/
-
-      return re.test(token)
-    },
-    setNewAliasCopied() {
-      this.newAliasCopied = true
-      this.aliasCopied()
-    },
-    setSendFromAddressCopied() {
-      this.sendFromAddressCopied = true
-      this.aliasCopied()
-    },
-    clipboardSuccess() {
-      this.clipboardButtonText = 'Copied!'
-    },
-    clipboardError() {
-      this.clipboardButtonText = 'Error!'
-    },
-    aliasCopied() {
-      this.success('Copied to clipboard')
-    },
-    success(text = '') {
-      this.$notify({
-        text: text,
-        type: 'success',
-      })
-    },
-    errorNotification(text = '') {
-      this.$notify({
-        text: text,
-        type: 'error',
-      })
-    },
-    getAliasEmail(alias) {
-      return alias.extension
-        ? `${alias.local_part}+${alias.extension}@${alias.domain}`
-        : alias.email
-    },
-    getAliasLocalPart(alias) {
-      return alias.extension ? `${alias.local_part}+${alias.extension}` : alias.local_part
-    },
-    async copyToClipboard(text) {
-      try {
-        // Try using the modern Clipboard API first
-        if (navigator.clipboard && window.isSecureContext) {
-          await navigator.clipboard.writeText(text)
-          this.success('Copied to clipboard')
-          return true
-        }
-
-        // Fallback for older browsers and Safari
-        const textArea = document.createElement('textarea')
-        textArea.value = text
-
-        // Make the textarea out of viewport
-        textArea.style.position = 'fixed'
-        textArea.style.left = '-999999px'
-        textArea.style.top = '-999999px'
-        document.body.appendChild(textArea)
-
-        textArea.focus()
-        textArea.select()
-
-        try {
-          document.execCommand('copy')
-          this.success('Copied to clipboard')
-          return true
-        } catch (err) {
-          console.error('Failed to copy text: ', err)
-          this.errorNotification('Failed to copy to clipboard')
-          return false
-        } finally {
-          textArea.remove()
-        }
-      } catch (err) {
-        console.error('Failed to copy text: ', err)
-        this.errorNotification('Failed to copy to clipboard')
-        return false
-      }
-    },
-  },
+  } catch (error) {
+    logoutLoading.value = false
+    console.log(error)
+  }
+}
+
+const popout = () => {
+  // Open the extension in a new window (popout)
+  const url = window.location.href
+  let hrefParts = url.split('#')
+  let newUrl = ''
+  if (url.includes('uilocation=popup')) {
+    newUrl = url.replace('uilocation=popup', 'uilocation=popout')
+  } else if (url.includes('uilocation=tab')) {
+    newUrl = url.replace('uilocation=tab', 'uilocation=popout')
+  } else if (url.includes('uilocation=sidebar')) {
+    newUrl = url.replace('uilocation=sidebar', 'uilocation=popout')
+  } else {
+    newUrl = hrefParts[0] + '?uilocation=popout' + (hrefParts.length > 1 ? '#' + hrefParts[1] : '')
+  }
+  window.open(newUrl, '_blank', 'width=600,height=800')
 }
 </script>
 

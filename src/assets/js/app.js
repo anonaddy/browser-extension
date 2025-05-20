@@ -2,8 +2,6 @@ import { createApp } from 'vue'
 
 import App from './components/App.vue'
 
-import Notifications from '@kyvg/vue3-notification'
-
 import dayjs from 'dayjs'
 import advancedFormat from 'dayjs/plugin/advancedFormat'
 import relativeTime from 'dayjs/plugin/relativeTime'
@@ -36,11 +34,6 @@ locale_en.relativeTime = {
 dayjs.locale('en-min', locale_en)
 
 const app = createApp(App)
-
-app.use(Notifications)
-
-// Mozilla's polyfill
-app.config.globalProperties.$browser = require('webextension-polyfill')
 
 // Global filters
 app.config.globalProperties.$filters = {

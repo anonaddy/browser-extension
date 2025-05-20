@@ -42,72 +42,71 @@
   </div>
 </template>
 
-<script>
-export default {
-  props: {
-    open: {
-      type: Boolean,
-      required: true,
-    },
-    overflow: {
-      type: Boolean,
-      required: false,
-      default: false,
-    },
+<script setup>
+import { ref, watch, computed, onMounted, onBeforeUnmount } from 'vue'
+
+const props = defineProps({
+  open: {
+    type: Boolean,
+    required: true,
   },
-  emits: ['close'],
-  data() {
-    return {
-      showModal: false,
-      showBackdrop: false,
-      showContent: false,
-      backdropLeaving: false,
-      cardLeaving: false,
-    }
+  overflow: {
+    type: Boolean,
+    required: false,
+    default: false,
   },
-  created() {
-    const onEscape = (e) => {
-      if (this.open && e.keyCode === 27) {
-        this.close()
-      }
-    }
-    document.addEventListener('keydown', onEscape)
-  },
-  watch: {
-    open: {
-      handler: function (newValue) {
-        if (newValue) {
-          this.show()
-        } else {
-          this.close()
-        }
-      },
-      immediate: true,
-    },
-    leaving(newValue) {
-      if (newValue === false) {
-        this.showModal = false
-        this.$emit('close')
-      }
-    },
-  },
-  computed: {
-    leaving() {
-      return this.backdropLeaving || this.cardLeaving
-    },
-  },
-  methods: {
-    show() {
-      this.showModal = true
-      this.showBackdrop = true
-      this.showContent = true
-    },
-    close() {
-      this.showBackdrop = false
-      this.showContent = false
-    },
-  },
+})
+const emit = defineEmits(['close'])
+
+const showModal = ref(false)
+const showBackdrop = ref(false)
+const showContent = ref(false)
+const backdropLeaving = ref(false)
+const cardLeaving = ref(false)
+
+const leaving = computed(() => backdropLeaving.value || cardLeaving.value)
+
+function show() {
+  showModal.value = true
+  showBackdrop.value = true
+  showContent.value = true
 }
+function close() {
+  showBackdrop.value = false
+  showContent.value = false
+}
+
+watch(
+  () => props.open,
+  (newValue) => {
+    if (newValue) {
+      show()
+    } else {
+      close()
+    }
+  },
+  { immediate: true }
+)
+
+watch(leaving, (newValue) => {
+  if (newValue === false) {
+    showModal.value = false
+    emit('close')
+  }
+})
+
+function onEscape(e) {
+  if (props.open && e.keyCode === 27) {
+    close()
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('keydown', onEscape)
+})
+onBeforeUnmount(() => {
+  document.removeEventListener('keydown', onEscape)
+})
 </script>
 
 <style>
