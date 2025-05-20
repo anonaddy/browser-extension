@@ -1,8 +1,8 @@
 <template>
-  <div class="loader inline-block ml-1">
+  <div class="loader ml-1 inline-block">
     <svg
       version="1.1"
-      class="fill-current inline-block"
+      class="inline-block fill-current"
       xmlns="http://www.w3.org/2000/svg"
       xmlns:xlink="http://www.w3.org/1999/xlink"
       x="0px"

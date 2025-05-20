@@ -1,4 +1,29 @@
-@tailwind base;
+@import 'tailwindcss';
+
+@config '../../../tailwind.config.js';
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
+}
 
 html {
   @apply font-sans;
@@ -6,23 +31,23 @@ html {
 }
 
 body {
-  @apply overflow-hidden w-full;
+  @apply w-full overflow-hidden;
   width: 400px;
   height: 600px;
 }
 
 .logged-in header {
-  @apply absolute top-0 left-0 right-0 overflow-y-auto overflow-x-auto;
+  @apply absolute top-0 right-0 left-0 overflow-x-auto overflow-y-auto;
 }
 
 content::-webkit-scrollbar,
 .multiselect .multiselect-dropdown::-webkit-scrollbar {
-  @apply w-2 h-2;
+  @apply h-2 w-2;
 }
 
 content::-webkit-scrollbar-thumb,
 .multiselect .multiselect-dropdown::-webkit-scrollbar-thumb {
-  @apply bg-indigo-500 rounded-full;
+  @apply rounded-full bg-indigo-500;
 }
 
 content::-webkit-scrollbar-track,
@@ -35,7 +60,7 @@ content::-webkit-scrollbar-track,
 }
 
 content {
-  @apply absolute top-12 bottom-14 left-0 right-0 overflow-y-auto overflow-x-auto text-base;
+  @apply absolute top-12 right-0 bottom-14 left-0 overflow-x-auto overflow-y-auto text-base;
 }
 
 .aliases-loader,
@@ -62,19 +87,19 @@ content {
 
 /* purgecss start ignore */
 .vue-notification-wrapper .vue-notification {
-  @apply text-sm mx-2 mb-2 text-center;
+  @apply mx-2 mb-2 text-center text-sm;
 }
 
 .vue-notification-wrapper .vue-notification.success {
-  @apply bg-green-100 border-green-600 text-green-800;
+  @apply border-green-600 bg-green-100 text-green-800;
 }
 
 .vue-notification-wrapper .vue-notification.error {
-  @apply bg-red-100 border-red-600 text-red-800;
+  @apply border-red-600 bg-red-100 text-red-800;
 }
 
 .vue-notification-wrapper .vue-notification.warn {
-  @apply bg-yellow-100 border-yellow-600 text-yellow-800;
+  @apply border-yellow-600 bg-yellow-100 text-yellow-800;
 }
 
 .multiselect .multiselect-tag {
@@ -90,7 +115,7 @@ content {
 }
 
 .dark .multiselect .multiselect-tags {
-  @apply bg-grey-700 text-white border-grey-500;
+  @apply border-grey-500 bg-grey-700 text-white;
 }
 
 .dark .multiselect .multiselect-tags input {
@@ -98,7 +123,7 @@ content {
 }
 
 .dark .multiselect .multiselect-dropdown {
-  @apply bg-grey-700 text-white border-grey-500;
+  @apply border-grey-500 bg-grey-700 text-white;
 }
 
 .dark .multiselect .multiselect-placeholder {
@@ -106,7 +131,3 @@ content {
 }
 
 /* purgecss end ignore */
-
-@tailwind components;
-
-@tailwind utilities;

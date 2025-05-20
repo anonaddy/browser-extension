@@ -1,23 +1,23 @@
 <template>
   <div :class="activeTheme">
-    <div v-if="!apiToken" class="login p-3 bg-indigo-900">
+    <div v-if="!apiToken" class="login bg-indigo-900 p-3">
       <header
-        class="flex items-center justify-between border-b bg-indigo-900 border-indigo-700 pb-3 mb-4"
+        class="mb-4 flex items-center justify-between border-b border-indigo-700 bg-indigo-900 pb-3"
       >
         <a href="https://app.addy.io" target="_blank" rel="nofollow noreferrer noopener">
           <img class="h-6" src="img/logo.png" alt="addy.io Logo" />
         </a>
-        <span class="text-grey-50 text-sm self-center">Anonymous Email Forwarding</span>
+        <span class="self-center text-sm text-grey-50">Anonymous Email Forwarding</span>
       </header>
       <div
         v-if="error"
-        class="flex items-center justify-center text-sm border-t-4 rounded-sm text-yellow-800 border-yellow-600 bg-yellow-100 p-2 mb-4"
+        class="mb-4 flex items-center justify-center rounded-xs border-t-4 border-yellow-600 bg-yellow-100 p-2 text-sm text-yellow-800"
         role="alert"
       >
         {{ error }}
       </div>
       <div v-if="changeInstance">
-        <label for="instance" class="block text-indigo-100 mb-1 text-base">
+        <label for="instance" class="mb-1 block text-base text-indigo-100">
           addy.io Instance: (only change this is you are self-hosting addy.io)</label
         >
         <input
@@ -25,16 +25,16 @@
           id="instance"
           type="text"
           required="required"
-          class="appearance-none shadow bg-white rounded-sm text-base w-full p-2 text-grey-700 focus:ring mb-4"
+          class="mb-4 w-full appearance-none rounded-xs bg-white p-2 text-base text-grey-700 shadow-sm focus:ring-3"
         />
       </div>
-      <label for="api_token" class="block text-indigo-100 mb-1 text-base">
+      <label for="api_token" class="mb-1 block text-base text-indigo-100">
         API key (from the addy.io
         <a
           href="https://app.addy.io/settings/api"
           target="_blank"
           rel="noopener noreferrer nofollow"
-          class="text-white hover:text-indigo-50 cursor-pointer"
+          class="cursor-pointer text-white hover:text-indigo-50"
           >settings</a
         >
         page):
@@ -46,26 +46,26 @@
         rows="2"
         required="required"
         autofocus="autofocus"
-        class="appearance-none shadow bg-white rounded-sm text-base w-full p-2 text-grey-700 focus:ring mb-4"
+        class="mb-4 w-full appearance-none rounded-xs bg-white p-2 text-base text-grey-700 shadow-sm focus:ring-3"
       >
       </textarea>
       <button
         @click="getAliasDomainOptions(tokenInput, instanceInput)"
-        class="px-3 py-2 w-full text-sm text-cyan-900 font-semibold bg-cyan-400 hover:bg-cyan-300 border border-transparent rounded-sm focus:outline-none"
+        class="w-full rounded-xs border border-transparent bg-cyan-400 px-3 py-2 text-sm font-semibold text-cyan-900 hover:bg-cyan-300 focus:outline-hidden"
         :class="domainOptionsLoading ? 'cursor-not-allowed' : ''"
         :disabled="domainOptionsLoading"
       >
         Sign In
         <loader class="h-5 w-5" v-if="domainOptionsLoading" />
       </button>
-      <div class="flex justify-between mt-3 text-base">
+      <div class="mt-3 flex justify-between text-base">
         <p class="text-indigo-100">
           Don't have an account?
           <a
             href="https://app.addy.io/register"
             target="_blank"
             rel="noopener noreferrer nofollow"
-            class="text-white hover:text-indigo-50 cursor-pointer"
+            class="cursor-pointer text-white hover:text-indigo-50"
           >
             Register
           </a>
@@ -73,14 +73,14 @@
         <span
           v-if="!changeInstance"
           @click="changeInstance = true"
-          class="block text-white hover:text-indigo-50 cursor-pointer"
+          class="block cursor-pointer text-white hover:text-indigo-50"
         >
           Change Instance
         </span>
         <span
           v-else
           @click="cancelChangeInstance"
-          class="block text-white hover:text-indigo-50 cursor-pointer"
+          class="block cursor-pointer text-white hover:text-indigo-50"
         >
           Cancel
         </span>
@@ -88,11 +88,11 @@
     </div>
 
     <div class="logged-in" v-else>
-      <header class="flex items-center justify-between bg-indigo-900 h-12">
+      <header class="flex h-12 items-center justify-between bg-indigo-900">
         <button
           v-if="extensionWindow"
           @click="popout"
-          class="text-white h-12 w-20 px-4 hover:bg-indigo-800 flex justify-center items-center focus:outline-none"
+          class="flex h-12 w-20 items-center justify-center px-4 text-white hover:bg-indigo-800 focus:outline-hidden"
           title="Pop out to a new window"
         >
           <external-link class="h-6 w-6" style="transform: scaleX(-1)" />
@@ -104,11 +104,11 @@
               id="search"
               type="text"
               placeholder="Search aliases"
-              class="w-full text-base appearance-none shadow bg-white text-grey-700 focus:outline-none rounded-sm py-1 px-8 dark:bg-grey-600 dark:text-white dark:placeholder-grey-200"
+              class="w-full appearance-none rounded-xs bg-white px-8 py-1 text-base text-grey-700 shadow-sm focus:outline-hidden dark:bg-grey-600 dark:text-white dark:placeholder-grey-200"
             />
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              class="absolute left-0 inset-y-0 ml-2 flex items-center text-grey-300 dark:text-white h-full w-5"
+              class="absolute inset-y-0 left-0 ml-2 flex h-full w-5 items-center text-grey-300 dark:text-white"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -123,13 +123,13 @@
             <cross
               v-if="searchInput"
               @click="((getAliasesLoading = true), (searchInput = ''))"
-              class="absolute right-0 inset-y-0 cursor-pointer mr-2 flex items-center text-grey-300 dark:text-white h-full w-5"
+              class="absolute inset-y-0 right-0 mr-2 flex h-full w-5 cursor-pointer items-center text-grey-300 dark:text-white"
             />
           </div>
         </div>
         <button
           @click="selected = 'CreateAlias'"
-          class="text-white h-12 w-20 px-4 hover:bg-indigo-800 flex justify-center items-center focus:outline-none"
+          class="flex h-12 w-20 items-center justify-center px-4 text-white hover:bg-indigo-800 focus:outline-hidden"
           title="Create Alias"
         >
           <plus />
@@ -139,7 +139,7 @@
       <content class="bg-grey-50 dark:bg-grey-900 dark:text-white">
         <div
           v-if="error"
-          class="flex items-center justify-center text-sm border-t-4 text-yellow-800 border-yellow-600 bg-yellow-100 p-2"
+          class="flex items-center justify-center border-t-4 border-yellow-600 bg-yellow-100 p-2 text-sm text-yellow-800"
           role="alert"
         >
           {{ error }}
@@ -157,38 +157,38 @@
                 showSearchSuggestions &&
                 !localPartSuggestions.includes(searchInput)
               "
-              class="px-3 py-2 shadow text-sm tracking-wide text-grey-600 bg-white dark:bg-grey-700 dark:text-white border-b border-grey-200 dark:border-grey-600"
+              class="border-b border-grey-200 bg-white px-3 py-2 text-sm tracking-wide text-grey-600 shadow-sm dark:border-grey-600 dark:bg-grey-700 dark:text-white"
             >
               Search
               <span v-if="localPartSuggestions[0] && localPartSuggestions[0] !== currentTabHostname"
                 >"<span
                   @click="((getAliasesLoading = true), (searchInput = localPartSuggestions[0]))"
-                  class="text-indigo-700 hover:text-indigo-500 dark:text-white dark:hover:text-grey-50 cursor-pointer"
+                  class="cursor-pointer text-indigo-700 hover:text-indigo-500 dark:text-white dark:hover:text-grey-50"
                   >{{ localPartSuggestions[0] }}</span
                 >" or</span
               >
               "<span
                 @click="((getAliasesLoading = true), (searchInput = currentTabHostname))"
-                class="text-indigo-700 hover:text-indigo-500 dark:text-white dark:hover:text-grey-50 cursor-pointer"
+                class="cursor-pointer text-indigo-700 hover:text-indigo-500 dark:text-white dark:hover:text-grey-50"
                 >{{ currentTabHostname }}</span
               >"?
             </div>
 
             <div
-              class="px-3 py-2 uppercase shadow text-sm tracking-wide text-grey-600 bg-white flex justify-between items-center dark:bg-grey-700 dark:text-white"
+              class="flex items-center justify-between bg-white px-3 py-2 text-sm tracking-wide text-grey-600 uppercase shadow-sm dark:bg-grey-700 dark:text-white"
             >
               {{ aliasesTitle }}
               <div class="flex items-center">
                 <label
                   for="show_alias_status"
-                  class="capitalize block text-grey-700 dark:text-white mr-2"
+                  class="mr-2 block text-grey-700 capitalize dark:text-white"
                   >Show:</label
                 >
                 <div class="relative">
                   <select
                     v-model="showAliasStatus"
                     id="show_alias_status"
-                    class="block appearance-none text-grey-700 bg-white pl-2 py-1 pr-8 rounded shadow focus:ring dark:bg-grey-600 dark:text-white"
+                    class="block appearance-none rounded-sm bg-white py-1 pr-8 pl-2 text-grey-700 shadow-sm focus:ring-3 dark:bg-grey-600 dark:text-white"
                     required
                   >
                     <option value="all">All</option>
@@ -201,7 +201,7 @@
                     class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-grey-700 dark:text-white"
                   >
                     <svg
-                      class="fill-current h-4 w-4"
+                      class="h-4 w-4 fill-current"
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 20 20"
                     >
@@ -221,11 +221,11 @@
                 <div
                   v-for="alias in aliases"
                   :key="alias.id"
-                  class="flex items-center h-20 hover:bg-indigo-50 dark:hover:bg-grey-800"
+                  class="flex h-20 items-center hover:bg-indigo-50 dark:hover:bg-grey-800"
                 >
                   <div
                     @click="viewAlias(alias)"
-                    class="grow flex items-center h-full truncate py-1 pl-2 cursor-pointer"
+                    class="flex h-full grow cursor-pointer items-center truncate py-1 pl-2"
                     title="View Alias Details"
                   >
                     <div
@@ -236,7 +236,7 @@
                     </div>
                     <span
                       :class="getAliasStatus(alias).backgroundColour"
-                      class="outline-none alias-status-background rounded-full flex items-center justify-center mx-1.5"
+                      class="alias-status-background mx-1.5 flex items-center justify-center rounded-full outline-hidden"
                       :title="getAliasStatus(alias).status"
                       tabindex="-1"
                     >
@@ -255,7 +255,7 @@
                       </div>
                       <div v-if="alias.description" class="flex items-center">
                         <span
-                          class="inline-block text-grey-400 text-sm truncate py-1 border border-transparent dark:text-grey-50"
+                          class="inline-block truncate border border-transparent py-1 text-sm text-grey-400 dark:text-grey-50"
                         >
                           {{ alias.description }}
                         </span>
@@ -263,7 +263,7 @@
                     </span>
                   </div>
 
-                  <div class="flex items-center flex-none py-1 pr-2 h-full">
+                  <div class="flex h-full flex-none items-center py-1 pr-2">
                     <div
                       class="cursor-pointer text-grey-400 dark:text-grey-200"
                       title="Copy Alias"
@@ -278,7 +278,7 @@
               <div v-if="aliasesHaveNextPage" class="p-3">
                 <button
                   @click="showMoreAliases"
-                  class="w-full flex justify-center items-center px-4 py-2 border border-grey-300 shadow-sm text-sm font-medium rounded-md text-grey-700 bg-white hover:bg-grey-50 dark:bg-grey-600 dark:text-white dark:border-grey-800 dark:hover:bg-grey-500"
+                  class="flex w-full items-center justify-center rounded-md border border-grey-300 bg-white px-4 py-2 text-sm font-medium text-grey-700 shadow-xs hover:bg-grey-50 dark:border-grey-800 dark:bg-grey-600 dark:text-white dark:hover:bg-grey-500"
                   :class="showMoreAliasesLoading ? 'cursor-not-allowed' : ''"
                   :disabled="showMoreAliasesLoading"
                 >
@@ -294,34 +294,34 @@
         <div v-else-if="selected == 'Settings'">
           <!-- Settings Tab -->
           <div
-            class="p-3 uppercase shadow text-sm tracking-wide text-grey-600 bg-white flex justify-between dark:bg-grey-700 dark:text-white"
+            class="flex justify-between bg-white p-3 text-sm tracking-wide text-grey-600 uppercase shadow-sm dark:bg-grey-700 dark:text-white"
           >
             <div class="flex">
               Settings (<a
                 :href="`${instance}`"
                 target="_blank"
                 rel="noopener noreferrer nofollow"
-                class="flex text-indigo-700 hover:text-indigo-500 dark:text-white dark:hover:text-grey-50 cursor-pointer"
-                >Visit Dashboard <external-link class="h-4 w-4 ml-1" /></a
+                class="flex cursor-pointer text-indigo-700 hover:text-indigo-500 dark:text-white dark:hover:text-grey-50"
+                >Visit Dashboard <external-link class="ml-1 h-4 w-4" /></a
               >)
             </div>
             <button
               @click="selected = 'Aliases'"
-              class="back-icon text-grey-600 hover:bg-grey-50 -m-3 flex justify-center items-center focus:outline-none dark:text-white dark:hover:bg-grey-800"
+              class="back-icon -m-3 flex items-center justify-center text-grey-600 hover:bg-grey-50 focus:outline-hidden dark:text-white dark:hover:bg-grey-800"
             >
               <chevron-left />
             </button>
           </div>
 
-          <div class="w-full text-left p-3 border-b border-grey-200">
-            <label for="select_theme" class="block text-grey-700 dark:text-white mb-1"
+          <div class="w-full border-b border-grey-200 p-3 text-left">
+            <label for="select_theme" class="mb-1 block text-grey-700 dark:text-white"
               >Extension Theme:</label
             >
             <div class="relative">
               <select
                 v-model="theme"
                 id="select_theme"
-                class="block appearance-none w-full text-grey-700 bg-white p-2 pr-8 rounded shadow focus:ring dark:bg-grey-600 dark:text-white"
+                class="block w-full appearance-none rounded-sm bg-white p-2 pr-8 text-grey-700 shadow-sm focus:ring-3 dark:bg-grey-600 dark:text-white"
                 required
               >
                 <option value="system">System</option>
@@ -332,7 +332,7 @@
                 class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-grey-700 dark:text-white"
               >
                 <svg
-                  class="fill-current h-4 w-4"
+                  class="h-4 w-4 fill-current"
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 20 20"
                 >
@@ -344,17 +344,17 @@
             </div>
           </div>
 
-          <div class="w-full text-left p-3 border-b border-grey-200">
+          <div class="w-full border-b border-grey-200 p-3 text-left">
             <div class="flex space-x-4">
               <div class="w-full">
-                <label for="default_sort" class="block text-grey-700 dark:text-white mb-1"
+                <label for="default_sort" class="mb-1 block text-grey-700 dark:text-white"
                   >Default Alias Sort By:</label
                 >
                 <div class="relative">
                   <select
                     v-model="defaultAliasSort"
                     id="default_sort"
-                    class="block appearance-none w-full text-grey-700 bg-white p-2 pr-8 rounded shadow focus:ring dark:bg-grey-600 dark:text-white"
+                    class="block w-full appearance-none rounded-sm bg-white p-2 pr-8 text-grey-700 shadow-sm focus:ring-3 dark:bg-grey-600 dark:text-white"
                     required
                   >
                     <option
@@ -369,7 +369,7 @@
                     class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-grey-700 dark:text-white"
                   >
                     <svg
-                      class="fill-current h-4 w-4"
+                      class="h-4 w-4 fill-current"
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 20 20"
                     >
@@ -381,14 +381,14 @@
                 </div>
               </div>
               <div class="w-full">
-                <label for="default_sort_dir" class="block text-grey-700 dark:text-white mb-1"
+                <label for="default_sort_dir" class="mb-1 block text-grey-700 dark:text-white"
                   >Direction:</label
                 >
                 <div class="relative">
                   <select
                     v-model="defaultAliasSortDir"
                     id="default_sort_dir"
-                    class="block appearance-none w-full text-grey-700 bg-white p-2 pr-8 rounded shadow focus:ring dark:bg-grey-600 dark:text-white"
+                    class="block w-full appearance-none rounded-sm bg-white p-2 pr-8 text-grey-700 shadow-sm focus:ring-3 dark:bg-grey-600 dark:text-white"
                     required
                   >
                     <option value="-">Descending</option>
@@ -398,7 +398,7 @@
                     class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-grey-700 dark:text-white"
                   >
                     <svg
-                      class="fill-current h-4 w-4"
+                      class="h-4 w-4 fill-current"
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 20 20"
                     >
@@ -412,15 +412,15 @@
             </div>
           </div>
 
-          <div class="w-full text-left p-3 border-b border-grey-200">
-            <label for="select_default_tab" class="block text-grey-700 dark:text-white mb-1"
+          <div class="w-full border-b border-grey-200 p-3 text-left">
+            <label for="select_default_tab" class="mb-1 block text-grey-700 dark:text-white"
               >Tab To Show On Open:</label
             >
             <div class="relative">
               <select
                 v-model="defaultSelected"
                 id="select_default_tab"
-                class="block appearance-none w-full text-grey-700 bg-white p-2 pr-8 rounded shadow focus:ring dark:bg-grey-600 dark:text-white"
+                class="block w-full appearance-none rounded-sm bg-white p-2 pr-8 text-grey-700 shadow-sm focus:ring-3 dark:bg-grey-600 dark:text-white"
                 required
               >
                 <option value="Aliases">View Aliases</option>
@@ -431,7 +431,7 @@
                 class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-grey-700 dark:text-white"
               >
                 <svg
-                  class="fill-current h-4 w-4"
+                  class="h-4 w-4 fill-current"
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 20 20"
                 >
@@ -443,15 +443,15 @@
             </div>
           </div>
 
-          <div class="w-full text-left p-3 border-b border-grey-200">
-            <label for="select_auto_copy_new_alias" class="block text-grey-700 dark:text-white mb-1"
+          <div class="w-full border-b border-grey-200 p-3 text-left">
+            <label for="select_auto_copy_new_alias" class="mb-1 block text-grey-700 dark:text-white"
               >Automatically Copy New Aliases to Clipboard:</label
             >
             <div class="relative">
               <select
                 v-model="autoCopyNewAlias"
                 id="select_auto_copy_new_alias"
-                class="block appearance-none w-full text-grey-700 bg-white p-2 pr-8 rounded shadow focus:ring dark:bg-grey-600 dark:text-white"
+                class="block w-full appearance-none rounded-sm bg-white p-2 pr-8 text-grey-700 shadow-sm focus:ring-3 dark:bg-grey-600 dark:text-white"
                 required
               >
                 <option :value="true">Enabled</option>
@@ -461,7 +461,7 @@
                 class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-grey-700 dark:text-white"
               >
                 <svg
-                  class="fill-current h-4 w-4"
+                  class="h-4 w-4 fill-current"
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 20 20"
                 >
@@ -473,17 +473,17 @@
             </div>
           </div>
 
-          <div class="w-full text-left p-3 border-b border-grey-200">
+          <div class="w-full border-b border-grey-200 p-3 text-left">
             <label
               for="select_show_search_suggestions"
-              class="block text-grey-700 dark:text-white mb-1"
+              class="mb-1 block text-grey-700 dark:text-white"
               >Show Search Suggestions:</label
             >
             <div class="relative">
               <select
                 v-model="showSearchSuggestions"
                 id="select_show_search_suggestions"
-                class="block appearance-none w-full text-grey-700 bg-white p-2 pr-8 rounded shadow focus:ring dark:bg-grey-600 dark:text-white"
+                class="block w-full appearance-none rounded-sm bg-white p-2 pr-8 text-grey-700 shadow-sm focus:ring-3 dark:bg-grey-600 dark:text-white"
                 required
               >
                 <option :value="true">Enabled</option>
@@ -493,7 +493,7 @@
                 class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-grey-700 dark:text-white"
               >
                 <svg
-                  class="fill-current h-4 w-4"
+                  class="h-4 w-4 fill-current"
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 20 20"
                 >
@@ -505,17 +505,17 @@
             </div>
           </div>
 
-          <div class="w-full text-left p-3 border-b border-grey-200">
+          <div class="w-full border-b border-grey-200 p-3 text-left">
             <label
               for="select_auto_fill_local_part"
-              class="block text-grey-700 dark:text-white mb-1"
+              class="mb-1 block text-grey-700 dark:text-white"
               >Automatically Fill New Alias Local Parts When Using The Custom Alias Format:</label
             >
             <div class="relative">
               <select
                 v-model="autoFillLocalPart"
                 id="select_auto_fill_local_part"
-                class="block appearance-none w-full text-grey-700 bg-white p-2 pr-8 rounded shadow focus:ring dark:bg-grey-600 dark:text-white"
+                class="block w-full appearance-none rounded-sm bg-white p-2 pr-8 text-grey-700 shadow-sm focus:ring-3 dark:bg-grey-600 dark:text-white"
                 required
               >
                 <option value="">Disabled</option>
@@ -528,7 +528,7 @@
                 class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-grey-700 dark:text-white"
               >
                 <svg
-                  class="fill-current h-4 w-4"
+                  class="h-4 w-4 fill-current"
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 20 20"
                 >
@@ -542,7 +542,7 @@
 
           <button
             @click="getAliasDomainOptions(apiToken, instance)"
-            class="w-full text-left p-3 focus:outline-none hover:bg-indigo-50 border-b border-grey-200 dark:hover:bg-grey-800"
+            class="w-full border-b border-grey-200 p-3 text-left hover:bg-indigo-50 focus:outline-hidden dark:hover:bg-grey-800"
             :class="domainOptionsLoading ? 'cursor-not-allowed' : ''"
             :disabled="domainOptionsLoading"
           >
@@ -551,7 +551,7 @@
           </button>
           <button
             @click="getRecipientsRequest()"
-            class="w-full text-left p-3 focus:outline-none hover:bg-indigo-50 border-b border-grey-200 dark:hover:bg-grey-800"
+            class="w-full border-b border-grey-200 p-3 text-left hover:bg-indigo-50 focus:outline-hidden dark:hover:bg-grey-800"
             :class="recipientsLoading ? 'cursor-not-allowed' : ''"
             :disabled="recipientsLoading"
           >
@@ -562,28 +562,28 @@
             :href="`${extensionUrl}`"
             target="_blank"
             rel="noopener noreferrer nofollow"
-            class="w-full flex items-center justify-between text-left p-3 focus:outline-none hover:bg-indigo-50 border-b border-grey-200 dark:hover:bg-grey-800"
+            class="flex w-full items-center justify-between border-b border-grey-200 p-3 text-left hover:bg-indigo-50 focus:outline-hidden dark:hover:bg-grey-800"
           >
             <span class="flex items-center"
-              >Rate the Extension<heart class="h-5 w-5 ml-1 text-cyan-500"
+              >Rate the Extension<heart class="ml-1 h-5 w-5 text-cyan-500"
             /></span>
             <external-link class="h-5 w-5" />
           </a>
           <button
             @click="renewApiKeyModalOpen = true"
-            class="w-full text-left p-3 focus:outline-none hover:bg-indigo-50 border-b border-grey-200 dark:hover:bg-grey-800"
+            class="w-full border-b border-grey-200 p-3 text-left hover:bg-indigo-50 focus:outline-hidden dark:hover:bg-grey-800"
           >
             Renew API Key
           </button>
           <button
             @click="logoutModalOpen = true"
-            class="w-full text-left p-3 focus:outline-none hover:bg-indigo-50 border-b border-grey-200 dark:hover:bg-grey-800"
+            class="w-full border-b border-grey-200 p-3 text-left hover:bg-indigo-50 focus:outline-hidden dark:hover:bg-grey-800"
           >
             Logout
           </button>
           <div
             v-if="extensionVersion"
-            class="w-full text-center p-3 border-grey-200 text-grey-600 dark:text-grey-100"
+            class="w-full border-grey-200 p-3 text-center text-grey-600 dark:text-grey-100"
           >
             v{{ extensionVersion }}
           </div>
@@ -591,21 +591,21 @@
         <div v-else-if="selected == 'ViewAlias'">
           <!-- View Alias Tab -->
           <div
-            class="p-3 uppercase shadow text-sm tracking-wide text-grey-600 bg-white flex justify-between dark:bg-grey-700 dark:text-white"
+            class="flex justify-between bg-white p-3 text-sm tracking-wide text-grey-600 uppercase shadow-sm dark:bg-grey-700 dark:text-white"
           >
             Alias Details
             <button
               @click="selected = 'Aliases'"
-              class="back-icon text-grey-600 hover:bg-grey-50 -m-3 flex justify-center items-center focus:outline-none dark:text-white dark:hover:bg-grey-800"
+              class="back-icon -m-3 flex items-center justify-center text-grey-600 hover:bg-grey-50 focus:outline-hidden dark:text-white dark:hover:bg-grey-800"
             >
               <chevron-left />
             </button>
           </div>
           <div class="p-3">
-            <div class="flex items-center mb-4">
+            <div class="mb-4 flex items-center">
               <span
                 :class="getAliasStatus(aliasToView).backgroundColour"
-                class="outline-none alias-status-background rounded-full flex items-center justify-center mx-1.5"
+                class="alias-status-background mx-1.5 flex items-center justify-center rounded-full outline-hidden"
                 :title="getAliasStatus(aliasToView).status"
                 tabindex="-1"
               >
@@ -615,9 +615,9 @@
                 ></span>
               </span>
 
-              <span class="block break-words w-full">
+              <span class="block w-full break-words">
                 <div
-                  class="break-words cursor-pointer"
+                  class="cursor-pointer break-words"
                   title="Click To Copy Alias"
                   @click="copyToClipboard(getAliasEmail(aliasToView))"
                 >
@@ -634,7 +634,7 @@
                     v-model="aliasDescriptionToEdit"
                     type="text"
                     id="description-input"
-                    class="grow text-sm appearance-none bg-white border text-grey-700 focus:outline-none rounded-sm px-2 py-1 shadow dark:bg-grey-600 dark:text-white dark:placeholder-grey-200"
+                    class="grow appearance-none rounded-xs border bg-white px-2 py-1 text-sm text-grey-700 shadow-sm focus:outline-hidden dark:bg-grey-600 dark:text-white dark:placeholder-grey-200"
                     :class="
                       aliasDescriptionToEdit.length > 200 ? 'border-red-500' : 'border-transparent'
                     "
@@ -643,24 +643,24 @@
                     autofocus
                   />
                   <cross
-                    class="inline-block w-6 h-6 text-red-300 cursor-pointer flex-none"
+                    class="inline-block h-6 w-6 flex-none cursor-pointer text-red-300"
                     @click="cancelEditDescription"
                   />
                   <check
-                    class="inline-block w-6 h-6 text-cyan-500 cursor-pointer flex-none"
+                    class="inline-block h-6 w-6 flex-none cursor-pointer text-cyan-500"
                     @click="editAliasDescription(aliasToView)"
                   />
                 </div>
                 <div v-else-if="aliasToView.description" class="flex items-center">
                   <span
-                    class="inline-block break-words cursor-pointer text-grey-400 text-sm py-1 border border-transparent dark:text-grey-50"
+                    class="inline-block cursor-pointer border border-transparent py-1 text-sm break-words text-grey-400 dark:text-grey-50"
                     title="Click To Copy Description"
                     @click="copyToClipboard(aliasToView.description)"
                   >
                     {{ aliasToView.description }}
                   </span>
                   <edit
-                    class="inline-block w-6 h-6 ml-2 text-grey-300 cursor-pointer flex-none dark:text-grey-200"
+                    class="ml-2 inline-block h-6 w-6 flex-none cursor-pointer text-grey-300 dark:text-grey-200"
                     @click="
                       ((aliasToViewDescriptionEditing = true),
                       (aliasDescriptionToEdit = aliasToView.description))
@@ -669,17 +669,19 @@
                 </div>
                 <div v-else>
                   <span
-                    class="inline-block text-grey-300 dark:text-grey-200 text-sm cursor-pointer py-1 border border-transparent"
+                    class="inline-block cursor-pointer border border-transparent py-1 text-sm text-grey-300 dark:text-grey-200"
                     @click="((aliasToViewDescriptionEditing = true), (aliasDescriptionToEdit = ''))"
                     >Add description</span
                   >
                 </div>
               </span>
             </div>
-            <dl class="grid gap-3 grid-cols-2">
-              <div class="relative bg-white dark:bg-grey-700 p-3 shadow rounded-lg overflow-hidden">
+            <dl class="grid grid-cols-2 gap-3">
+              <div
+                class="relative overflow-hidden rounded-lg bg-white p-3 shadow-sm dark:bg-grey-700"
+              >
                 <dt>
-                  <div class="absolute bg-indigo-500 rounded-md p-3">
+                  <div class="absolute rounded-md bg-indigo-500 p-3">
                     <forward class="text-white" />
                   </div>
                   <p class="ml-16 text-sm font-medium text-grey-500 dark:text-grey-50">Forwarded</p>
@@ -691,16 +693,18 @@
                 </dd>
                 <dd v-if="aliasToView.last_forwarded">
                   <p
-                    class="text-sm text-grey-500 dark:text-grey-50 leading-none"
+                    class="text-sm leading-none text-grey-500 dark:text-grey-50"
                     :title="$filters.formatDateTime(aliasToView.last_forwarded)"
                   >
                     {{ $filters.timeAgoHuman(aliasToView.last_forwarded) }}
                   </p>
                 </dd>
               </div>
-              <div class="relative bg-white dark:bg-grey-700 p-3 shadow rounded-lg overflow-hidden">
+              <div
+                class="relative overflow-hidden rounded-lg bg-white p-3 shadow-sm dark:bg-grey-700"
+              >
                 <dt>
-                  <div class="absolute bg-indigo-500 rounded-md p-3">
+                  <div class="absolute rounded-md bg-indigo-500 p-3">
                     <reply class="text-white" />
                   </div>
                   <p class="ml-16 text-sm font-medium text-grey-500 dark:text-grey-50">Replies</p>
@@ -712,16 +716,18 @@
                 </dd>
                 <dd v-if="aliasToView.last_replied">
                   <p
-                    class="text-sm text-grey-500 dark:text-grey-50 leading-none"
+                    class="text-sm leading-none text-grey-500 dark:text-grey-50"
                     :title="$filters.formatDateTime(aliasToView.last_replied)"
                   >
                     {{ $filters.timeAgoHuman(aliasToView.last_replied) }}
                   </p>
                 </dd>
               </div>
-              <div class="relative bg-white dark:bg-grey-700 p-3 shadow rounded-lg overflow-hidden">
+              <div
+                class="relative overflow-hidden rounded-lg bg-white p-3 shadow-sm dark:bg-grey-700"
+              >
                 <dt>
-                  <div class="absolute bg-indigo-500 rounded-md p-3">
+                  <div class="absolute rounded-md bg-indigo-500 p-3">
                     <sent class="text-white" />
                   </div>
                   <p class="ml-16 text-sm font-medium text-grey-500 dark:text-grey-50">Sent</p>
@@ -733,16 +739,18 @@
                 </dd>
                 <dd v-if="aliasToView.last_sent">
                   <p
-                    class="text-sm text-grey-500 dark:text-grey-50 leading-none"
+                    class="text-sm leading-none text-grey-500 dark:text-grey-50"
                     :title="$filters.formatDateTime(aliasToView.last_sent)"
                   >
                     {{ $filters.timeAgoHuman(aliasToView.last_sent) }}
                   </p>
                 </dd>
               </div>
-              <div class="relative bg-white dark:bg-grey-700 p-3 shadow rounded-lg overflow-hidden">
+              <div
+                class="relative overflow-hidden rounded-lg bg-white p-3 shadow-sm dark:bg-grey-700"
+              >
                 <dt>
-                  <div class="absolute bg-indigo-500 rounded-md p-3">
+                  <div class="absolute rounded-md bg-indigo-500 p-3">
                     <block class="text-white" />
                   </div>
                   <p class="ml-16 text-sm font-medium text-grey-500 dark:text-grey-50">Blocked</p>
@@ -754,7 +762,7 @@
                 </dd>
                 <dd v-if="aliasToView.last_blocked">
                   <p
-                    class="text-sm text-grey-500 dark:text-grey-50 leading-none"
+                    class="text-sm leading-none text-grey-500 dark:text-grey-50"
                     :title="$filters.formatDateTime(aliasToView.last_blocked)"
                   >
                     {{ $filters.timeAgoHuman(aliasToView.last_blocked) }}
@@ -764,13 +772,13 @@
             </dl>
           </div>
           <div
-            class="p-3 uppercase shadow text-sm tracking-wide text-grey-600 bg-white dark:bg-grey-700 dark:text-white"
+            class="bg-white p-3 text-sm tracking-wide text-grey-600 uppercase shadow-sm dark:bg-grey-700 dark:text-white"
           >
             Actions
           </div>
           <button
             @click="openSendFromAlias"
-            class="w-full text-left p-3 focus:outline-none hover:bg-indigo-50 border-b border-grey-200 dark:hover:bg-grey-800"
+            class="w-full border-b border-grey-200 p-3 text-left hover:bg-indigo-50 focus:outline-hidden dark:hover:bg-grey-800"
           >
             Send from this alias
           </button>
@@ -778,7 +786,7 @@
             <button
               v-if="aliasToView.active"
               @click="deactivateAlias(aliasToView)"
-              class="w-full text-left p-3 focus:outline-none hover:bg-indigo-50 border-b border-grey-200 dark:hover:bg-grey-800"
+              class="w-full border-b border-grey-200 p-3 text-left hover:bg-indigo-50 focus:outline-hidden dark:hover:bg-grey-800"
               :class="deactivateAliasLoading ? 'cursor-not-allowed' : ''"
               :disabled="deactivateAliasLoading"
             >
@@ -788,7 +796,7 @@
             <button
               v-else
               @click="activateAlias(aliasToView)"
-              class="w-full text-left p-3 focus:outline-none hover:bg-indigo-50 border-b border-grey-200 dark:hover:bg-grey-800"
+              class="w-full border-b border-grey-200 p-3 text-left hover:bg-indigo-50 focus:outline-hidden dark:hover:bg-grey-800"
               :class="activateAliasLoading ? 'cursor-not-allowed' : ''"
               :disabled="activateAliasLoading"
             >
@@ -799,20 +807,20 @@
           <button
             v-if="aliasToView.deleted_at"
             @click="restoreAliasModalOpen = true"
-            class="w-full text-left p-3 focus:outline-none hover:bg-indigo-50 border-b border-grey-200 dark:hover:bg-grey-800"
+            class="w-full border-b border-grey-200 p-3 text-left hover:bg-indigo-50 focus:outline-hidden dark:hover:bg-grey-800"
           >
             Restore this alias
           </button>
           <button
             v-else
             @click="deleteAliasModalOpen = true"
-            class="w-full text-left p-3 focus:outline-none hover:bg-indigo-50 border-b border-grey-200 dark:hover:bg-grey-800"
+            class="w-full border-b border-grey-200 p-3 text-left hover:bg-indigo-50 focus:outline-hidden dark:hover:bg-grey-800"
           >
             Delete this alias
           </button>
           <button
             @click="forgetAliasModalOpen = true"
-            class="w-full text-left p-3 focus:outline-none hover:bg-indigo-50 border-b border-grey-200 dark:hover:bg-grey-800"
+            class="w-full border-b border-grey-200 p-3 text-left hover:bg-indigo-50 focus:outline-hidden dark:hover:bg-grey-800"
           >
             Forget this alias
           </button>
@@ -820,44 +828,44 @@
         <div v-else-if="selected == 'SendFromAlias'">
           <!-- Send From Alias Tab -->
           <div
-            class="p-3 uppercase shadow text-sm tracking-wide text-grey-600 bg-white flex justify-between dark:bg-grey-700 dark:text-white"
+            class="flex justify-between bg-white p-3 text-sm tracking-wide text-grey-600 uppercase shadow-sm dark:bg-grey-700 dark:text-white"
           >
             Send From Alias
             <button
               @click="selected = 'ViewAlias'"
-              class="back-icon text-grey-600 hover:bg-grey-50 -m-3 flex justify-center items-center focus:outline-none dark:text-white dark:hover:bg-grey-800"
+              class="back-icon -m-3 flex items-center justify-center text-grey-600 hover:bg-grey-50 focus:outline-hidden dark:text-white dark:hover:bg-grey-800"
             >
               <chevron-left />
             </button>
           </div>
 
           <div class="p-3">
-            <p class="text-grey-700 dark:text-white mb-2">
+            <p class="mb-2 text-grey-700 dark:text-white">
               Use this to automatically create the correct address to send an email to in order to
               send an email from this alias.
             </p>
 
             <div
-              class="flex items-center justify-center rounded-sm text-sm border-t-4 text-indigo-800 border-indigo-600 bg-indigo-50 p-2 mb-4"
+              class="mb-4 flex items-center justify-center rounded-xs border-t-4 border-indigo-600 bg-indigo-50 p-2 text-sm text-indigo-800"
               role="alert"
             >
-              <information class="text-indigo-800 mr-2 flex-none" />
+              <information class="mr-2 flex-none text-indigo-800" />
               You must send the email from a verified recipient on your addy.io account.
             </div>
 
-            <label for="send_from_alias" class="block text-grey-700 dark:text-grey-50 mb-1">
+            <label for="send_from_alias" class="mb-1 block text-grey-700 dark:text-grey-50">
               Alias to send from:
             </label>
             <input
               v-model="aliasToView.email"
               id="send_from_alias"
               type="text"
-              class="appearance-none shadow bg-white rounded-sm w-full p-2 text-grey-700 focus:ring mb-4 dark:bg-grey-600 dark:text-white"
+              class="mb-4 w-full appearance-none rounded-xs bg-white p-2 text-grey-700 shadow-sm focus:ring-3 dark:bg-grey-600 dark:text-white"
               disabled
             />
             <label
               for="send_from_alias_destination"
-              class="block text-grey-700 dark:text-grey-50 mb-1"
+              class="mb-1 block text-grey-700 dark:text-grey-50"
             >
               Email destination:
             </label>
@@ -866,7 +874,7 @@
               @keyup.enter="displaySendFromAddress"
               id="send_from_alias_destination"
               type="text"
-              class="appearance-none shadow bg-white rounded-sm w-full p-2 text-grey-700 focus:ring mb-4 dark:bg-grey-600 dark:text-white dark:placeholder-grey-200"
+              class="mb-4 w-full appearance-none rounded-xs bg-white p-2 text-grey-700 shadow-sm focus:ring-3 dark:bg-grey-600 dark:text-white dark:placeholder-grey-200"
               placeholder="Enter destination email"
             />
 
@@ -874,7 +882,7 @@
               <p class="mb-1 text-grey-700 dark:text-white">Send your message to this email:</p>
               <div
                 @click="copyToClipboard(sendFromAliasEmailToSendTo, setSendFromAddressCopied)"
-                class="flex items-center justify-between cursor-pointer text-sm border-t-4 rounded-sm text-green-800 border-green-600 bg-green-100 p-2 mb-4"
+                class="mb-4 flex cursor-pointer items-center justify-between rounded-xs border-t-4 border-green-600 bg-green-100 p-2 text-sm text-green-800"
                 role="alert"
                 title="Click To Copy"
               >
@@ -912,7 +920,7 @@
               </div>
               <a
                 :href="'mailto:' + sendFromAliasEmailToSendTo"
-                class="flex items-center justify-between cursor-pointer text-sm border-t-4 rounded-sm text-green-800 border-green-600 bg-green-100 p-2 mb-4"
+                class="mb-4 flex cursor-pointer items-center justify-between rounded-xs border-t-4 border-green-600 bg-green-100 p-2 text-sm text-green-800"
                 role="alert"
                 title="Click To Open Mail Application"
               >
@@ -921,7 +929,7 @@
             </div>
             <button
               @click="displaySendFromAddress"
-              class="px-3 py-2 w-full text-cyan-900 font-semibold bg-cyan-400 hover:bg-cyan-300 border border-transparent rounded-sm focus:outline-none"
+              class="w-full rounded-xs border border-transparent bg-cyan-400 px-3 py-2 font-semibold text-cyan-900 hover:bg-cyan-300 focus:outline-hidden"
             >
               Show Address
             </button>
@@ -930,24 +938,24 @@
         <div v-else>
           <!-- Create Alias Tab -->
           <div
-            class="p-3 uppercase shadow text-sm tracking-wide text-grey-600 bg-white flex justify-between dark:bg-grey-700 dark:text-white"
+            class="flex justify-between bg-white p-3 text-sm tracking-wide text-grey-600 uppercase shadow-sm dark:bg-grey-700 dark:text-white"
           >
             Create A New Alias
             <button
               @click="selected = 'Aliases'"
-              class="back-icon text-grey-600 hover:bg-grey-50 -m-3 flex justify-center items-center focus:outline-none dark:text-white dark:hover:bg-grey-800"
+              class="back-icon -m-3 flex items-center justify-center text-grey-600 hover:bg-grey-50 focus:outline-hidden dark:text-white dark:hover:bg-grey-800"
             >
               <chevron-left />
             </button>
           </div>
           <div class="p-3">
             <div v-if="newAlias">
-              <p for="alias_domain" class="block text-grey-700 dark:text-white mb-1">
+              <p for="alias_domain" class="mb-1 block text-grey-700 dark:text-white">
                 {{ autoCopyNewAlias ? 'This is' : 'Click To Copy' }} Your New Alias:
               </p>
               <div
                 @click="copyToClipboard(newAlias, setNewAliasCopied)"
-                class="flex items-center justify-between cursor-pointer text-sm border-t-4 rounded-sm text-green-800 border-green-600 bg-green-100 p-2 mb-4"
+                class="mb-4 flex cursor-pointer items-center justify-between rounded-xs border-t-4 border-green-600 bg-green-100 p-2 text-sm text-green-800"
                 role="alert"
               >
                 <span>
@@ -984,14 +992,14 @@
               </div>
             </div>
 
-            <label for="alias_domain" class="block text-grey-700 dark:text-grey-50 mb-1">
+            <label for="alias_domain" class="mb-1 block text-grey-700 dark:text-grey-50">
               Alias Domain:
             </label>
-            <div class="block relative w-full mb-4">
+            <div class="relative mb-4 block w-full">
               <select
                 v-model="domain"
                 id="alias_domain"
-                class="block appearance-none w-full text-grey-700 bg-white p-2 pr-8 rounded shadow focus:ring dark:bg-grey-600 dark:text-white"
+                class="block w-full appearance-none rounded-sm bg-white p-2 pr-8 text-grey-700 shadow-sm focus:ring-3 dark:bg-grey-600 dark:text-white"
                 required
               >
                 <option
@@ -1006,7 +1014,7 @@
                 class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-grey-700 dark:text-white"
               >
                 <svg
-                  class="fill-current h-4 w-4"
+                  class="h-4 w-4 fill-current"
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 20 20"
                 >
@@ -1016,14 +1024,14 @@
                 </svg>
               </div>
             </div>
-            <label for="alias_format" class="block text-grey-700 dark:text-grey-50 mb-1">
+            <label for="alias_format" class="mb-1 block text-grey-700 dark:text-grey-50">
               Alias Format:
             </label>
-            <div class="block relative w-full mb-4">
+            <div class="relative mb-4 block w-full">
               <select
                 v-model="aliasFormat"
                 id="alias_format"
-                class="block appearance-none w-full text-grey-700 bg-white p-2 pr-8 rounded shadow focus:ring dark:bg-grey-600 dark:text-white dark:placeholder-grey-100"
+                class="block w-full appearance-none rounded-sm bg-white p-2 pr-8 text-grey-700 shadow-sm focus:ring-3 dark:bg-grey-600 dark:text-white dark:placeholder-grey-100"
                 required
               >
                 <option
@@ -1048,7 +1056,7 @@
                 class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-grey-700 dark:text-white"
               >
                 <svg
-                  class="fill-current h-4 w-4"
+                  class="h-4 w-4 fill-current"
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 20 20"
                 >
@@ -1059,7 +1067,7 @@
               </div>
             </div>
             <div v-if="!sharedDomainSelected && aliasFormat === 'custom'">
-              <label for="alias_local_part" class="block text-grey-700 dark:text-grey-50 mb-1">
+              <label for="alias_local_part" class="mb-1 block text-grey-700 dark:text-grey-50">
                 Alias Local Part:
               </label>
               <input
@@ -1067,12 +1075,12 @@
                 id="alias_local_part"
                 type="text"
                 placeholder="Enter local part"
-                class="appearance-none shadow bg-white rounded-sm w-full p-2 text-grey-700 focus:ring dark:bg-grey-600 dark:text-white dark:placeholder-grey-200"
+                class="w-full appearance-none rounded-xs bg-white p-2 text-grey-700 shadow-sm focus:ring-3 dark:bg-grey-600 dark:text-white dark:placeholder-grey-200"
                 :class="localPartSuggestions.length ? '' : 'mb-4'"
               />
               <p
                 v-if="localPartSuggestions.length"
-                class="text-sm mt-1 mb-3 text-grey-600 dark:text-grey-100"
+                class="mt-1 mb-3 text-sm text-grey-600 dark:text-grey-100"
               >
                 Click to use:
                 <span v-for="(suggestion, i) in localPartSuggestions" :key="suggestion">
@@ -1085,7 +1093,7 @@
                 </span>
               </p>
             </div>
-            <label for="alias_description" class="block text-grey-700 dark:text-grey-50 mb-1">
+            <label for="alias_description" class="mb-1 block text-grey-700 dark:text-grey-50">
               Description: (optional)
             </label>
             <input
@@ -1094,13 +1102,13 @@
               type="text"
               :placeholder="currentTabHostname"
               autofocus="autofocus"
-              class="appearance-none shadow bg-white rounded-sm w-full p-2 text-grey-700 focus:ring dark:bg-grey-600 dark:text-white dark:placeholder-grey-200"
+              class="w-full appearance-none rounded-xs bg-white p-2 text-grey-700 shadow-sm focus:ring-3 dark:bg-grey-600 dark:text-white dark:placeholder-grey-200"
             />
-            <p class="text-xs mt-1 mb-3 text-grey-600 dark:text-grey-100">
+            <p class="mt-1 mb-3 text-xs text-grey-600 dark:text-grey-100">
               If left empty the description will default to the current tab's hostname.
             </p>
 
-            <label for="alias_recipient_ids" class="block text-grey-700 dark:text-grey-50 mb-1">
+            <label for="alias_recipient_ids" class="mb-1 block text-grey-700 dark:text-grey-50">
               Recipients: (optional)
             </label>
             <multiselect
@@ -1121,7 +1129,7 @@
 
             <button
               @click="createAlias"
-              class="mt-4 px-3 py-2 w-full text-cyan-900 font-semibold bg-cyan-400 hover:bg-cyan-300 border border-transparent rounded-sm focus:outline-none"
+              class="mt-4 w-full rounded-xs border border-transparent bg-cyan-400 px-3 py-2 font-semibold text-cyan-900 hover:bg-cyan-300 focus:outline-hidden"
               :class="createAliasLoading ? 'cursor-not-allowed' : ''"
               :disabled="createAliasLoading"
             >
@@ -1132,7 +1140,7 @@
         </div>
       </content>
 
-      <nav class="-mb-px flex h-14 w-full absolute bottom-0 bg-indigo-900" aria-label="Tabs">
+      <nav class="absolute bottom-0 -mb-px flex h-14 w-full bg-indigo-900" aria-label="Tabs">
         <button
           v-for="tab in tabs"
           :key="tab.name"
@@ -1142,7 +1150,7 @@
             selected == tab.name
               ? 'border-white text-white'
               : 'border-transparent text-indigo-100 hover:text-white',
-            'group w-1/2 inline-flex justify-center items-center py-4 px-1 border-b-2 font-medium text-sm',
+            'group inline-flex w-1/2 items-center justify-center border-b-2 px-1 py-4 text-sm font-medium',
           ]"
           :aria-current="selected == tab.name ? 'page' : undefined"
         >
@@ -1150,7 +1158,7 @@
             :is="tab.icon"
             :class="[
               selected == tab.name ? 'text-white' : 'text-indigo-100 group-hover:text-white',
-              '-ml-0.5 mr-2 h-5 w-5',
+              'mr-2 -ml-0.5 h-5 w-5',
             ]"
             aria-hidden="true"
           />
@@ -1160,10 +1168,10 @@
     </div>
 
     <Modal :open="restoreAliasModalOpen" @close="restoreAliasModalOpen = false" class="px-3">
-      <div class="w-full bg-white dark:bg-grey-800 rounded-md shadow-2xl p-4">
+      <div class="w-full rounded-md bg-white p-4 shadow-2xl dark:bg-grey-800">
         <div>
           <div
-            class="mx-auto shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-cyan-50"
+            class="mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-cyan-50"
           >
             <information class="text-cyan-600" />
           </div>
@@ -1185,7 +1193,7 @@
         <div class="mt-5">
           <button
             type="button"
-            class="inline-flex justify-center w-full rounded-md border border-transparent shadow-sm px-4 py-2 bg-cyan-400 text-base font-medium text-cyan-900 hover:bg-cyan-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-300"
+            class="inline-flex w-full justify-center rounded-md border border-transparent bg-cyan-400 px-4 py-2 text-base font-medium text-cyan-900 shadow-xs hover:bg-cyan-300 focus:ring-2 focus:ring-cyan-300 focus:ring-offset-2 focus:outline-hidden"
             @click="restoreAlias(aliasToView)"
             :class="restoreAliasLoading ? 'cursor-not-allowed' : ''"
             :disabled="restoreAliasLoading"
@@ -1195,7 +1203,7 @@
           </button>
           <button
             type="button"
-            class="mt-3 w-full inline-flex justify-center rounded-md border border-grey-300 px-4 py-2 bg-white text-base font-medium text-grey-700 shadow-sm hover:bg-grey-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-grey-500 dark:text-white dark:border-grey-600"
+            class="mt-3 inline-flex w-full justify-center rounded-md border border-grey-300 bg-white px-4 py-2 text-base font-medium text-grey-700 shadow-xs hover:bg-grey-50 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden dark:border-grey-600 dark:bg-grey-500 dark:text-white"
             @click="restoreAliasModalOpen = false"
           >
             Cancel
@@ -1205,10 +1213,10 @@
     </Modal>
 
     <Modal :open="deleteAliasModalOpen" @close="deleteAliasModalOpen = false" class="px-3">
-      <div class="w-full bg-white dark:bg-grey-800 rounded-md shadow-2xl p-4">
+      <div class="w-full rounded-md bg-white p-4 shadow-2xl dark:bg-grey-800">
         <div>
           <div
-            class="mx-auto shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100"
+            class="mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-red-100"
           >
             <exclamation class="text-red-600" />
           </div>
@@ -1231,7 +1239,7 @@
         <div class="mt-5">
           <button
             type="button"
-            class="inline-flex justify-center w-full rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+            class="inline-flex w-full justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-base font-medium text-white shadow-xs hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:outline-hidden"
             @click="deleteAlias(aliasToView)"
             :class="deleteAliasLoading ? 'cursor-not-allowed' : ''"
             :disabled="deleteAliasLoading"
@@ -1241,7 +1249,7 @@
           </button>
           <button
             type="button"
-            class="mt-3 w-full inline-flex justify-center rounded-md border border-grey-300 px-4 py-2 bg-white text-base font-medium text-grey-700 shadow-sm hover:bg-grey-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-grey-500 dark:text-white dark:border-grey-600"
+            class="mt-3 inline-flex w-full justify-center rounded-md border border-grey-300 bg-white px-4 py-2 text-base font-medium text-grey-700 shadow-xs hover:bg-grey-50 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden dark:border-grey-600 dark:bg-grey-500 dark:text-white"
             @click="deleteAliasModalOpen = false"
           >
             Cancel
@@ -1251,10 +1259,10 @@
     </Modal>
 
     <Modal :open="forgetAliasModalOpen" @close="forgetAliasModalOpen = false" class="px-3">
-      <div class="w-full bg-white dark:bg-grey-800 rounded-md shadow-2xl p-4">
+      <div class="w-full rounded-md bg-white p-4 shadow-2xl dark:bg-grey-800">
         <div>
           <div
-            class="mx-auto shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100"
+            class="mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-red-100"
           >
             <exclamation class="text-red-600" />
           </div>
@@ -1272,13 +1280,13 @@
               </p>
               <p
                 v-if="aliasToViewHasSharedDomain"
-                class="text-sm text-grey-500 dark:text-white mt-2"
+                class="mt-2 text-sm text-grey-500 dark:text-white"
               >
                 <b>Note:</b> This alias uses a shared domain so it can <b>never be restored</b> or
                 used again so make sure you are certain. Once forgotten, this alias will
                 <b>reject any emails sent to it</b>
               </p>
-              <p v-else class="text-sm text-grey-500 dark:text-white mt-2">
+              <p v-else class="mt-2 text-sm text-grey-500 dark:text-white">
                 <b>Note:</b> This is a standard alias so it
                 <b>can be created again in the future</b> since it will be as if it never existed in
                 the database. Once forgotten, if someone sends an email to this alias and you have
@@ -1291,7 +1299,7 @@
         <div class="mt-5">
           <button
             type="button"
-            class="inline-flex justify-center w-full rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+            class="inline-flex w-full justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-base font-medium text-white shadow-xs hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:outline-hidden"
             @click="forgetAlias(aliasToView)"
             :class="forgetAliasLoading ? 'cursor-not-allowed' : ''"
             :disabled="forgetAliasLoading"
@@ -1301,7 +1309,7 @@
           </button>
           <button
             type="button"
-            class="mt-3 w-full inline-flex justify-center rounded-md border border-grey-300 px-4 py-2 bg-white text-base font-medium text-grey-700 shadow-sm hover:bg-grey-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-grey-500 dark:text-white dark:border-grey-600"
+            class="mt-3 inline-flex w-full justify-center rounded-md border border-grey-300 bg-white px-4 py-2 text-base font-medium text-grey-700 shadow-xs hover:bg-grey-50 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden dark:border-grey-600 dark:bg-grey-500 dark:text-white"
             @click="forgetAliasModalOpen = false"
           >
             Cancel
@@ -1311,10 +1319,10 @@
     </Modal>
 
     <Modal :open="renewApiKeyModalOpen" @close="renewApiKeyModalOpen = false" class="px-3">
-      <div class="w-full bg-white dark:bg-grey-800 rounded-md shadow-2xl p-4">
+      <div class="w-full rounded-md bg-white p-4 shadow-2xl dark:bg-grey-800">
         <div>
           <div
-            class="mx-auto shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-cyan-50"
+            class="mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-cyan-50"
           >
             <information class="text-cyan-600" />
           </div>
@@ -1333,7 +1341,7 @@
                   href="https://app.addy.io/settings/api"
                   target="_blank"
                   rel="noopener noreferrer nofollow"
-                  class="text-indigo-700 hover:text-indigo-500 dark:text-white dark:hover:text-grey-50 cursor-pointer"
+                  class="cursor-pointer text-indigo-700 hover:text-indigo-500 dark:text-white dark:hover:text-grey-50"
                   >settings</a
                 >
                 page) below.
@@ -1346,7 +1354,7 @@
               rows="2"
               required="required"
               autofocus="autofocus"
-              class="appearance-none shadow bg-white rounded-sm text-base w-full p-2 text-grey-700 focus:ring mt-5"
+              class="mt-5 w-full appearance-none rounded-xs bg-white p-2 text-base text-grey-700 shadow-sm focus:ring-3"
             >
             </textarea>
           </div>
@@ -1354,7 +1362,7 @@
         <div class="mt-5">
           <button
             type="button"
-            class="inline-flex justify-center w-full rounded-md border border-transparent shadow-sm px-4 py-2 bg-cyan-400 text-base font-medium text-cyan-900 hover:bg-cyan-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-300"
+            class="inline-flex w-full justify-center rounded-md border border-transparent bg-cyan-400 px-4 py-2 text-base font-medium text-cyan-900 shadow-xs hover:bg-cyan-300 focus:ring-2 focus:ring-cyan-300 focus:ring-offset-2 focus:outline-hidden"
             @click="getAliasDomainOptions(tokenInput, instance, true)"
             :class="domainOptionsLoading ? 'cursor-not-allowed' : ''"
             :disabled="domainOptionsLoading"
@@ -1364,7 +1372,7 @@
           </button>
           <button
             type="button"
-            class="mt-3 w-full inline-flex justify-center rounded-md border border-grey-300 px-4 py-2 bg-white text-base font-medium text-grey-700 shadow-sm hover:bg-grey-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-grey-500 dark:text-white dark:border-grey-600"
+            class="mt-3 inline-flex w-full justify-center rounded-md border border-grey-300 bg-white px-4 py-2 text-base font-medium text-grey-700 shadow-xs hover:bg-grey-50 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden dark:border-grey-600 dark:bg-grey-500 dark:text-white"
             @click="renewApiKeyModalOpen = false"
           >
             Cancel
@@ -1374,10 +1382,10 @@
     </Modal>
 
     <Modal :open="logoutModalOpen" @close="logoutModalOpen = false" class="px-3">
-      <div class="w-full bg-white dark:bg-grey-800 rounded-md shadow-2xl p-4">
+      <div class="w-full rounded-md bg-white p-4 shadow-2xl dark:bg-grey-800">
         <div>
           <div
-            class="mx-auto shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-cyan-50"
+            class="mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-cyan-50"
           >
             <information class="text-cyan-600" />
           </div>
@@ -1400,7 +1408,7 @@
         <div class="mt-5">
           <button
             type="button"
-            class="inline-flex justify-center w-full rounded-md border border-transparent shadow-sm px-4 py-2 bg-cyan-400 text-base font-medium text-cyan-900 hover:bg-cyan-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-300"
+            class="inline-flex w-full justify-center rounded-md border border-transparent bg-cyan-400 px-4 py-2 text-base font-medium text-cyan-900 shadow-xs hover:bg-cyan-300 focus:ring-2 focus:ring-cyan-300 focus:ring-offset-2 focus:outline-hidden"
             @click="logout()"
             :class="logoutLoading ? 'cursor-not-allowed' : ''"
             :disabled="logoutLoading"
@@ -1410,7 +1418,7 @@
           </button>
           <button
             type="button"
-            class="mt-3 w-full inline-flex justify-center rounded-md border border-grey-300 px-4 py-2 bg-white text-base font-medium text-grey-700 shadow-sm hover:bg-grey-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-grey-500 dark:text-white dark:border-grey-600"
+            class="mt-3 inline-flex w-full justify-center rounded-md border border-grey-300 bg-white px-4 py-2 text-base font-medium text-grey-700 shadow-xs hover:bg-grey-50 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden dark:border-grey-600 dark:bg-grey-500 dark:text-white"
             @click="logoutModalOpen = false"
           >
             Cancel
@@ -1424,7 +1432,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, defineAsyncComponent } from 'vue'
 import debounce from 'lodash/debounce'
 import Loader from './Loader'
 import Plus from './../components/icons/Plus'
@@ -1453,8 +1461,14 @@ const browser = require('webextension-polyfill')
 const extensionWindow = ref('')
 const extensionVersion = ref(null)
 const tabs = ref([
-  { name: 'Aliases', icon: 'AtSign' },
-  { name: 'Settings', icon: 'Cog' },
+  {
+    name: 'Aliases',
+    icon: defineAsyncComponent(() => import('./../components/icons/AtSign.vue')),
+  },
+  {
+    name: 'Settings',
+    icon: defineAsyncComponent(() => import('./../components/icons/Cog.vue')),
+  },
 ])
 const selected = ref('Aliases')
 const tokenInput = ref('')

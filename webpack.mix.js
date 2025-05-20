@@ -18,8 +18,4 @@ mix
       },
     },
   })
-  .postCss('src/assets/css/app.css', 'dist/', [
-    require('postcss-import'),
-    require('tailwindcss'),
-    require('autoprefixer'),
-  ])
+  .postCss('src/assets/css/app.css', 'dist/', [require('@tailwindcss/postcss')])
