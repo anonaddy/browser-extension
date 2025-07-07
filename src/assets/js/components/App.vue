@@ -1689,7 +1689,11 @@ onMounted(async () => {
   defaultSelected.value = await getDefaultSelected()
   selected.value = defaultSelected.value
 
-  if (sharedDomainSelected.value && aliasFormat.value === 'custom' && !selfHosting.value) {
+  if (
+    sharedDomainSelected.value &&
+    aliasFormat.value === 'custom' &&
+    !subscribedOrSelfHosting.value
+  ) {
     aliasFormat.value = 'random_characters'
   }
 
@@ -2307,7 +2311,11 @@ const getAliasDomainOptions = async (token, instanceArgument, renew = false) => 
       domain.value = data.defaultAliasDomain ? data.defaultAliasDomain : data.data[0]
       aliasFormat.value = data.defaultAliasFormat ? data.defaultAliasFormat : 'random_characters'
 
-      if (sharedDomainSelected.value && aliasFormat.value === 'custom' && !selfHosting.value) {
+      if (
+        sharedDomainSelected.value &&
+        aliasFormat.value === 'custom' &&
+        !subscribedOrSelfHosting.value
+      ) {
         aliasFormat.value = 'random_characters'
       }
     } else {
