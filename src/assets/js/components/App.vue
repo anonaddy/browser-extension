@@ -992,9 +992,18 @@
               </div>
             </div>
 
-            <label for="alias_domain" class="mb-1 block text-grey-700 dark:text-grey-50">
-              Alias Domain:
-            </label>
+            <div class="flex items-center justify-between">
+              <label for="alias_domain" class="mb-1 block text-grey-700 dark:text-grey-50">
+                Alias Domain:
+              </label>
+              <LoaderNoMargin v-if="domainOptionsLoading" class="mr-3 h-4 w-4" />
+              <span v-else title="Click to refresh domains" class="mr-3">
+                <Refresh
+                  @click="getAliasDomainOptions(apiToken, instance)"
+                  class="cursor-pointer text-indigo-700 hover:text-indigo-900 dark:text-white dark:hover:text-grey-100"
+                />
+              </span>
+            </div>
             <div class="relative mb-4 block w-full">
               <select
                 v-model="domain"
@@ -1024,9 +1033,18 @@
                 </svg>
               </div>
             </div>
-            <label for="alias_format" class="mb-1 block text-grey-700 dark:text-grey-50">
-              Alias Format:
-            </label>
+            <div class="flex items-center justify-between">
+              <label for="alias_format" class="mb-1 block text-grey-700 dark:text-grey-50">
+                Alias Format:
+              </label>
+              <LoaderNoMargin v-if="domainOptionsLoading" class="mr-3 h-4 w-4" />
+              <span v-else title="Click to refresh available formats" class="mr-3">
+                <Refresh
+                  @click="getAliasDomainOptions(apiToken, instance)"
+                  class="cursor-pointer text-indigo-700 hover:text-indigo-900 dark:text-white dark:hover:text-grey-100"
+                />
+              </span>
+            </div>
             <div class="relative mb-4 block w-full">
               <select
                 v-model="aliasFormat"
@@ -1040,14 +1058,24 @@
                   :value="formatOption.value"
                   :disabled="
                     (!subscribedOrSelfHosting && formatOption.paid) ||
-                    (formatOption.value === 'custom' && sharedDomainSelected)
+                    (formatOption.value === 'custom' &&
+                      sharedDomainSelected &&
+                      !subscribedOrSelfHosting)
                   "
                 >
                   {{ formatOption.label }}
-                  {{ !subscribedOrSelfHosting && formatOption.paid ? '(Subscribe To Unlock)' : ''
+                  {{ !subscribedOrSelfHosting && formatOption.paid ? '(Subscribe to unlock)' : ''
                   }}{{
-                    formatOption.value === 'custom' && sharedDomainSelected
-                      ? '(Not available for shared domains)'
+                    formatOption.value === 'custom' &&
+                    sharedDomainSelected &&
+                    !subscribedOrSelfHosting
+                      ? '(Subscribe to unlock for shared domain aliases)'
+                      : ''
+                  }}{{
+                    formatOption.value === 'custom' &&
+                    sharedDomainSelected &&
+                    subscribedOrSelfHosting
+                      ? '(5 random characters will be added)'
                       : ''
                   }}
                 </option>
@@ -1066,7 +1094,7 @@
                 </svg>
               </div>
             </div>
-            <div v-if="!sharedDomainSelected && aliasFormat === 'custom'">
+            <div v-if="aliasFormat === 'custom'">
               <label for="alias_local_part" class="mb-1 block text-grey-700 dark:text-grey-50">
                 Alias Local Part:
               </label>
@@ -1108,9 +1136,18 @@
               If left empty the description will default to the current tab's hostname.
             </p>
 
-            <label for="alias_recipient_ids" class="mb-1 block text-grey-700 dark:text-grey-50">
-              Recipients: (optional)
-            </label>
+            <div class="flex items-center justify-between">
+              <label for="alias_recipient_ids" class="mb-1 block text-grey-700 dark:text-grey-50">
+                Recipients: (optional)
+              </label>
+              <LoaderNoMargin v-if="recipientsLoading" class="mr-3 h-4 w-4" />
+              <span v-else title="Click to refresh recipients" class="mr-3">
+                <Refresh
+                  @click="getRecipientsRequest()"
+                  class="cursor-pointer text-indigo-700 hover:text-indigo-900 dark:text-white dark:hover:text-grey-100"
+                />
+              </span>
+            </div>
             <multiselect
               id="alias_recipient_ids"
               v-model="createAliasRecipientIds"
@@ -1435,6 +1472,7 @@
 import { ref, computed, watch, onMounted, defineAsyncComponent } from 'vue'
 import debounce from 'lodash/debounce'
 import Loader from './Loader'
+import LoaderNoMargin from './LoaderNoMargin'
 import Plus from './../components/icons/Plus'
 import AtSign from './../components/icons/AtSign'
 import Cog from './../components/icons/Cog'
@@ -1451,6 +1489,7 @@ import Edit from './../components/icons/Edit'
 import Check from './../components/icons/Check'
 import ExternalLink from './../components/icons/ExternalLink'
 import Heart from './../components/icons/Heart'
+import Refresh from './../components/icons/Refresh'
 import Modal from './../components/Modal.vue'
 import Multiselect from '@vueform/multiselect'
 import { useNotification, Notifications } from '@kyvg/vue3-notification'
@@ -1700,7 +1739,7 @@ onMounted(async () => {
 })
 
 // Computed properties
-const subscribed = computed(() => Object.values(domainOptions.value).length > 3)
+const subscribed = computed(() => Object.values(domainOptions.value).includes('addy.io'))
 const selfHosting = computed(
   () => !['https://app.anonaddy.com', 'https://app.addy.io'].includes(instance.value)
 )
@@ -1775,7 +1814,7 @@ watch(recipients, async (val) => {
 })
 
 watch(domain, async (val) => {
-  if (sharedDomainSelected.value) {
+  if (sharedDomainSelected.value && !subscribedOrSelfHosting.value) {
     aliasFormat.value = 'random_characters'
   }
   try {
@@ -2304,7 +2343,7 @@ const getRecipientsRequest = async () => {
       }
     })
 
-    if (selected.value == 'Settings') {
+    if (['Settings', 'CreateAlias'].includes(selected.value)) {
       success('Recipients refreshed')
     }
 
@@ -2318,12 +2357,12 @@ const getRecipientsRequest = async () => {
 
 const createAlias = async () => {
   // Validate alias local part
-  if (
-    !sharedDomainSelected.value &&
-    aliasFormat.value === 'custom' &&
-    !validLocalPart(localPart.value)
-  ) {
+  if (aliasFormat.value === 'custom' && !validLocalPart(localPart.value)) {
     return (error.value = 'Valid local part required')
+  }
+
+  if (aliasFormat.value === 'custom' && sharedDomainSelected.value && localPart.value.length < 2) {
+    return (error.value = 'Please enter at least 2 characters for the local part.')
   }
 
   if (description.value.length > 200) {
@@ -2362,8 +2401,8 @@ const createAlias = async () => {
     } else if (response.status === 429) {
       error.value = 'You have reached your hourly limit for creating new aliases'
     } else if (response.status === 422) {
-      let error = await response.json()
-      error.value = error.errors[Object.keys(error.errors)[0]][0]
+      let errorResponse = await response.json()
+      error.value = errorResponse.errors[Object.keys(errorResponse.errors)[0]][0]
     } else if (response.status === 401) {
       logout(true)
       error.value =
