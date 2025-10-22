@@ -28,6 +28,7 @@
           class="mb-4 w-full appearance-none rounded-xs bg-white p-2 text-base text-grey-700 shadow-sm focus:ring-3"
         />
       </div>
+      <!-- TODO username/password login to get API key. With "Use API key instead" option. -->
       <label for="api_token" class="mb-1 block text-base text-indigo-100">
         API key (from the addy.io
         <a
@@ -2205,6 +2206,9 @@ const getAliases = async (calledFromMounted = false) => {
       logout(true)
       error.value =
         "Unauthenticated, your API key has either expired or been revoked. You've been automatically logged out."
+    } else if (response.status === 419) {
+      error.value =
+        'An error occurred, please check any ad blockers (e.g. AdGuard) and add an exception for app.addy.io'
     } else {
       error.value = 'An Error Has Occurred'
     }
@@ -2318,6 +2322,13 @@ const getAliasDomainOptions = async (token, instanceArgument, renew = false) => 
       ) {
         aliasFormat.value = 'random_characters'
       }
+    } else if (response.status === 419) {
+      renew
+        ? errorNotification(
+            'An error occurred, please check any ad blockers (e.g. AdGuard) and add an exception for app.addy.io'
+          )
+        : (error.value =
+            'An error occurred, please check any ad blockers (e.g. AdGuard) and add an exception for app.addy.io')
     } else {
       renew ? errorNotification('An Error Has Occurred') : (error.value = 'An Error Has Occurred')
     }
@@ -2342,17 +2353,28 @@ const getRecipientsRequest = async () => {
       },
     })
 
-    let data = await response.json()
+    if (response.status === 200) {
+      let data = await response.json()
 
-    recipients.value = data.data.map(function (recipient) {
-      return {
-        id: recipient.id,
-        email: recipient.email,
+      recipients.value = data.data.map(function (recipient) {
+        return {
+          id: recipient.id,
+          email: recipient.email,
+        }
+      })
+
+      if (['Settings', 'CreateAlias'].includes(selected.value)) {
+        success('Recipients refreshed')
       }
-    })
-
-    if (['Settings', 'CreateAlias'].includes(selected.value)) {
-      success('Recipients refreshed')
+    } else if (response.status === 401) {
+      logout(true)
+      error.value =
+        "Unauthenticated, your API key has either expired or been revoked. You've been automatically logged out."
+    } else if (response.status === 419) {
+      error.value =
+        'An error occurred, please check any ad blockers (e.g. AdGuard) and add an exception for app.addy.io'
+    } else {
+      error.value = 'An Error Has Occurred'
     }
 
     recipientsLoading.value = false
@@ -2408,6 +2430,9 @@ const createAlias = async () => {
       error.value = 'You have reached your active shared domain alias limit'
     } else if (response.status === 429) {
       error.value = 'You have reached your hourly limit for creating new aliases'
+    } else if (response.status === 419) {
+      error.value =
+        'An error occurred, please check any ad blockers (e.g. AdGuard) and add an exception for app.addy.io'
     } else if (response.status === 422) {
       let errorResponse = await response.json()
       error.value = errorResponse.errors[Object.keys(errorResponse.errors)[0]][0]
@@ -2462,6 +2487,9 @@ const editAliasDescription = async (alias) => {
       aliasDescriptionToEdit.value = ''
       aliasToViewDescriptionEditing.value = false
       success('Alias description updated successfully')
+    } else if (response.status === 419) {
+      error.value =
+        'An error occurred, please check any ad blockers (e.g. AdGuard) and add an exception for app.addy.io'
     } else {
       error.value = 'An Error Has Occurred'
     }
@@ -2498,6 +2526,9 @@ const activateAlias = async (alias) => {
     } else if (response.status === 200) {
       alias.active = true
       success('Alias activated successfully')
+    } else if (response.status === 419) {
+      error.value =
+        'An error occurred, please check any ad blockers (e.g. AdGuard) and add an exception for app.addy.io'
     } else {
       error.value = 'An Error Has Occurred'
     }
@@ -2527,6 +2558,9 @@ const deactivateAlias = async (alias) => {
     if (response.status === 204) {
       alias.active = false
       success('Alias deactivated successfully')
+    } else if (response.status === 419) {
+      error.value =
+        'An error occurred, please check any ad blockers (e.g. AdGuard) and add an exception for app.addy.io'
     } else {
       error.value = 'An Error Has Occurred'
     }
@@ -2557,6 +2591,9 @@ const deleteAlias = async (alias) => {
       alias.deleted_at = new Date().toISOString()
       alias.active = false
       success('Alias deleted successfully')
+    } else if (response.status === 419) {
+      error.value =
+        'An error occurred, please check any ad blockers (e.g. AdGuard) and add an exception for app.addy.io'
     } else {
       error.value = 'An Error Has Occurred'
     }
@@ -2588,6 +2625,9 @@ const forgetAlias = async (alias) => {
     if (response.status === 204) {
       aliases.value = aliases.value.filter((a) => a.id !== alias.id)
       success('Alias forgotten successfully')
+    } else if (response.status === 419) {
+      error.value =
+        'An error occurred, please check any ad blockers (e.g. AdGuard) and add an exception for app.addy.io'
     } else {
       error.value = 'An Error Has Occurred'
     }
@@ -2621,6 +2661,9 @@ const restoreAlias = async (alias) => {
       alias.deleted_at = null
       alias.active = true
       success('Alias restored successfully')
+    } else if (response.status === 419) {
+      error.value =
+        'An error occurred, please check any ad blockers (e.g. AdGuard) and add an exception for app.addy.io'
     } else {
       error.value = 'An Error Has Occurred'
     }

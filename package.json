@@ -1,6 +1,6 @@
 {
   "name": "addy-io-extension",
-  "version": "2.3.7",
+  "version": "2.3.8",
   "description": "addy.io browser extension.",
   "main": "app.js",
   "scripts": {
@@ -39,7 +39,7 @@
     "husky": "^9.0.0",
     "lint-staged": "^16.0.0",
     "prettier": "^3.5.3",
-    "prettier-plugin-tailwindcss": "^0.6.11"
+    "prettier-plugin-tailwindcss": "^0.7.0"
   },
   "lint-staged": {
     "*.{css,js,vue}": [
