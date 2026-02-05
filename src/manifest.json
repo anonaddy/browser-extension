@@ -5,7 +5,7 @@
   "author": "Will Browning",
   "description": "Open-source Anonymous Email Forwarding, create unlimited email aliases for free",
   "homepage_url": "https://addy.io",
-  "version": "2.3.8",
+  "version": "3.0.0",
   "icons": {
     "16": "img/icon_16.png",
     "32": "img/icon_32.png",
@@ -19,7 +19,20 @@
   },
   "permissions": [
     "storage",
-    "activeTab"
+    "activeTab",
+    "contextMenus",
+    "notifications"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle",
+      "all_frames": true
+    }
   ],
   "content_security_policy": {
     "extension_pages": "script-src 'self' ; object-src 'self'"

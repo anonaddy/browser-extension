@@ -1,9 +1,12 @@
 {
     "/dist/app.js": "/dist/app.js",
+    "/dist/background.js": "/dist/background.js",
+    "/dist/content.js": "/dist/content.js",
     "/dist/app.css": "/dist/app.css",
     "/dist/app.html": "/dist/app.html",
     "/dist/manifest.json": "/dist/manifest.json",
     "/dist/img/icon.png": "/dist/img/icon.png",
+    "/dist/img/icon.svg": "/dist/img/icon.svg",
     "/dist/img/icon@2x.png": "/dist/img/icon@2x.png",
     "/dist/img/icon_128.png": "/dist/img/icon_128.png",
     "/dist/img/icon_16.png": "/dist/img/icon_16.png",

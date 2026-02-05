@@ -28,37 +28,136 @@
           class="mb-4 w-full appearance-none rounded-xs bg-white p-2 text-base text-grey-700 shadow-sm focus:ring-3"
         />
       </div>
-      <!-- TODO username/password login to get API key. With "Use API key instead" option. -->
-      <label for="api_token" class="mb-1 block text-base text-indigo-100">
-        API key (from the addy.io
-        <a
-          href="https://app.addy.io/settings/api"
-          target="_blank"
-          rel="noopener noreferrer nofollow"
-          class="cursor-pointer text-white hover:text-indigo-50"
-          >settings</a
+
+      <!-- Credentials login -->
+      <template v-if="loginMode === 'credentials'">
+        <template v-if="!mfaRequired">
+          <label for="login_username" class="mb-1 block text-base text-indigo-100">Username</label>
+          <input
+            v-model="usernameInput"
+            id="login_username"
+            type="text"
+            autocomplete="username"
+            placeholder="Your addy.io username"
+            class="mb-4 w-full appearance-none rounded-xs bg-white p-2 text-base text-grey-700 shadow-sm focus:ring-3"
+          />
+          <label for="login_password" class="mb-1 block text-base text-indigo-100">Password</label>
+          <input
+            v-model="passwordInput"
+            id="login_password"
+            type="password"
+            autocomplete="current-password"
+            placeholder="Your password"
+            class="mb-4 w-full appearance-none rounded-xs bg-white p-2 text-base text-grey-700 shadow-sm focus:ring-3"
+          />
+          <label for="require_relogin" class="mb-1 block text-base text-indigo-100">
+            Require re-login after
+          </label>
+          <select
+            v-model="requireReloginAfter"
+            id="require_relogin"
+            class="mb-4 w-full appearance-none rounded-xs bg-white p-2 text-base text-grey-700 shadow-sm focus:ring-3"
+          >
+            <option value="">Never</option>
+            <option value="day">1 day</option>
+            <option value="week">1 week</option>
+            <option value="month">1 month</option>
+            <option value="year">1 year</option>
+          </select>
+          <button
+            @click="loginWithCredentials"
+            class="w-full rounded-xs border border-transparent bg-cyan-400 px-3 py-2 text-sm font-semibold text-cyan-900 hover:bg-cyan-300 focus:outline-hidden"
+            :class="credentialsLoading ? 'cursor-not-allowed' : ''"
+            :disabled="credentialsLoading"
+          >
+            Sign In
+            <loader class="h-5 w-5" v-if="credentialsLoading" />
+          </button>
+          <p class="mt-3 text-center text-sm text-indigo-200">
+            <span
+              @click="loginMode = 'apiKey'"
+              class="cursor-pointer text-white underline hover:text-indigo-50"
+            >
+              Login using API Key instead
+            </span>
+          </p>
+        </template>
+        <!-- MFA step (after login when 2FA is enabled) -->
+        <template v-else>
+          <label for="mfa_otp" class="mb-1 block text-base text-indigo-100">
+            Two-factor authentication code (6 digits)
+          </label>
+          <input
+            v-model="mfaOtp"
+            id="mfa_otp"
+            type="text"
+            inputmode="numeric"
+            autocomplete="one-time-code"
+            placeholder="000000"
+            maxlength="6"
+            class="mb-4 w-full appearance-none rounded-xs bg-white p-2 text-center text-base tracking-widest text-grey-700 shadow-sm focus:ring-3"
+            @keyup.enter="submitMfa"
+          />
+          <button
+            @click="submitMfa"
+            class="w-full rounded-xs border border-transparent bg-cyan-400 px-3 py-2 text-sm font-semibold text-cyan-900 hover:bg-cyan-300 focus:outline-hidden"
+            :class="credentialsLoading ? 'cursor-not-allowed' : ''"
+            :disabled="credentialsLoading || mfaOtp.length !== 6"
+          >
+            Verify
+            <loader class="h-5 w-5" v-if="credentialsLoading" />
+          </button>
+          <p class="mt-3 text-center text-sm text-indigo-200">
+            <span
+              @click="resetMfaStep"
+              class="cursor-pointer text-white underline hover:text-indigo-50"
+            >
+              Back to login
+            </span>
+          </p>
+        </template>
+      </template>
+
+      <!-- API Key login -->
+      <template v-else>
+        <label for="api_token" class="mb-1 block text-base text-indigo-100">
+          API key (from the addy.io
+          <a
+            href="https://app.addy.io/settings/api"
+            target="_blank"
+            rel="noopener noreferrer nofollow"
+            class="cursor-pointer text-white hover:text-indigo-50"
+            >settings</a
+          >
+          page):
+        </label>
+        <textarea
+          v-model="tokenInput"
+          id="api_token"
+          placeholder="Enter your API key"
+          rows="2"
+          class="mb-4 w-full appearance-none rounded-xs bg-white p-2 text-base text-grey-700 shadow-sm focus:ring-3"
         >
-        page):
-      </label>
-      <textarea
-        v-model="tokenInput"
-        id="api_token"
-        placeholder="Enter your API key"
-        rows="2"
-        required="required"
-        autofocus="autofocus"
-        class="mb-4 w-full appearance-none rounded-xs bg-white p-2 text-base text-grey-700 shadow-sm focus:ring-3"
-      >
-      </textarea>
-      <button
-        @click="getAliasDomainOptions(tokenInput, instanceInput)"
-        class="w-full rounded-xs border border-transparent bg-cyan-400 px-3 py-2 text-sm font-semibold text-cyan-900 hover:bg-cyan-300 focus:outline-hidden"
-        :class="domainOptionsLoading ? 'cursor-not-allowed' : ''"
-        :disabled="domainOptionsLoading"
-      >
-        Sign In
-        <loader class="h-5 w-5" v-if="domainOptionsLoading" />
-      </button>
+        </textarea>
+        <button
+          @click="getAliasDomainOptions(tokenInput, instanceInput)"
+          class="w-full rounded-xs border border-transparent bg-cyan-400 px-3 py-2 text-sm font-semibold text-cyan-900 hover:bg-cyan-300 focus:outline-hidden"
+          :class="domainOptionsLoading ? 'cursor-not-allowed' : ''"
+          :disabled="domainOptionsLoading"
+        >
+          Sign In
+          <loader class="h-5 w-5" v-if="domainOptionsLoading" />
+        </button>
+        <p class="mt-3 text-center text-sm text-indigo-200">
+          <span
+            @click="switchToCredentialsLogin"
+            class="cursor-pointer text-white underline hover:text-indigo-50"
+          >
+            Login using username and password
+          </span>
+        </p>
+      </template>
+
       <div class="mt-3 flex justify-between text-base">
         <p class="text-indigo-100">
           Don't have an account?
@@ -484,6 +583,38 @@
               <select
                 v-model="showSearchSuggestions"
                 id="select_show_search_suggestions"
+                class="block w-full appearance-none rounded-sm bg-white p-2 pr-8 text-grey-700 shadow-sm focus:ring-3 dark:bg-grey-600 dark:text-white"
+                required
+              >
+                <option :value="true">Enabled</option>
+                <option :value="false">Disabled</option>
+              </select>
+              <div
+                class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-grey-700 dark:text-white"
+              >
+                <svg
+                  class="h-4 w-4 fill-current"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"
+                  />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="w-full border-b border-grey-200 p-3 text-left">
+            <label
+              for="select_show_icon_in_email_fields"
+              class="mb-1 block text-grey-700 dark:text-white"
+              >Show addy.io icon in email fields:</label
+            >
+            <div class="relative">
+              <select
+                v-model="showIconInEmailFields"
+                id="select_show_icon_in_email_fields"
                 class="block w-full appearance-none rounded-sm bg-white p-2 pr-8 text-grey-700 shadow-sm focus:ring-3 dark:bg-grey-600 dark:text-white"
                 required
               >
@@ -1494,6 +1625,7 @@ import Refresh from './../components/icons/Refresh'
 import Modal from './../components/Modal.vue'
 import Multiselect from '@vueform/multiselect'
 import { useNotification, Notifications } from '@kyvg/vue3-notification'
+import { createAliasRequest, formatAliasEmail } from '../api/createAlias.js'
 const { notify } = useNotification()
 
 // State
@@ -1516,6 +1648,17 @@ const apiToken = ref('')
 const instanceInput = ref('https://app.addy.io')
 const instance = ref('')
 const changeInstance = ref(false)
+const loginMode = ref('credentials')
+const usernameInput = ref('')
+const passwordInput = ref('')
+const requireReloginAfter = ref('')
+const mfaRequired = ref(false)
+const mfaKey = ref('')
+const mfaCsrfToken = ref('')
+const mfaOtp = ref('')
+const credentialsLoading = ref(false)
+const pendingLoginDeviceName = ref('')
+const pendingLoginExpiration = ref('')
 const searchInput = ref('')
 const currentTabHostname = ref('')
 const localPartSuggestions = ref([])
@@ -1567,6 +1710,21 @@ const aliasFormatOptions = ref([
     paid: true,
   },
   {
+    value: 'random_male_name',
+    label: 'Random Male Name',
+    paid: true,
+  },
+  {
+    value: 'random_female_name',
+    label: 'Random Female Name',
+    paid: true,
+  },
+  {
+    value: 'random_noun',
+    label: 'Random Noun',
+    paid: true,
+  },
+  {
     value: 'custom',
     label: 'Custom',
     paid: false,
@@ -1584,6 +1742,7 @@ const aliasToView = ref({})
 const theme = ref('system')
 const autoCopyNewAlias = ref(true)
 const showSearchSuggestions = ref(true)
+const showIconInEmailFields = ref(true)
 const autoFillLocalPart = ref('')
 const defaultAliasSort = ref('created_at')
 const defaultAliasSortDir = ref('-')
@@ -1673,6 +1832,14 @@ onMounted(async () => {
   if (apiToken.value && !instance.value) {
     instance.value = 'https://app.addy.io'
   }
+  // If session was set to expire (username/password login), require re-login when expired
+  if (apiToken.value) {
+    const { apiTokenExpiresAt } = await browser.storage.sync.get({ apiTokenExpiresAt: '' })
+    if (apiTokenExpiresAt && new Date(apiTokenExpiresAt) <= new Date()) {
+      await browser.storage.sync.remove(['apiToken', 'apiTokenExpiresAt'])
+      apiToken.value = ''
+    }
+  }
   domainOptions.value = await getDomainOptions()
   recipients.value = await getRecipients()
   domain.value = await getDomain()
@@ -1684,6 +1851,7 @@ onMounted(async () => {
   }
   autoCopyNewAlias.value = await getAutoCopyNewAlias()
   showSearchSuggestions.value = await getShowSearchSuggestions()
+  showIconInEmailFields.value = await getShowIconInEmailFields()
   autoFillLocalPart.value = await getAutoFillLocalPart()
   defaultAliasSort.value = await getDefaultAliasSort()
   defaultAliasSortDir.value = await getDefaultAliasSortDir()
@@ -1881,6 +2049,14 @@ watch(showSearchSuggestions, async (val) => {
   }
 })
 
+watch(showIconInEmailFields, async (val) => {
+  try {
+    await browser.storage.sync.set({ showIconInEmailFields: val })
+  } catch (error) {
+    console.log(error)
+  }
+})
+
 watch(autoFillLocalPart, async (val) => {
   if (aliasFormat.value === 'custom' && val !== '') {
     localPart.value = localPartAutoFill.value[val]
@@ -2051,6 +2227,15 @@ const getShowSearchSuggestions = async () => {
   try {
     const result = await browser.storage.sync.get({ showSearchSuggestions: true })
     return result.showSearchSuggestions
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+const getShowIconInEmailFields = async () => {
+  try {
+    const result = await browser.storage.sync.get({ showIconInEmailFields: true })
+    return result.showIconInEmailFields
   } catch (error) {
     console.log(error)
   }
@@ -2232,6 +2417,196 @@ const getAliases = async (calledFromMounted = false) => {
   }
 }
 
+const getInstanceForLogin = () =>
+  changeInstance.value ? instanceInput.value : instance.value || instanceInput.value
+
+const loginWithCredentials = async () => {
+  error.value = ''
+  const baseUrl = getInstanceForLogin()
+
+  if (!usernameInput.value.trim()) {
+    error.value = 'Please enter your username.'
+    return
+  }
+  if (!passwordInput.value) {
+    error.value = 'Please enter your password.'
+    return
+  }
+  if (!validInstance(baseUrl) && changeInstance.value) {
+    error.value =
+      'Please enter a valid URL for the instance with no trailing slash, e.g. "https://app.example.com"'
+    return
+  }
+
+  credentialsLoading.value = true
+  const deviceName = getBrowserExtensionDeviceName()
+  const expiration = requireReloginAfter.value || null
+
+  try {
+    const response = await fetch(`${baseUrl}/api/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-Requested-From': 'browser-extension',
+      },
+      body: JSON.stringify({
+        username: usernameInput.value.trim(),
+        password: passwordInput.value,
+        device_name: deviceName,
+        expiration: expiration || undefined,
+      }),
+    })
+
+    const data = await response.json().catch(() => ({}))
+
+    if (response.ok) {
+      credentialsLoading.value = false
+      const apiKey = data.api_key
+      if (!apiKey) {
+        error.value = 'Login succeeded but no API key was returned.'
+        return
+      }
+      pendingLoginDeviceName.value = ''
+      pendingLoginExpiration.value = ''
+      if (!instance.value) {
+        instance.value = baseUrl
+      }
+      apiToken.value = apiKey
+      if (data.expires_at) {
+        await browser.storage.sync.set({ apiTokenExpiresAt: data.expires_at })
+      }
+      tokenInput.value = ''
+      usernameInput.value = ''
+      passwordInput.value = ''
+      getAliases()
+      getRecipientsRequest()
+      const domainResponse = await fetch(`${baseUrl}/api/v1/domain-options`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-Requested-From': 'browser-extension',
+          Authorization: `Bearer ${apiKey}`,
+        },
+      })
+      if (domainResponse.status === 200) {
+        const domainData = await domainResponse.json()
+        domainOptions.value = domainData.data
+        domain.value = domainData.defaultAliasDomain
+          ? domainData.defaultAliasDomain
+          : domainData.data[0]
+        aliasFormat.value = domainData.defaultAliasFormat
+          ? domainData.defaultAliasFormat
+          : 'random_characters'
+      }
+      success('Logged in successfully')
+      return
+    }
+
+    if (response.status === 422 && data.mfa_key && data.csrf_token) {
+      mfaKey.value = data.mfa_key
+      mfaCsrfToken.value = data.csrf_token
+      pendingLoginDeviceName.value = deviceName
+      pendingLoginExpiration.value = expiration
+      mfaRequired.value = true
+      mfaOtp.value = ''
+      error.value = ''
+      credentialsLoading.value = false
+      return
+    }
+
+    error.value = data.message || 'An error occurred during login.'
+    credentialsLoading.value = false
+  } catch (err) {
+    credentialsLoading.value = false
+    error.value = 'An error occurred during login.'
+    console.log(err)
+  }
+}
+
+const submitMfa = async () => {
+  if (mfaOtp.value.length !== 6) return
+  error.value = ''
+  const baseUrl = getInstanceForLogin()
+
+  credentialsLoading.value = true
+  try {
+    const response = await fetch(`${baseUrl}/api/auth/mfa`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-Requested-From': 'browser-extension',
+        'X-CSRF-TOKEN': mfaCsrfToken.value,
+      },
+      body: JSON.stringify({
+        mfa_key: mfaKey.value,
+        otp: mfaOtp.value,
+        device_name: pendingLoginDeviceName.value,
+        expiration: pendingLoginExpiration.value || undefined,
+      }),
+    })
+
+    const data = await response.json().catch(() => ({}))
+
+    if (response.ok) {
+      const apiKey = data.api_key
+      if (!apiKey) {
+        error.value = 'Verification succeeded but no API key was returned.'
+        credentialsLoading.value = false
+        return
+      }
+      mfaRequired.value = false
+      mfaKey.value = ''
+      mfaCsrfToken.value = ''
+      mfaOtp.value = ''
+      pendingLoginDeviceName.value = ''
+      pendingLoginExpiration.value = ''
+      credentialsLoading.value = false
+      if (!instance.value) {
+        instance.value = baseUrl
+      }
+      apiToken.value = apiKey
+      if (data.expires_at) {
+        await browser.storage.sync.set({ apiTokenExpiresAt: data.expires_at })
+      }
+      getAliases()
+      getRecipientsRequest()
+      const domainResponse = await fetch(`${baseUrl}/api/v1/domain-options`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-Requested-From': 'browser-extension',
+          Authorization: `Bearer ${apiKey}`,
+        },
+      })
+      if (domainResponse.status === 200) {
+        const domainData = await domainResponse.json()
+        domainOptions.value = domainData.data
+        domain.value = domainData.defaultAliasDomain
+          ? domainData.defaultAliasDomain
+          : domainData.data[0]
+        aliasFormat.value = domainData.defaultAliasFormat
+          ? domainData.defaultAliasFormat
+          : 'random_characters'
+      }
+      success('Logged in successfully')
+      return
+    }
+
+    error.value = data.message || 'Invalid or expired code. Try again or go back to login.'
+    credentialsLoading.value = false
+  } catch (err) {
+    credentialsLoading.value = false
+    error.value = 'An error occurred during verification.'
+    console.log(err)
+  }
+}
+
 const getAliasDomainOptions = async (token, instanceArgument, renew = false) => {
   error.value = ''
 
@@ -2407,59 +2782,37 @@ const createAlias = async () => {
   error.value = ''
 
   try {
-    const response = await fetch(`${instance.value}/api/v1/aliases`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
-        'X-Requested-From': 'browser-extension',
-        Authorization: `Bearer ${apiToken.value}`,
-      },
-      body: JSON.stringify({
-        domain: domain.value,
-        local_part: localPart.value,
-        description: description.value ? description.value : currentTabHostname.value,
-        format: aliasFormat.value,
-        recipient_ids: createAliasRecipientIds.value,
-      }),
+    const { data } = await createAliasRequest({
+      instance: instance.value,
+      apiToken: apiToken.value,
+      domain: domain.value,
+      localPart: localPart.value,
+      description: description.value ? description.value : currentTabHostname.value,
+      format: aliasFormat.value,
+      recipientIds: createAliasRecipientIds.value,
     })
 
     createAliasLoading.value = false
+    localPart.value = ''
+    description.value = ''
+    createAliasRecipientIds.value = []
+    newAlias.value = formatAliasEmail(data)
 
-    if (response.status === 403) {
-      error.value = 'You have reached your active shared domain alias limit'
-    } else if (response.status === 429) {
-      error.value = 'You have reached your hourly limit for creating new aliases'
-    } else if (response.status === 419) {
-      error.value =
-        'An error occurred, please check any ad blockers (e.g. AdGuard) and add an exception for app.addy.io'
-    } else if (response.status === 422) {
-      let errorResponse = await response.json()
-      error.value = errorResponse.errors[Object.keys(errorResponse.errors)[0]][0]
-    } else if (response.status === 401) {
+    if (autoCopyNewAlias.value) {
+      await copyToClipboard(formatAliasEmail(data))
+    }
+
+    aliases.value = [data].concat(aliases.value)
+  } catch (err) {
+    createAliasLoading.value = false
+    if (err.code === 'UNAUTHENTICATED') {
       logout(true)
       error.value =
         "Unauthenticated, your API key has either expired or been revoked. You've been automatically logged out."
-    } else if (response.status === 201) {
-      let data = await response.json()
-      localPart.value = ''
-      description.value = ''
-      createAliasRecipientIds.value = []
-      newAlias.value = getAliasEmail(data.data)
-
-      // If auto copy is enabled
-      if (autoCopyNewAlias.value) {
-        await copyToClipboard(getAliasEmail(data.data))
-      }
-
-      aliases.value = [data.data].concat(aliases.value)
     } else {
-      error.value = 'An Error Has Occurred'
+      error.value = err.message || 'An Error Has Occurred'
+      console.log(err)
     }
-  } catch (error) {
-    createAliasLoading.value = false
-    error.value = 'An Error Has Occurred'
-    console.log(error)
   }
 }
 
@@ -2736,9 +3089,42 @@ const cancelChangeInstance = () => {
   instanceInput.value = 'https://app.addy.io'
 }
 
+const switchToCredentialsLogin = () => {
+  loginMode.value = 'credentials'
+  error.value = ''
+}
+
+const resetMfaStep = () => {
+  mfaRequired.value = false
+  mfaOtp.value = ''
+  error.value = ''
+}
+
 const validInstance = (instance) => {
   let re = /^(?:http(s)?:\/\/)[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+(?<!\/)$/
   return re.test(instance)
+}
+
+const getBrowserExtensionDeviceName = () => {
+  const ua = navigator.userAgent
+  if (ua.match(/Edg/i)) return 'Edge browser extension'
+  const iOS = ua.match(/Macintosh/i) || ua.match(/iPad/i) || ua.match(/iPhone/i)
+  if (
+    iOS &&
+    ua.match(/WebKit/i) &&
+    !ua.match(/CriOS/i) &&
+    !ua.match(/EdgiOS/i) &&
+    !ua.match(/Chrome/i)
+  ) {
+    return 'Safari browser extension'
+  }
+  if (/rv:([^)]+)\) Gecko\/\d{8}/.test(ua)) return 'Firefox browser extension'
+  if (ua.match(/OPR\/|Opera/i)) return 'Opera browser extension'
+  if (ua.match(/Brave/i)) return 'Brave browser extension'
+  if (ua.match(/Vivaldi/i)) return 'Vivaldi browser extension'
+  if (ua.match(/YaBrowser/i)) return 'Yandex browser extension'
+  if (ua.match(/SamsungBrowser/i)) return 'Samsung Internet browser extension'
+  return 'Chrome browser extension'
 }
 
 const validLocalPart = (part) => {
@@ -2838,6 +3224,7 @@ const logout = async (expiredToken = false) => {
   try {
     await browser.storage.sync.remove([
       'apiToken',
+      'apiTokenExpiresAt',
       'instance',
       'domainOptions',
       'recipients',
@@ -2847,6 +3234,7 @@ const logout = async (expiredToken = false) => {
       'theme',
       'autoCopyNewAlias',
       'showSearchSuggestions',
+      'showIconInEmailFields',
       'autoFillLocalPart',
       'defaultAliasSort',
       'defaultAliasSortDir',
@@ -2862,6 +3250,7 @@ const logout = async (expiredToken = false) => {
     theme.value = await getTheme()
     autoCopyNewAlias.value = await getAutoCopyNewAlias()
     showSearchSuggestions.value = await getShowSearchSuggestions()
+    showIconInEmailFields.value = await getShowIconInEmailFields()
     autoFillLocalPart.value = await getAutoFillLocalPart()
     defaultAliasSort.value = await getDefaultAliasSort()
     defaultAliasSortDir.value = await getDefaultAliasSortDir()

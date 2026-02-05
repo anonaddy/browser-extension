@@ -10,6 +10,8 @@ mix
   .copy('src/manifest.json', 'dist/')
   .copyDirectory('src/assets/img', 'dist/img')
   .js('src/assets/js/app.js', 'dist/')
+  .js('src/background.js', 'dist/')
+  .js('src/content.js', 'dist/')
   .vue({
     options: {
       compilerOptions: {
