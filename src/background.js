@@ -19,20 +19,12 @@ async function getIconDataUrl() {
   return dataUrl
 }
 
-function getDefaultRecipientIds(recipients) {
-  if (!Array.isArray(recipients) || recipients.length === 0) return []
-  const list = Array.isArray(recipients) ? recipients : Object.values(recipients)
-  const first = list[0]
-  return first && first.id ? [first.id] : []
-}
-
 async function createQuickAlias() {
-  const { apiToken, instance, domain, aliasFormat, recipients } = await browser.storage.sync.get({
+  const { apiToken, instance, domain, aliasFormat } = await browser.storage.sync.get({
     apiToken: '',
     instance: '',
     domain: '',
     aliasFormat: 'random_characters',
-    recipients: [],
   })
 
   if (!apiToken || !instance || !domain) {
@@ -42,13 +34,12 @@ async function createQuickAlias() {
   // Quick-create cannot provide a local-part, so do not use "custom" format
   const format = aliasFormat === 'custom' ? 'random_characters' : aliasFormat || 'random_characters'
 
-  const recipientIds = getDefaultRecipientIds(recipients)
   const { data } = await createAliasRequest({
     instance,
     apiToken,
     domain,
     format,
-    recipientIds,
+    recipientIds: [],
     description: '',
   })
 
