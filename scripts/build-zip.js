@@ -22,22 +22,57 @@ const makeDestZipDirIfNotExists = () => {
 }
 
 const buildZip = (src, dist, zipFilename) => {
-  console.info(`Building ${zipFilename}...`)
+  return new Promise((resolve, reject) => {
+    console.info(`Building ${zipFilename}...`)
 
-  const output = fs.createWriteStream(path.join(dist, zipFilename))
-  const archive = archiver('zip')
-  archive.pipe(output)
-  archive.directory(src, false)
-  archive.finalize()
+    const output = fs.createWriteStream(path.join(dist, zipFilename))
+    const archive = archiver('zip')
+    archive.on('error', reject)
+    output.on('error', reject)
+    output.on('close', () => resolve())
+
+    archive.pipe(output)
+    archive.directory(src, false)
+    archive.finalize()
+  })
 }
 
-const main = () => {
+/**
+ * Copy dist to a temp dir and patch manifest.json for Firefox (add background.scripts).
+ * Returns path to the temp dir (caller must clean up).
+ */
+const prepareFirefoxDist = () => {
+  const firefoxDir = path.join(__dirname, '../dist-firefox')
+  if (fs.existsSync(firefoxDir)) {
+    fs.rmSync(firefoxDir, { recursive: true })
+  }
+  fs.cpSync(DEST_DIR, firefoxDir, { recursive: true })
+
+  const manifestPath = path.join(firefoxDir, 'manifest.json')
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'))
+  if (!manifest.background) manifest.background = {}
+  manifest.background.scripts = ['background.js']
+  fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2))
+
+  return firefoxDir
+}
+
+const main = async () => {
   const { name, version } = extractExtensionData()
-  const zipFilename = `${name}-v${version}.zip`
 
   makeDestZipDirIfNotExists()
 
-  buildZip(DEST_DIR, DEST_ZIP_DIR, zipFilename)
+  await buildZip(DEST_DIR, DEST_ZIP_DIR, `${name}-v${version}.zip`)
+
+  const firefoxDir = prepareFirefoxDist()
+  try {
+    await buildZip(firefoxDir, DEST_ZIP_DIR, `${name}-v${version}-firefox.zip`)
+  } finally {
+    fs.rmSync(firefoxDir, { recursive: true, force: true })
+  }
 }
 
-main()
+main().catch((err) => {
+  console.error(err)
+  process.exit(1)
+})

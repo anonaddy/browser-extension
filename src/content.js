@@ -104,12 +104,14 @@ function isValidEmailInput(element) {
 
 /**
  * Place the floating button over the right side of the input.
+ * Uses position:fixed + viewport coords so we must update on scroll/resize.
  */
 function updateButtonPosition(input, wrapper) {
   if (!input.isConnected) {
     const entry = trackedInputs.get(input)
     if (entry) {
       clearInterval(entry.intervalId)
+      entry.intersectionObserver?.disconnect()
       trackedInputs.delete(input)
       entry.wrapper.remove()
     }
@@ -117,9 +119,6 @@ function updateButtonPosition(input, wrapper) {
   }
 
   const rect = input.getBoundingClientRect()
-
-  // Place icon inside the input at the right edge (with inset).
-  // getBoundingClientRect() is viewport-relative; our wrapper is in body so absolute positioning is viewport-relative too.
   const left = rect.right - ICON_SIZE - ICON_INSET
   const top = rect.top + (rect.height - ICON_SIZE) / 2
 
@@ -127,9 +126,14 @@ function updateButtonPosition(input, wrapper) {
   wrapper.style.top = top + 'px'
   wrapper.style.width = ICON_SIZE + 'px'
   wrapper.style.height = ICON_SIZE + 'px'
-  // Only show icon when the input has a reasonable visible size (avoids wrong placement on hidden/honeypot fields)
-  wrapper.style.visibility =
-    rect.width >= MIN_INPUT_WIDTH && rect.height >= MIN_INPUT_HEIGHT ? 'visible' : 'hidden'
+
+  const sizeOk = rect.width >= MIN_INPUT_WIDTH && rect.height >= MIN_INPUT_HEIGHT
+  const inView = wrapper._addyInView !== false
+  wrapper.style.visibility = sizeOk && inView ? 'visible' : 'hidden'
+}
+
+function updateAllPositions() {
+  trackedInputs.forEach(({ wrapper }, input) => updateButtonPosition(input, wrapper))
 }
 
 function injectIconIntoInput(input) {
@@ -143,12 +147,13 @@ function injectIconIntoInput(input) {
   wrapper.className = WRAPPER_CLASS
   wrapper.setAttribute('aria-hidden', 'true')
   wrapper.style.cssText = `
-    position:absolute;
+    position:fixed;
     z-index:999999;
     pointer-events:auto;
     box-sizing:border-box;
   `
   document.body.appendChild(wrapper)
+  wrapper._addyInView = true
 
   const icon = document.createElement('img')
   icon.className = ICON_CLASS
@@ -186,9 +191,23 @@ function injectIconIntoInput(input) {
 
   wrapper._addyInput = input
 
+  const intersectionObserver = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        const w = entry.target._addyWrapper
+        if (!w) continue
+        w._addyInView = entry.isIntersecting && entry.intersectionRatio >= 0.5
+        updateButtonPosition(entry.target, w)
+      }
+    },
+    { threshold: [0, 0.5, 1], root: null }
+  )
+  input._addyWrapper = wrapper
+  intersectionObserver.observe(input)
+
   updateButtonPosition(input, wrapper)
   const intervalId = setInterval(() => updateButtonPosition(input, wrapper), POSITION_UPDATE_MS)
-  trackedInputs.set(input, { wrapper, intervalId })
+  trackedInputs.set(input, { wrapper, intervalId, intersectionObserver })
 }
 
 function handleIconClick(input, icon, wrapper) {
@@ -233,8 +252,11 @@ function scanAndInject() {
 }
 
 function removeAllInjected() {
-  trackedInputs.forEach(({ wrapper, intervalId }) => {
+  trackedInputs.forEach((entry, input) => {
+    const { wrapper, intervalId, intersectionObserver } = entry
     clearInterval(intervalId)
+    intersectionObserver?.disconnect()
+    delete input._addyWrapper
     wrapper.remove()
   })
   trackedInputs.clear()
@@ -243,8 +265,16 @@ function removeAllInjected() {
   })
 }
 
+function setupScrollAndResizeListeners() {
+  if (window._addyScrollResizeSetup) return
+  window._addyScrollResizeSetup = true
+  window.addEventListener('scroll', updateAllPositions, { passive: true, capture: true })
+  window.addEventListener('resize', updateAllPositions)
+}
+
 function run(showIcon) {
   if (showIcon) {
+    setupScrollAndResizeListeners()
     if (iconDataUrl) {
       scanAndInject()
       const observer = new MutationObserver(() => scanAndInject())
