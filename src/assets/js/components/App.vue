@@ -347,7 +347,13 @@
                     </span>
 
                     <span class="block truncate">
-                      <div class="truncate">
+                      <div class="flex items-center truncate">
+                        <span title="Pinned">
+                          <Pin
+                            v-if="alias.pinned"
+                            class="mr-1 fill-current text-yellow-500 dark:text-yellow-400"
+                          />
+                        </span>
                         <span class="font-semibold text-indigo-800 dark:text-indigo-100">{{
                           getAliasLocalPart(alias)
                         }}</span
@@ -747,16 +753,24 @@
                 ></span>
               </span>
 
-              <span class="block w-full break-words">
-                <div
-                  class="cursor-pointer break-words"
-                  title="Click To Copy Alias"
-                  @click="copyToClipboard(getAliasEmail(aliasToView))"
-                >
-                  <span class="font-semibold text-indigo-800 dark:text-indigo-100">{{
-                    getAliasLocalPart(aliasToView)
-                  }}</span
-                  ><span>@{{ aliasToView.domain }}</span>
+              <span class="block w-full break-words break-all">
+                <div class="inline-flex items-center">
+                  <span title="Pinned">
+                    <Pin
+                      v-if="aliasToView.pinned"
+                      class="mr-1 inline-block fill-current text-yellow-500 dark:text-yellow-400"
+                    />
+                  </span>
+                  <div
+                    class="cursor-pointer break-words"
+                    title="Click To Copy Alias"
+                    @click="copyToClipboard(getAliasEmail(aliasToView))"
+                  >
+                    <span class="font-semibold text-indigo-800 dark:text-indigo-100">{{
+                      getAliasLocalPart(aliasToView)
+                    }}</span
+                    ><span>@{{ aliasToView.domain }}</span>
+                  </div>
                 </div>
 
                 <div v-if="aliasToViewDescriptionEditing" class="flex items-center">
@@ -785,7 +799,7 @@
                 </div>
                 <div v-else-if="aliasToView.description" class="flex items-center">
                   <span
-                    class="inline-block cursor-pointer border border-transparent py-1 text-sm break-words text-grey-400 dark:text-grey-50"
+                    class="inline-block cursor-pointer border border-transparent py-1 text-sm break-words break-all text-grey-400 dark:text-grey-50"
                     title="Click To Copy Description"
                     @click="copyToClipboard(aliasToView.description)"
                   >
@@ -936,6 +950,26 @@
               <loader class="h-5 w-5" v-if="activateAliasLoading" />
             </button>
           </div>
+          <button
+            v-if="aliasToView.pinned"
+            @click="unpinAlias(aliasToView)"
+            class="w-full border-b border-grey-200 p-3 text-left hover:bg-indigo-50 focus:outline-hidden dark:hover:bg-grey-800"
+            :class="unpinAliasLoading ? 'cursor-not-allowed' : ''"
+            :disabled="unpinAliasLoading"
+          >
+            Unpin this alias
+            <loader class="h-5 w-5" v-if="unpinAliasLoading" />
+          </button>
+          <button
+            v-else
+            @click="pinAlias(aliasToView)"
+            class="w-full border-b border-grey-200 p-3 text-left hover:bg-indigo-50 focus:outline-hidden dark:hover:bg-grey-800"
+            :class="pinAliasLoading ? 'cursor-not-allowed' : ''"
+            :disabled="pinAliasLoading"
+          >
+            Pin this alias
+            <loader class="h-5 w-5" v-if="pinAliasLoading" />
+          </button>
           <button
             v-if="aliasToView.deleted_at"
             @click="restoreAliasModalOpen = true"
@@ -1622,6 +1656,7 @@ import Check from './../components/icons/Check'
 import ExternalLink from './../components/icons/ExternalLink'
 import Heart from './../components/icons/Heart'
 import Refresh from './../components/icons/Refresh'
+import Pin from './../components/icons/Pin'
 import Modal from './../components/Modal.vue'
 import Multiselect from '@vueform/multiselect'
 import { useNotification, Notifications } from '@kyvg/vue3-notification'
@@ -1672,6 +1707,8 @@ const recipientsLoading = ref(false)
 const createAliasLoading = ref(false)
 const activateAliasLoading = ref(false)
 const deactivateAliasLoading = ref(false)
+const pinAliasLoading = ref(false)
+const unpinAliasLoading = ref(false)
 const deleteAliasLoading = ref(false)
 const forgetAliasLoading = ref(false)
 const restoreAliasLoading = ref(false)
@@ -2718,15 +2755,18 @@ const getRecipientsRequest = async () => {
   recipientsLoading.value = true
 
   try {
-    const response = await fetch(`${instance.value}/api/v1/recipients?filter[verified]=true`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
-        'X-Requested-From': 'browser-extension',
-        Authorization: `Bearer ${apiToken.value}`,
-      },
-    })
+    const response = await fetch(
+      `${instance.value}/api/v1/recipients?filter[verified]=true&alias_count=false`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-Requested-From': 'browser-extension',
+          Authorization: `Bearer ${apiToken.value}`,
+        },
+      }
+    )
 
     if (response.status === 200) {
       let data = await response.json()
@@ -2919,6 +2959,77 @@ const deactivateAlias = async (alias) => {
     }
   } catch (error) {
     deactivateAliasLoading.value = false
+    error.value = 'An Error Has Occurred'
+    console.log(error)
+  }
+}
+
+const pinAlias = async (alias) => {
+  pinAliasLoading.value = true
+
+  try {
+    const response = await fetch(`${instance.value}/api/v1/pinned-aliases`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-Requested-From': 'browser-extension',
+        Authorization: `Bearer ${apiToken.value}`,
+      },
+      body: JSON.stringify({
+        id: alias.id,
+      }),
+    })
+
+    pinAliasLoading.value = false
+
+    if (response.status === 200) {
+      alias.pinned = true
+      aliasesCurrentPage.value = 1
+      getAliases(true) // To ensure correct pinned order
+      success('Alias pinned successfully')
+    } else if (response.status === 419) {
+      error.value =
+        'An error occurred, please check any ad blockers (e.g. AdGuard) and add an exception for app.addy.io'
+    } else {
+      error.value = 'An Error Has Occurred'
+    }
+  } catch (error) {
+    pinAliasLoading.value = false
+    error.value = 'An Error Has Occurred'
+    console.log(error)
+  }
+}
+
+const unpinAlias = async (alias) => {
+  unpinAliasLoading.value = true
+
+  try {
+    const response = await fetch(`${instance.value}/api/v1/pinned-aliases/${alias.id}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-Requested-From': 'browser-extension',
+        Authorization: `Bearer ${apiToken.value}`,
+      },
+    })
+
+    unpinAliasLoading.value = false
+
+    if (response.status === 204) {
+      alias.pinned = false
+      aliasesCurrentPage.value = 1
+      getAliases(true) // To ensure correct pinned order
+      success('Alias unpinned successfully')
+    } else if (response.status === 419) {
+      error.value =
+        'An error occurred, please check any ad blockers (e.g. AdGuard) and add an exception for app.addy.io'
+    } else {
+      error.value = 'An Error Has Occurred'
+    }
+  } catch (error) {
+    unpinAliasLoading.value = false
     error.value = 'An Error Has Occurred'
     console.log(error)
   }
