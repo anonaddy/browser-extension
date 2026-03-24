@@ -294,7 +294,9 @@
                     <option value="all">All</option>
                     <option value="active">Active</option>
                     <option value="inactive">Inactive</option>
-                    <option value="not_deleted">Not Deleted</option>
+                    <option value="not_deleted">Active and Inactive</option>
+                    <option value="pinned">Pinned</option>
+                    <option value="unpinned">Unpinned</option>
                     <option value="deleted">Deleted</option>
                   </select>
                   <div
@@ -1979,6 +1981,16 @@ const showActiveAliases = computed(() => {
     return ''
   }
 })
+const showPinnedAliases = computed(() => {
+  if (showAliasStatus.value === 'pinned') {
+    return true
+  } else if (showAliasStatus.value === 'unpinned') {
+    return false
+  } else {
+    return ''
+  }
+})
+
 const activeTheme = computed(() => {
   if (theme.value === 'system') {
     if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
@@ -2384,7 +2396,7 @@ const getAliases = async (calledFromMounted = false) => {
 
   try {
     const response = await fetch(
-      `${instance.value}/api/v1/aliases?filter[deleted]=${showDeletedAliases.value}&filter[active]=${showActiveAliases.value}&filter[search]=${
+      `${instance.value}/api/v1/aliases?filter[deleted]=${showDeletedAliases.value}&filter[active]=${showActiveAliases.value}&filter[pinned]=${showPinnedAliases.value}&filter[search]=${
         searchInput.value.length > 2 ? searchInput.value : ''
       }&sort=${defaultAliasSortDir.value}${defaultAliasSort.value}&page[number]=${
         aliasesCurrentPage.value
