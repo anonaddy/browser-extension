@@ -1,11 +1,11 @@
 {
   "manifest_version": 3,
-  "name": "addy.io - Anonymous Email Forwarding",
+  "name": "addy.io - Protect Your Real Email With Aliases",
   "short_name": "addy.io",
   "author": "Will Browning",
-  "description": "Open-source Anonymous Email Forwarding, create unlimited email aliases for free",
+  "description": "addy.io is open-source and creates aliases that forward to your real inbox. Share an alias instead of your main email address.",
   "homepage_url": "https://addy.io",
-  "version": "3.0.3",
+  "version": "3.0.4",
   "icons": {
     "16": "img/icon_16.png",
     "32": "img/icon_32.png",

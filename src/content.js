@@ -272,8 +272,13 @@ function setupScrollAndResizeListeners() {
   window.addEventListener('resize', updateAllPositions)
 }
 
-function run(showIcon) {
-  if (showIcon) {
+function isLoggedIn(apiToken) {
+  return typeof apiToken === 'string' && apiToken.trim().length > 0
+}
+
+function run(showIcon, loggedIn) {
+  const shouldShow = showIcon && loggedIn
+  if (shouldShow) {
     setupScrollAndResizeListeners()
     if (iconDataUrl) {
       scanAndInject()
@@ -297,13 +302,20 @@ function run(showIcon) {
   }
 }
 
-browser.storage.sync.get({ showIconInEmailFields: true }).then(({ showIconInEmailFields }) => {
-  run(showIconInEmailFields)
-})
+function refreshFromStorage() {
+  return browser.storage.sync
+    .get({ showIconInEmailFields: true, apiToken: '' })
+    .then(({ showIconInEmailFields, apiToken }) => {
+      run(showIconInEmailFields, isLoggedIn(apiToken))
+    })
+}
+
+refreshFromStorage()
 
 browser.storage.onChanged.addListener((changes, areaName) => {
-  if (areaName === 'sync' && changes.showIconInEmailFields) {
-    run(changes.showIconInEmailFields.newValue)
+  if (areaName !== 'sync') return
+  if (changes.showIconInEmailFields || changes.apiToken) {
+    refreshFromStorage()
   }
 })
 
