@@ -260,7 +260,12 @@
               class="border-b border-grey-200 bg-white px-3 py-2 text-sm tracking-wide text-grey-600 shadow-sm dark:border-grey-600 dark:bg-grey-700 dark:text-white"
             >
               Search
-              <span v-if="localPartSuggestions[0] && localPartSuggestions[0] !== currentTabHostname"
+              <span
+                v-if="
+                  localPartSuggestions[0] &&
+                  localPartSuggestions[0] !== currentTabHostname &&
+                  String(localPartSuggestions[0]).length >= 3
+                "
                 >"<span
                   @click="((getAliasesLoading = true), (searchInput = localPartSuggestions[0]))"
                   class="cursor-pointer text-indigo-700 hover:text-indigo-500 dark:text-white dark:hover:text-grey-50"
@@ -1272,20 +1277,20 @@
                 type="text"
                 placeholder="Enter local part"
                 class="w-full appearance-none rounded-xs bg-white p-2 text-grey-700 shadow-sm focus:ring-3 dark:bg-grey-600 dark:text-white dark:placeholder-grey-200"
-                :class="localPartSuggestions.length ? '' : 'mb-4'"
+                :class="localPartSuggestionsForCreate.length ? '' : 'mb-4'"
               />
               <p
-                v-if="localPartSuggestions.length"
+                v-if="localPartSuggestionsForCreate.length"
                 class="mt-1 mb-3 text-sm text-grey-600 dark:text-grey-100"
               >
                 Click to use:
-                <span v-for="(suggestion, i) in localPartSuggestions" :key="suggestion">
+                <span v-for="(suggestion, i) in localPartSuggestionsForCreate" :key="suggestion">
                   <span
                     class="cursor-pointer text-indigo-700 hover:text-indigo-900 dark:text-white dark:hover:text-grey-100"
                     title="Click to use suggestion"
                     @click="localPart = suggestion"
                     >{{ suggestion }}</span
-                  >{{ i == localPartSuggestions.length - 1 ? '' : ', ' }}
+                  >{{ i == localPartSuggestionsForCreate.length - 1 ? '' : ', ' }}
                 </span>
               </p>
             </div>
@@ -1963,6 +1968,16 @@ const aliasToViewHasSharedDomain = computed(() => {
   return sharedDomains.value.includes(aliasToView.value.domain)
 })
 const sharedDomainSelected = computed(() => sharedDomains.value.includes(domain.value))
+
+/** Create Alias "Click to use"; min length 2 only when custom format + shared domain (see createAlias). */
+const localPartSuggestionsForCreate = computed(() => {
+  const needMin2 = aliasFormat.value === 'custom' && sharedDomainSelected.value
+  if (needMin2) {
+    return localPartSuggestions.value.filter((s) => String(s).length >= 2)
+  }
+  return localPartSuggestions.value
+})
+
 const showDeletedAliases = computed(() => {
   if (showAliasStatus.value === 'all') {
     return 'with'
@@ -2359,7 +2374,10 @@ const getCurrentTabHostname = async () => {
 
       // Set the alias local part if the format is custom and autoFill is enabled
       if (aliasFormat.value === 'custom' && autoFillLocalPart.value !== '') {
-        localPart.value = localPartAutoFill.value[autoFillLocalPart.value]
+        const filled = localPartAutoFill.value[autoFillLocalPart.value]
+        if (filled && (!sharedDomainSelected.value || String(filled).length >= 2)) {
+          localPart.value = filled
+        }
       }
 
       return url.hostname
