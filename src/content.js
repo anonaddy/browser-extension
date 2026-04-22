@@ -222,8 +222,13 @@ function handleIconClick(input, icon, wrapper) {
     wrapper.style.cursor = ''
   }
 
+  let pageHostname = ''
+  try {
+    pageHostname = window.location.hostname || ''
+  } catch (_) {}
+
   browser.runtime
-    .sendMessage({ type: 'CREATE_ALIAS_FOR_INPUT' })
+    .sendMessage({ type: 'CREATE_ALIAS_FOR_INPUT', description: pageHostname })
     .then((response) => {
       if (response && response.aliasEmail) {
         input.value = response.aliasEmail

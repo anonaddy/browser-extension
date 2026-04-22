@@ -52,6 +52,21 @@ const prepareFirefoxDist = () => {
   const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'))
   if (!manifest.background) manifest.background = {}
   manifest.background.scripts = ['background.js']
+  manifest.commands = {
+    ...(manifest.commands || {}),
+    open_addy_extension: {
+      suggested_key: {
+        default: 'Alt+Shift+A',
+      },
+      description: 'Open addy.io extension',
+    },
+    toggle_addy_sidebar: {
+      suggested_key: {
+        default: 'Ctrl+Alt+S',
+      },
+      description: 'Toggle addy.io sidebar',
+    },
+  }
   fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2))
 
   return firefoxDir

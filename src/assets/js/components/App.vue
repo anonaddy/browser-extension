@@ -32,47 +32,53 @@
       <!-- Credentials login -->
       <template v-if="loginMode === 'credentials'">
         <template v-if="!mfaRequired">
-          <label for="login_username" class="mb-1 block text-base text-indigo-100">Username</label>
-          <input
-            v-model="usernameInput"
-            id="login_username"
-            type="text"
-            autocomplete="username"
-            placeholder="Your addy.io username"
-            class="mb-4 w-full appearance-none rounded-xs bg-white p-2 text-base text-grey-700 shadow-sm focus:ring-3"
-          />
-          <label for="login_password" class="mb-1 block text-base text-indigo-100">Password</label>
-          <input
-            v-model="passwordInput"
-            id="login_password"
-            type="password"
-            autocomplete="current-password"
-            placeholder="Your password"
-            class="mb-4 w-full appearance-none rounded-xs bg-white p-2 text-base text-grey-700 shadow-sm focus:ring-3"
-          />
-          <label for="require_relogin" class="mb-1 block text-base text-indigo-100">
-            Require re-login after
-          </label>
-          <select
-            v-model="requireReloginAfter"
-            id="require_relogin"
-            class="mb-4 w-full appearance-none rounded-xs bg-white p-2 text-base text-grey-700 shadow-sm focus:ring-3"
-          >
-            <option value="">Never</option>
-            <option value="day">1 day</option>
-            <option value="week">1 week</option>
-            <option value="month">1 month</option>
-            <option value="year">1 year</option>
-          </select>
-          <button
-            @click="loginWithCredentials"
-            class="w-full rounded-xs border border-transparent bg-cyan-400 px-3 py-2 text-sm font-semibold text-cyan-900 hover:bg-cyan-300 focus:outline-hidden"
-            :class="credentialsLoading ? 'cursor-not-allowed' : ''"
-            :disabled="credentialsLoading"
-          >
-            Sign In
-            <loader class="h-5 w-5" v-if="credentialsLoading" />
-          </button>
+          <form @submit.prevent="loginWithCredentials">
+            <label for="login_username" class="mb-1 block text-base text-indigo-100"
+              >Username</label
+            >
+            <input
+              v-model="usernameInput"
+              id="login_username"
+              type="text"
+              autocomplete="username"
+              placeholder="Your addy.io username"
+              class="mb-4 w-full appearance-none rounded-xs bg-white p-2 text-base text-grey-700 shadow-sm focus:ring-3"
+            />
+            <label for="login_password" class="mb-1 block text-base text-indigo-100"
+              >Password</label
+            >
+            <input
+              v-model="passwordInput"
+              id="login_password"
+              type="password"
+              autocomplete="current-password"
+              placeholder="Your password"
+              class="mb-4 w-full appearance-none rounded-xs bg-white p-2 text-base text-grey-700 shadow-sm focus:ring-3"
+            />
+            <label for="require_relogin" class="mb-1 block text-base text-indigo-100">
+              Require re-login after
+            </label>
+            <select
+              v-model="requireReloginAfter"
+              id="require_relogin"
+              class="mb-4 w-full appearance-none rounded-xs bg-white p-2 text-base text-grey-700 shadow-sm focus:ring-3"
+            >
+              <option value="">Never</option>
+              <option value="day">1 day</option>
+              <option value="week">1 week</option>
+              <option value="month">1 month</option>
+              <option value="year">1 year</option>
+            </select>
+            <button
+              type="submit"
+              class="w-full rounded-xs border border-transparent bg-cyan-400 px-3 py-2 text-sm font-semibold text-cyan-900 hover:bg-cyan-300 focus:outline-hidden"
+              :class="credentialsLoading ? 'cursor-not-allowed' : ''"
+              :disabled="credentialsLoading"
+            >
+              Sign In
+              <loader class="h-5 w-5" v-if="credentialsLoading" />
+            </button>
+          </form>
           <p class="mt-3 text-center text-sm text-indigo-200">
             <span
               @click="loginMode = 'apiKey'"
@@ -89,6 +95,7 @@
           </label>
           <input
             v-model="mfaOtp"
+            ref="mfaOtpInput"
             id="mfa_otp"
             type="text"
             inputmode="numeric"
@@ -652,6 +659,38 @@
 
           <div class="w-full border-b border-grey-200 p-3 text-left">
             <label
+              for="select_show_context_menu_option"
+              class="mb-1 block text-grey-700 dark:text-white"
+              >Show right-click "Create and copy new addy.io alias" option:</label
+            >
+            <div class="relative">
+              <select
+                v-model="showContextMenuOption"
+                id="select_show_context_menu_option"
+                class="block w-full appearance-none rounded-sm bg-white p-2 pr-8 text-grey-700 shadow-sm focus:ring-3 dark:bg-grey-600 dark:text-white"
+                required
+              >
+                <option :value="true">Enabled</option>
+                <option :value="false">Disabled</option>
+              </select>
+              <div
+                class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-grey-700 dark:text-white"
+              >
+                <svg
+                  class="h-4 w-4 fill-current"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"
+                  />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="w-full border-b border-grey-200 p-3 text-left">
+            <label
               for="select_auto_fill_local_part"
               class="mb-1 block text-grey-700 dark:text-white"
               >Automatically Fill New Alias Local Parts When Using The Custom Alias Format:</label
@@ -691,7 +730,7 @@
             :class="domainOptionsLoading ? 'cursor-not-allowed' : ''"
             :disabled="domainOptionsLoading"
           >
-            Refresh Domains and Defaults
+            Sync Alias Domains and Account Settings
             <loader class="h-5 w-5" v-if="domainOptionsLoading" />
           </button>
           <button
@@ -700,7 +739,7 @@
             :class="recipientsLoading ? 'cursor-not-allowed' : ''"
             :disabled="recipientsLoading"
           >
-            Refresh Recipients
+            Sync Recipients List
             <loader class="h-5 w-5" v-if="recipientsLoading" />
           </button>
           <a
@@ -726,11 +765,36 @@
           >
             Logout
           </button>
+          <details
+            class="w-full border-b border-grey-200 p-3 text-left text-sm text-grey-600 dark:text-grey-100"
+          >
+            <summary class="cursor-pointer font-medium text-grey-700 dark:text-white">
+              Keyboard shortcuts info
+            </summary>
+            <p class="mt-2">You can customise extension shortcuts in your browser settings:</p>
+            <ul class="mt-1 list-inside list-disc space-y-1">
+              <li>Firefox: <code>about:addons</code> > gear icon > Manage Extension Shortcuts</li>
+              <li>
+                Brave/Chrome: <code>brave://extensions/shortcuts</code> or
+                <code>chrome://extensions/shortcuts</code>
+              </li>
+            </ul>
+            <p class="mt-2">
+              Available shortcuts include creating/copying an alias and, on Firefox builds, opening
+              the extension or toggling the sidebar.
+            </p>
+          </details>
           <div
             v-if="extensionVersion"
             class="w-full border-grey-200 p-3 text-center text-grey-600 dark:text-grey-100"
           >
-            v{{ extensionVersion }}
+            <a
+              href="https://github.com/anonaddy/browser-extension/releases"
+              target="_blank"
+              rel="nofollow noreferrer noopener"
+              class="hover:text-indigo-600 hover:underline dark:hover:text-grey-50"
+              >v{{ extensionVersion }}</a
+            >
           </div>
         </div>
         <div v-else-if="selected == 'ViewAlias'">
@@ -1170,7 +1234,7 @@
                 Alias Domain:
               </label>
               <LoaderNoMargin v-if="domainOptionsLoading" class="mr-3 h-4 w-4" />
-              <span v-else title="Click to refresh domains" class="mr-3">
+              <span v-else title="Click to sync alias domains" class="mr-3">
                 <Refresh
                   @click="getAliasDomainOptions(apiToken, instance)"
                   class="cursor-pointer text-indigo-700 hover:text-indigo-900 dark:text-white dark:hover:text-grey-100"
@@ -1211,7 +1275,7 @@
                 Alias Format:
               </label>
               <LoaderNoMargin v-if="domainOptionsLoading" class="mr-3 h-4 w-4" />
-              <span v-else title="Click to refresh available formats" class="mr-3">
+              <span v-else title="Click to sync available alias formats" class="mr-3">
                 <Refresh
                   @click="getAliasDomainOptions(apiToken, instance)"
                   class="cursor-pointer text-indigo-700 hover:text-indigo-900 dark:text-white dark:hover:text-grey-100"
@@ -1314,7 +1378,7 @@
                 Recipients: (optional)
               </label>
               <LoaderNoMargin v-if="recipientsLoading" class="mr-3 h-4 w-4" />
-              <span v-else title="Click to refresh recipients" class="mr-3">
+              <span v-else title="Click to sync available recipients" class="mr-3">
                 <Refresh
                   @click="getRecipientsRequest()"
                   class="cursor-pointer text-indigo-700 hover:text-indigo-900 dark:text-white dark:hover:text-grey-100"
@@ -1642,7 +1706,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, defineAsyncComponent } from 'vue'
+import { ref, computed, watch, onMounted, defineAsyncComponent, nextTick } from 'vue'
 import debounce from 'lodash/debounce'
 import Loader from './Loader'
 import LoaderNoMargin from './LoaderNoMargin'
@@ -1696,8 +1760,8 @@ const passwordInput = ref('')
 const requireReloginAfter = ref('')
 const mfaRequired = ref(false)
 const mfaKey = ref('')
-const mfaCsrfToken = ref('')
 const mfaOtp = ref('')
+const mfaOtpInput = ref(null)
 const credentialsLoading = ref(false)
 const pendingLoginDeviceName = ref('')
 const pendingLoginExpiration = ref('')
@@ -1787,6 +1851,7 @@ const theme = ref('system')
 const autoCopyNewAlias = ref(true)
 const showSearchSuggestions = ref(true)
 const showIconInEmailFields = ref(true)
+const showContextMenuOption = ref(true)
 const autoFillLocalPart = ref('')
 const defaultAliasSort = ref('created_at')
 const defaultAliasSortDir = ref('-')
@@ -1866,6 +1931,38 @@ const sharedDomains = ref([
   'addy.io',
   'addy.to',
 ])
+const AUTO_REFRESH_INTERVAL_MS = 24 * 60 * 60 * 1000
+
+const shouldAutoRefresh = (lastRefreshedAt) => {
+  const last = Number(lastRefreshedAt || 0)
+  if (!last || Number.isNaN(last)) return true
+  return Date.now() - last >= AUTO_REFRESH_INTERVAL_MS
+}
+
+const maybeAutoRefreshDomainAndRecipients = async () => {
+  if (!apiToken.value || !instance.value) return
+
+  try {
+    const { lastDomainOptionsRefreshAt, lastRecipientsRefreshAt } = await browser.storage.sync.get({
+      lastDomainOptionsRefreshAt: 0,
+      lastRecipientsRefreshAt: 0,
+    })
+
+    const refreshTasks = []
+    if (shouldAutoRefresh(lastDomainOptionsRefreshAt) && !domainOptionsLoading.value) {
+      refreshTasks.push(getAliasDomainOptions(apiToken.value, instance.value, false, true))
+    }
+    if (shouldAutoRefresh(lastRecipientsRefreshAt) && !recipientsLoading.value) {
+      refreshTasks.push(getRecipientsRequest(true))
+    }
+
+    if (refreshTasks.length) {
+      await Promise.allSettled(refreshTasks)
+    }
+  } catch (error) {
+    console.log(error)
+  }
+}
 
 onMounted(async () => {
   apiToken.value = await getApiToken()
@@ -1896,6 +1993,7 @@ onMounted(async () => {
   autoCopyNewAlias.value = await getAutoCopyNewAlias()
   showSearchSuggestions.value = await getShowSearchSuggestions()
   showIconInEmailFields.value = await getShowIconInEmailFields()
+  showContextMenuOption.value = await getShowContextMenuOption()
   autoFillLocalPart.value = await getAutoFillLocalPart()
   defaultAliasSort.value = await getDefaultAliasSort()
   defaultAliasSortDir.value = await getDefaultAliasSortDir()
@@ -1912,6 +2010,7 @@ onMounted(async () => {
 
   extensionWindow.value = await getExtensionWindow()
   currentTabHostname.value = await getCurrentTabHostname()
+  await maybeAutoRefreshDomainAndRecipients()
 
   let manifest = browser.runtime.getManifest()
 
@@ -2121,6 +2220,14 @@ watch(showIconInEmailFields, async (val) => {
   }
 })
 
+watch(showContextMenuOption, async (val) => {
+  try {
+    await browser.storage.sync.set({ showContextMenuOption: val })
+  } catch (error) {
+    console.log(error)
+  }
+})
+
 watch(autoFillLocalPart, async (val) => {
   if (aliasFormat.value === 'custom' && val !== '') {
     localPart.value = localPartAutoFill.value[val]
@@ -2179,6 +2286,13 @@ watch(localPart, () => {
 watch(selected, (val) => {
   error.value = ''
   cancelEditDescription()
+})
+
+watch(mfaRequired, async (val) => {
+  if (val === true) {
+    await nextTick()
+    mfaOtpInput.value?.focus()
+  }
 })
 
 watch(
@@ -2300,6 +2414,15 @@ const getShowIconInEmailFields = async () => {
   try {
     const result = await browser.storage.sync.get({ showIconInEmailFields: true })
     return result.showIconInEmailFields
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+const getShowContextMenuOption = async () => {
+  try {
+    const result = await browser.storage.sync.get({ showContextMenuOption: true })
+    return result.showContextMenuOption
   } catch (error) {
     console.log(error)
   }
@@ -2572,9 +2695,8 @@ const loginWithCredentials = async () => {
       return
     }
 
-    if (response.status === 422 && data.mfa_key && data.csrf_token) {
+    if (response.status === 422 && data.mfa_key) {
       mfaKey.value = data.mfa_key
-      mfaCsrfToken.value = data.csrf_token
       pendingLoginDeviceName.value = deviceName
       pendingLoginExpiration.value = expiration
       mfaRequired.value = true
@@ -2607,7 +2729,6 @@ const submitMfa = async () => {
         Accept: 'application/json',
         'X-Requested-With': 'XMLHttpRequest',
         'X-Requested-From': 'browser-extension',
-        'X-CSRF-TOKEN': mfaCsrfToken.value,
       },
       body: JSON.stringify({
         mfa_key: mfaKey.value,
@@ -2628,7 +2749,6 @@ const submitMfa = async () => {
       }
       mfaRequired.value = false
       mfaKey.value = ''
-      mfaCsrfToken.value = ''
       mfaOtp.value = ''
       pendingLoginDeviceName.value = ''
       pendingLoginExpiration.value = ''
@@ -2674,7 +2794,7 @@ const submitMfa = async () => {
   }
 }
 
-const getAliasDomainOptions = async (token, instanceArgument, renew = false) => {
+const getAliasDomainOptions = async (token, instanceArgument, renew = false, silent = false) => {
   error.value = ''
 
   if (!token) {
@@ -2740,22 +2860,29 @@ const getAliasDomainOptions = async (token, instanceArgument, renew = false) => 
       if (!apiToken.value) {
         apiToken.value = token
         getAliases()
-        getRecipientsRequest()
+        getRecipientsRequest(silent)
 
-        success('Logged in successfully')
+        if (!silent) {
+          success('Logged in successfully')
+        }
       } else if (renew) {
         apiToken.value = token
         renewApiKeyModalOpen.value = false
 
-        success('Renewed API Key successfully')
+        if (!silent) {
+          success('Renewed API Key successfully')
+        }
       } else {
-        success('Domains and defaults refreshed')
+        if (!silent) {
+          success('Domains and defaults refreshed')
+        }
       }
 
       let data = await response.json()
       domainOptions.value = data.data
       domain.value = data.defaultAliasDomain ? data.defaultAliasDomain : data.data[0]
       aliasFormat.value = data.defaultAliasFormat ? data.defaultAliasFormat : 'random_characters'
+      await browser.storage.sync.set({ lastDomainOptionsRefreshAt: Date.now() })
 
       if (
         sharedDomainSelected.value &&
@@ -2781,7 +2908,7 @@ const getAliasDomainOptions = async (token, instanceArgument, renew = false) => 
   }
 }
 
-const getRecipientsRequest = async () => {
+const getRecipientsRequest = async (silent = false) => {
   recipientsLoading.value = true
 
   try {
@@ -2807,8 +2934,9 @@ const getRecipientsRequest = async () => {
           email: recipient.email,
         }
       })
+      await browser.storage.sync.set({ lastRecipientsRefreshAt: Date.now() })
 
-      if (['Settings', 'CreateAlias'].includes(selected.value)) {
+      if (!silent && ['Settings', 'CreateAlias'].includes(selected.value)) {
         success('Recipients refreshed')
       }
     } else if (response.status === 401) {
@@ -3376,6 +3504,7 @@ const logout = async (expiredToken = false) => {
       'autoCopyNewAlias',
       'showSearchSuggestions',
       'showIconInEmailFields',
+      'showContextMenuOption',
       'autoFillLocalPart',
       'defaultAliasSort',
       'defaultAliasSortDir',
@@ -3392,6 +3521,7 @@ const logout = async (expiredToken = false) => {
     autoCopyNewAlias.value = await getAutoCopyNewAlias()
     showSearchSuggestions.value = await getShowSearchSuggestions()
     showIconInEmailFields.value = await getShowIconInEmailFields()
+    showContextMenuOption.value = await getShowContextMenuOption()
     autoFillLocalPart.value = await getAutoFillLocalPart()
     defaultAliasSort.value = await getDefaultAliasSort()
     defaultAliasSortDir.value = await getDefaultAliasSortDir()
