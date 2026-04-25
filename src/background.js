@@ -1,7 +1,17 @@
 import browser from 'webextension-polyfill'
+import psl from 'psl'
 import { createAliasRequest, formatAliasEmail } from './assets/js/api/createAlias.js'
 
 const CONTEXT_MENU_ID = 'addy-generate-alias'
+const SHARED_DOMAINS = new Set([
+  'anonaddy.me',
+  'anonaddy.com',
+  '4wrd.cc',
+  'mailer.me',
+  'addymail.com',
+  'addy.io',
+  'addy.to',
+])
 let iconDataUrlCache = null
 
 async function getIconDataUrl() {
@@ -19,25 +29,54 @@ async function getIconDataUrl() {
   return dataUrl
 }
 
-async function createQuickAlias(description = '') {
-  const { apiToken, instance, domain, aliasFormat } = await browser.storage.sync.get({
-    apiToken: '',
-    instance: '',
-    domain: '',
-    aliasFormat: 'random_characters',
-  })
+function deriveCustomLocalPartFromHostname(hostname, autoFillLocalPart) {
+  if (!hostname || !autoFillLocalPart) return ''
+  const parsed = psl.parse(hostname)
+  const sld = parsed && typeof parsed.sld === 'string' ? parsed.sld : ''
+  const domain = parsed && typeof parsed.domain === 'string' ? parsed.domain : ''
+
+  if (autoFillLocalPart === 'sld') return sld
+  if (autoFillLocalPart === 'domain') return domain
+  if (autoFillLocalPart === 'full') return hostname
+  if (autoFillLocalPart === 'random' && sld) {
+    return `${sld}.${Math.random().toString(36).substring(2, 5)}`
+  }
+  return ''
+}
+
+async function createQuickAlias(description = '', hostname = '') {
+  const { apiToken, instance, domain, aliasFormat, autoFillLocalPart } =
+    await browser.storage.sync.get({
+      apiToken: '',
+      instance: '',
+      domain: '',
+      aliasFormat: 'random_characters',
+      autoFillLocalPart: '',
+    })
 
   if (!apiToken || !instance || !domain) {
     throw new Error('Not logged in or missing settings. Open the addy.io extension to sign in.')
   }
 
-  // Quick-create cannot provide a local-part, so do not use "custom" format
-  const format = aliasFormat === 'custom' ? 'random_characters' : aliasFormat || 'random_characters'
+  let format = aliasFormat || 'random_characters'
+  let localPart = ''
+
+  if (format === 'custom') {
+    localPart = deriveCustomLocalPartFromHostname(hostname, autoFillLocalPart)
+
+    // Shared domains require at least 2 chars for custom local parts.
+    if (!localPart || (SHARED_DOMAINS.has(domain) && localPart.length < 2)) {
+      // Fall back to random when custom cannot be safely derived.
+      format = 'random_characters'
+      localPart = ''
+    }
+  }
 
   const { data } = await createAliasRequest({
     instance,
     apiToken,
     domain,
+    localPart,
     format,
     recipientIds: [],
     description: typeof description === 'string' ? description : '',
@@ -65,7 +104,8 @@ async function getActiveTab() {
 }
 
 async function createAndCopyAliasForTab(tab) {
-  const aliasEmail = await createQuickAlias(getHostnameFromTab(tab))
+  const hostname = getHostnameFromTab(tab)
+  const aliasEmail = await createQuickAlias(hostname, hostname)
 
   if (tab && tab.id) {
     try {
@@ -213,7 +253,7 @@ function showErrorNotification(message) {
 
 browser.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message.type === 'CREATE_ALIAS_FOR_INPUT') {
-    createQuickAlias(message.description)
+    createQuickAlias(message.description, message.description)
       .then((aliasEmail) => sendResponse({ aliasEmail }))
       .catch((err) => {
         const msg = err.message || 'Failed to create alias'
