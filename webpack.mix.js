@@ -1,11 +1,14 @@
 const mix = require('laravel-mix')
 
-// Webpack 5.106+ validates ProgressPlugin options strictly. webpackbar (Mix's progress bar)
-// subclasses ProgressPlugin but stores its own options on `this.options`, which fails
-// validation. Dropping WebpackBar only removes the fancy CLI progress bar; the build is unchanged.
+// Laravel Mix 6 is incompatible with webpack 5.106+ internals:
+// - WebpackBarPlugin: ProgressPlugin option validation
+// - BuildOutputPlugin: removed webpack/lib/SizeFormatHelpers
+// Dropping these only removes fancy CLI output; compilation is unchanged.
 mix.override((config) => {
   config.plugins = (config.plugins || []).filter(
-    (p) => !p || p.constructor.name !== 'WebpackBarPlugin'
+    (p) =>
+      !p ||
+      (p.constructor.name !== 'WebpackBarPlugin' && p.constructor.name !== 'BuildOutputPlugin')
   )
 })
 

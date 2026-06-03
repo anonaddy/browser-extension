@@ -1111,8 +1111,11 @@
               @keyup.enter="displaySendFromAddress"
               id="send_from_alias_destination"
               type="text"
-              class="mb-4 w-full appearance-none rounded-xs bg-white p-2 text-grey-700 shadow-sm focus:ring-3 dark:bg-grey-600 dark:text-white dark:placeholder-grey-200"
-              placeholder="Enter destination email"
+              class="mb-4 w-full appearance-none rounded-xs bg-white p-2 text-grey-700 shadow-sm focus:ring-3 disabled:cursor-not-allowed dark:bg-grey-600 dark:text-white dark:placeholder-grey-200"
+              :placeholder="
+                !subscribedOrSelfHosting ? 'Subscribe to unlock' : 'Enter destination email'
+              "
+              :disabled="!subscribedOrSelfHosting"
             />
 
             <div v-if="sendFromAliasEmailToSendTo">
@@ -1165,10 +1168,18 @@
               </a>
             </div>
             <button
+              v-if="subscribedOrSelfHosting"
               @click="displaySendFromAddress"
               class="w-full rounded-xs border border-transparent bg-cyan-400 px-3 py-2 font-semibold text-cyan-900 hover:bg-cyan-300 focus:outline-hidden"
             >
               Show Address
+            </button>
+            <button
+              v-else
+              class="w-full rounded-xs border border-transparent bg-grey-400 px-3 py-2 font-semibold text-grey-900 hover:bg-grey-300 focus:outline-hidden disabled:cursor-not-allowed"
+              disabled
+            >
+              Subscribe to unlock
             </button>
           </div>
         </div>

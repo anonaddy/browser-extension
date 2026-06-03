@@ -2,13 +2,22 @@
 
 const fs = require('fs')
 const path = require('path')
-// eslint-disable-next-line
-var archiver = require('archiver')
 
 const extPackageJson = require('../package.json')
 
 const DEST_DIR = path.join(__dirname, '../dist')
 const DEST_ZIP_DIR = path.join(__dirname, '../dist-zip')
+
+/** @type {typeof import('archiver').ZipArchive | null} */
+let ZipArchiveClass = null
+
+const getZipArchive = async () => {
+  if (!ZipArchiveClass) {
+    const { ZipArchive } = await import('archiver')
+    ZipArchiveClass = ZipArchive
+  }
+  return ZipArchiveClass
+}
 
 const extractExtensionData = () => ({
   name: extPackageJson.name,
@@ -21,12 +30,14 @@ const makeDestZipDirIfNotExists = () => {
   }
 }
 
-const buildZip = (src, dist, zipFilename) => {
+const buildZip = async (src, dist, zipFilename) => {
+  const ZipArchive = await getZipArchive()
+
   return new Promise((resolve, reject) => {
     console.info(`Building ${zipFilename}...`)
 
     const output = fs.createWriteStream(path.join(dist, zipFilename))
-    const archive = archiver('zip')
+    const archive = new ZipArchive()
     archive.on('error', reject)
     output.on('error', reject)
     output.on('close', () => resolve())

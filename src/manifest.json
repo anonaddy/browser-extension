@@ -5,7 +5,7 @@
   "author": "Will Browning",
   "description": "addy.io is open-source and creates aliases that forward to your real inbox. Share an alias instead of your main email address.",
   "homepage_url": "https://addy.io",
-  "version": "3.0.7",
+  "version": "3.0.8",
   "icons": {
     "16": "img/icon_16.png",
     "32": "img/icon_32.png",
