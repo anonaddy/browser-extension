@@ -40,7 +40,7 @@
     "lint-staged": "^17.0.0",
     "prettier": "^3.5.3",
     "prettier-plugin-tailwindcss": "^0.8.0",
-    "webpack": "^5.105.4"
+    "webpack": "5.105.4"
   },
   "lint-staged": {
     "*.{css,js,vue}": [
@@ -48,6 +48,6 @@
     ]
   },
   "overrides": {
-    "webpack": "$webpack"
+    "webpack": "5.105.4"
   }
 }
