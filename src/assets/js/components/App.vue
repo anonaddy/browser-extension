@@ -373,12 +373,36 @@
                         }}</span
                         ><span>@{{ alias.domain }}</span>
                       </div>
-                      <div v-if="alias.description" class="flex items-center">
+                      <div
+                        v-if="alias.description || (alias.labels || []).length"
+                        class="flex min-w-0 items-center gap-1.5 py-1"
+                      >
                         <span
-                          class="inline-block truncate border border-transparent py-1 text-sm text-grey-400 dark:text-grey-50"
+                          v-if="alias.description"
+                          class="inline-block min-w-0 truncate text-sm text-grey-400 dark:text-grey-50"
                         >
                           {{ alias.description }}
                         </span>
+                        <template v-if="(alias.labels || []).length">
+                          <span
+                            class="inline-flex shrink-0 items-center gap-1 rounded-full px-1.5 py-0.5 text-xs text-grey-800 dark:text-grey-100"
+                            :style="{ backgroundColor: alias.labels[0].colour + '33' }"
+                            :title="alias.labels[0].name"
+                          >
+                            <span
+                              class="h-1.5 w-1.5 shrink-0 rounded-full"
+                              :style="{ backgroundColor: alias.labels[0].colour }"
+                            />
+                            {{ truncateLabelName(alias.labels[0].name) }}
+                          </span>
+                          <span
+                            v-if="alias.labels.length > 1"
+                            class="shrink-0 text-xs text-grey-500 dark:text-grey-300"
+                            :title="getAdditionalAliasLabelNames(alias.labels)"
+                          >
+                            +{{ alias.labels.length - 1 }}
+                          </span>
+                        </template>
                       </div>
                     </span>
                   </div>
@@ -742,6 +766,15 @@
             Sync Recipients List
             <loader class="h-5 w-5" v-if="recipientsLoading" />
           </button>
+          <button
+            @click="getLabelsRequest()"
+            class="w-full border-b border-grey-200 p-3 text-left hover:bg-indigo-50 focus:outline-hidden dark:hover:bg-grey-800"
+            :class="labelsLoading ? 'cursor-not-allowed' : ''"
+            :disabled="labelsLoading"
+          >
+            Sync Labels List
+            <loader class="h-5 w-5" v-if="labelsLoading" />
+          </button>
           <a
             :href="`${extensionUrl}`"
             target="_blank"
@@ -811,7 +844,7 @@
             </button>
           </div>
           <div class="p-3">
-            <div class="mb-4 flex items-center">
+            <div class="mb-4 flex min-w-0 items-center">
               <span
                 :class="getAliasStatus(aliasToView).backgroundColour"
                 class="alias-status-background mx-1.5 flex items-center justify-center rounded-full outline-hidden"
@@ -824,7 +857,7 @@
                 ></span>
               </span>
 
-              <span class="block w-full break-words break-all">
+              <span class="block w-full min-w-0 break-words break-all">
                 <div class="inline-flex items-center">
                   <span title="Pinned">
                     <Pin
@@ -890,6 +923,62 @@
                     @click="((aliasToViewDescriptionEditing = true), (aliasDescriptionToEdit = ''))"
                     >Add description</span
                   >
+                </div>
+
+                <div class="mt-2">
+                  <div v-if="aliasToViewLabelsEditing" class="flex min-w-0 items-center gap-2">
+                    <multiselect
+                      id="alias_label_ids_edit"
+                      class="min-w-0 grow"
+                      v-model="aliasLabelIdsToEdit"
+                      mode="tags"
+                      value-prop="id"
+                      track-by="name"
+                      label="name"
+                      :options="Object.values(labels)"
+                      :close-on-select="true"
+                      :clear-on-select="false"
+                      :searchable="true"
+                      :max="10"
+                      placeholder="Select label(s)"
+                    >
+                    </multiselect>
+                    <cross
+                      class="inline-block h-6 w-6 shrink-0 cursor-pointer text-red-300"
+                      @click="cancelEditLabels"
+                    />
+                    <check
+                      class="inline-block h-6 w-6 shrink-0 cursor-pointer text-cyan-500"
+                      :class="editAliasLabelsLoading ? 'cursor-not-allowed opacity-50' : ''"
+                      @click="!editAliasLabelsLoading && editAliasLabels(aliasToView)"
+                    />
+                  </div>
+
+                  <div v-else class="flex items-start gap-2">
+                    <div
+                      v-if="(aliasToView.labels || []).length"
+                      class="flex min-w-0 flex-1 flex-wrap gap-1.5"
+                    >
+                      <span
+                        v-for="label in aliasToView.labels"
+                        :key="label.id"
+                        class="inline-flex max-w-full min-w-0 items-center gap-1 rounded-full px-2 py-0.5 text-xs text-grey-800 dark:text-grey-100"
+                        :style="{ backgroundColor: label.colour + '33' }"
+                        :title="label.name"
+                      >
+                        <span
+                          class="h-2 w-2 shrink-0 rounded-full"
+                          :style="{ backgroundColor: label.colour }"
+                        />
+                        <span class="truncate">{{ truncateLabelName(label.name) }}</span>
+                      </span>
+                    </div>
+                    <p v-else class="text-sm text-grey-400 dark:text-grey-300">No labels</p>
+                    <edit
+                      class="inline-block h-6 w-6 shrink-0 cursor-pointer text-grey-300 dark:text-grey-200"
+                      @click="startEditAliasLabels()"
+                    />
+                  </div>
                 </div>
               </span>
             </div>
@@ -1412,6 +1501,35 @@
             >
             </multiselect>
 
+            <div class="mt-3 flex items-center justify-between">
+              <label for="alias_label_ids" class="mb-1 block text-grey-700 dark:text-grey-50">
+                Labels: (optional)
+              </label>
+              <LoaderNoMargin v-if="labelsLoading" class="mr-3 h-4 w-4" />
+              <span v-else title="Click to sync available labels" class="mr-3">
+                <Refresh
+                  @click="getLabelsRequest()"
+                  class="cursor-pointer text-indigo-700 hover:text-indigo-900 dark:text-white dark:hover:text-grey-100"
+                />
+              </span>
+            </div>
+            <multiselect
+              id="alias_label_ids"
+              class="min-w-0"
+              v-model="createAliasLabelIds"
+              mode="tags"
+              value-prop="id"
+              track-by="name"
+              label="name"
+              :options="Object.values(labels)"
+              :close-on-select="true"
+              :clear-on-select="false"
+              :searchable="true"
+              :max="10"
+              placeholder="Select label(s)"
+            >
+            </multiselect>
+
             <button
               @click="createAlias"
               class="mt-4 w-full rounded-xs border border-transparent bg-cyan-400 px-3 py-2 font-semibold text-cyan-900 hover:bg-cyan-300 focus:outline-hidden"
@@ -1786,6 +1904,7 @@ const sendFromAliasDestination = ref('')
 const sendFromAliasEmailToSendTo = ref('')
 const domainOptionsLoading = ref(false)
 const recipientsLoading = ref(false)
+const labelsLoading = ref(false)
 const createAliasLoading = ref(false)
 const activateAliasLoading = ref(false)
 const deactivateAliasLoading = ref(false)
@@ -1796,6 +1915,9 @@ const forgetAliasLoading = ref(false)
 const restoreAliasLoading = ref(false)
 const logoutLoading = ref(false)
 const editAliasDescriptionLoading = ref(false)
+const editAliasLabelsLoading = ref(false)
+const aliasToViewLabelsEditing = ref(false)
+const aliasLabelIdsToEdit = ref([])
 const deleteAliasModalOpen = ref(false)
 const forgetAliasModalOpen = ref(false)
 const restoreAliasModalOpen = ref(false)
@@ -1810,7 +1932,9 @@ const error = ref('')
 const domain = ref('')
 const domainOptions = ref([])
 const recipients = ref([])
+const labels = ref([])
 const createAliasRecipientIds = ref([])
+const createAliasLabelIds = ref([])
 const aliasFormat = ref('random_characters')
 const aliasFormatOptions = ref([
   {
@@ -1954,10 +2078,12 @@ const maybeAutoRefreshDomainAndRecipients = async () => {
   if (!apiToken.value || !instance.value) return
 
   try {
-    const { lastDomainOptionsRefreshAt, lastRecipientsRefreshAt } = await browser.storage.sync.get({
-      lastDomainOptionsRefreshAt: 0,
-      lastRecipientsRefreshAt: 0,
-    })
+    const { lastDomainOptionsRefreshAt, lastRecipientsRefreshAt, lastLabelsRefreshAt } =
+      await browser.storage.sync.get({
+        lastDomainOptionsRefreshAt: 0,
+        lastRecipientsRefreshAt: 0,
+        lastLabelsRefreshAt: 0,
+      })
 
     const refreshTasks = []
     if (shouldAutoRefresh(lastDomainOptionsRefreshAt) && !domainOptionsLoading.value) {
@@ -1965,6 +2091,9 @@ const maybeAutoRefreshDomainAndRecipients = async () => {
     }
     if (shouldAutoRefresh(lastRecipientsRefreshAt) && !recipientsLoading.value) {
       refreshTasks.push(getRecipientsRequest(true))
+    }
+    if (shouldAutoRefresh(lastLabelsRefreshAt) && !labelsLoading.value) {
+      refreshTasks.push(getLabelsRequest(true))
     }
 
     if (refreshTasks.length) {
@@ -1994,6 +2123,7 @@ onMounted(async () => {
   }
   domainOptions.value = await getDomainOptions()
   recipients.value = await getRecipients()
+  labels.value = await getLabels()
   domain.value = await getDomain()
   aliasFormat.value = await getAliasFormat()
   showAliasStatus.value = await getShowAliasStatus()
@@ -2061,6 +2191,10 @@ onMounted(async () => {
 
     if (recipients.value.length == 0) {
       getRecipientsRequest()
+    }
+
+    if (labels.value.length == 0) {
+      getLabelsRequest()
     }
   }
 })
@@ -2155,6 +2289,14 @@ watch(domainOptions, async (val) => {
 watch(recipients, async (val) => {
   try {
     await browser.storage.sync.set({ recipients: val })
+  } catch (error) {
+    console.log(error)
+  }
+})
+
+watch(labels, async (val) => {
+  try {
+    await browser.storage.sync.set({ labels: val })
   } catch (error) {
     console.log(error)
   }
@@ -2297,6 +2439,7 @@ watch(localPart, () => {
 watch(selected, (val) => {
   error.value = ''
   cancelEditDescription()
+  cancelEditLabels()
 })
 
 watch(mfaRequired, async (val) => {
@@ -2362,6 +2505,15 @@ const getRecipients = async () => {
   try {
     const result = await browser.storage.sync.get({ recipients: [''] })
     return result.recipients
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+const getLabels = async () => {
+  try {
+    const result = await browser.storage.sync.get({ labels: [''] })
+    return result.labels
   } catch (error) {
     console.log(error)
   }
@@ -2552,7 +2704,7 @@ const getAliases = async (calledFromMounted = false) => {
         searchInput.value.length > 2 ? searchInput.value : ''
       }&sort=${defaultAliasSortDir.value}${defaultAliasSort.value}&page[number]=${
         aliasesCurrentPage.value
-      }&page[size]=10`,
+      }&page[size]=10&with=labels`,
       {
         method: 'GET',
         headers: {
@@ -2683,6 +2835,7 @@ const loginWithCredentials = async () => {
       passwordInput.value = ''
       getAliases()
       getRecipientsRequest()
+      getLabelsRequest()
       const domainResponse = await fetch(`${baseUrl}/api/v1/domain-options`, {
         method: 'GET',
         headers: {
@@ -2773,6 +2926,7 @@ const submitMfa = async () => {
       }
       getAliases()
       getRecipientsRequest()
+      getLabelsRequest()
       const domainResponse = await fetch(`${baseUrl}/api/v1/domain-options`, {
         method: 'GET',
         headers: {
@@ -2872,6 +3026,7 @@ const getAliasDomainOptions = async (token, instanceArgument, renew = false, sil
         apiToken.value = token
         getAliases()
         getRecipientsRequest(silent)
+        getLabelsRequest(silent)
 
         if (!silent) {
           success('Logged in successfully')
@@ -2969,6 +3124,54 @@ const getRecipientsRequest = async (silent = false) => {
   }
 }
 
+const getLabelsRequest = async (silent = false) => {
+  labelsLoading.value = true
+
+  try {
+    const response = await fetch(`${instance.value}/api/v1/labels`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-Requested-From': 'browser-extension',
+        Authorization: `Bearer ${apiToken.value}`,
+      },
+    })
+
+    if (response.status === 200) {
+      let data = await response.json()
+
+      labels.value = data.data.map(function (label) {
+        return {
+          id: label.id,
+          name: label.name,
+          colour: label.colour,
+        }
+      })
+      await browser.storage.sync.set({ lastLabelsRefreshAt: Date.now() })
+
+      if (!silent && ['Settings', 'CreateAlias'].includes(selected.value)) {
+        success('Labels refreshed')
+      }
+    } else if (response.status === 401) {
+      logout(true)
+      error.value =
+        "Unauthenticated, your API key has either expired or been revoked. You've been automatically logged out."
+    } else if (response.status === 419) {
+      error.value =
+        'An error occurred, please check any ad blockers (e.g. AdGuard) and add an exception for app.addy.io'
+    } else {
+      error.value = 'An Error Has Occurred'
+    }
+
+    labelsLoading.value = false
+  } catch (error) {
+    labelsLoading.value = false
+    error.value = 'An Error Has Occurred'
+    console.log(error)
+  }
+}
+
 const createAlias = async () => {
   // Validate alias local part
   if (aliasFormat.value === 'custom' && !validLocalPart(localPart.value)) {
@@ -2999,12 +3202,14 @@ const createAlias = async () => {
       description: description.value ? description.value : currentTabHostname.value,
       format: aliasFormat.value,
       recipientIds: createAliasRecipientIds.value,
+      labelIds: createAliasLabelIds.value,
     })
 
     createAliasLoading.value = false
     localPart.value = ''
     description.value = ''
     createAliasRecipientIds.value = []
+    createAliasLabelIds.value = []
     newAlias.value = formatAliasEmail(data)
 
     if (autoCopyNewAlias.value) {
@@ -3061,6 +3266,56 @@ const editAliasDescription = async (alias) => {
     aliasToViewDescriptionEditing.value = false
     error.value = 'An Error Has Occurred'
     console.log(error)
+  }
+}
+
+const editAliasLabels = async (alias) => {
+  editAliasLabelsLoading.value = true
+  error.value = ''
+
+  try {
+    const response = await fetch(`${instance.value}/api/v1/alias-labels`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-Requested-From': 'browser-extension',
+        Authorization: `Bearer ${apiToken.value}`,
+      },
+      body: JSON.stringify({
+        alias_id: alias.id,
+        label_ids: aliasLabelIdsToEdit.value,
+      }),
+    })
+
+    const data = await response.json().catch(() => ({}))
+
+    editAliasLabelsLoading.value = false
+
+    if (response.status === 200 && data.data) {
+      alias.labels = data.data.labels || []
+      aliasLabelIdsToEdit.value = []
+      aliasToViewLabelsEditing.value = false
+      success('Alias labels updated successfully')
+    } else if (response.status === 401) {
+      logout(true)
+      error.value =
+        "Unauthenticated, your API key has either expired or been revoked. You've been automatically logged out."
+    } else if (response.status === 403 || response.status === 429) {
+      error.value = data.message || 'An Error Has Occurred'
+    } else if (response.status === 422 && data.errors) {
+      const firstKey = Object.keys(data.errors)[0]
+      error.value = firstKey ? data.errors[firstKey][0] : 'Validation failed'
+    } else if (response.status === 419) {
+      error.value =
+        'An error occurred, please check any ad blockers (e.g. AdGuard) and add an exception for app.addy.io'
+    } else {
+      error.value = data.message || 'An Error Has Occurred'
+    }
+  } catch (err) {
+    editAliasLabelsLoading.value = false
+    error.value = 'An Error Has Occurred'
+    console.log(err)
   }
 }
 
@@ -3333,8 +3588,23 @@ const openSendFromAlias = () => {
 }
 
 const viewAlias = (alias) => {
+  cancelEditLabels()
   selected.value = 'ViewAlias'
   aliasToView.value = alias
+}
+
+const startEditAliasLabels = async () => {
+  aliasToViewLabelsEditing.value = true
+  aliasLabelIdsToEdit.value = (aliasToView.value.labels || []).map((label) => label.id)
+
+  if (!labels.value.length) {
+    await getLabelsRequest(true)
+  }
+}
+
+const cancelEditLabels = () => {
+  aliasToViewLabelsEditing.value = false
+  aliasLabelIdsToEdit.value = []
 }
 
 const getAliasStatus = (alias) => {
@@ -3351,6 +3621,18 @@ const getAliasStatus = (alias) => {
       status: alias.active ? 'Active' : 'Inactive',
     }
   }
+}
+
+const truncateLabelName = (name, max = 12) => {
+  if (!name || name.length <= max) return name
+  return `${name.slice(0, max)}…`
+}
+
+const getAdditionalAliasLabelNames = (labels) => {
+  return labels
+    .slice(1)
+    .map((label) => label.name)
+    .join(', ')
 }
 
 const showMoreAliases = () => {
@@ -3508,6 +3790,7 @@ const logout = async (expiredToken = false) => {
       'instance',
       'domainOptions',
       'recipients',
+      'labels',
       'domain',
       'aliasFormat',
       'showAliasStatus',
@@ -3525,6 +3808,7 @@ const logout = async (expiredToken = false) => {
     instance.value = await getInstance()
     domainOptions.value = await getDomainOptions()
     recipients.value = await getRecipients()
+    labels.value = await getLabels()
     domain.value = await getDomain()
     aliasFormat.value = await getAliasFormat()
     showAliasStatus.value = await getShowAliasStatus()

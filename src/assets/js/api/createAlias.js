@@ -23,7 +23,8 @@ export function formatAliasEmail(alias) {
  *   localPart?: string,
  *   description?: string,
  *   format: string,
- *   recipientIds?: string[]
+ *   recipientIds?: string[],
+ *   labelIds?: string[]
  * }} options
  * @returns {Promise<{ data: object }>} Created alias data from API
  */
@@ -36,6 +37,7 @@ export async function createAliasRequest(options) {
     description = '',
     format,
     recipientIds = [],
+    labelIds = [],
   } = options
 
   const response = await fetch(`${instance}/api/v1/aliases`, {
@@ -52,6 +54,7 @@ export async function createAliasRequest(options) {
       description: description || undefined,
       format,
       recipient_ids: recipientIds,
+      label_ids: labelIds,
     }),
   })
 

@@ -60,7 +60,7 @@ content::-webkit-scrollbar-track,
 }
 
 content {
-  @apply absolute top-12 right-0 bottom-14 left-0 overflow-x-auto overflow-y-auto text-base;
+  @apply absolute top-12 right-0 bottom-14 left-0 overflow-x-hidden overflow-y-auto text-base;
 }
 
 .aliases-loader,
@@ -104,6 +104,26 @@ content {
 
 .multiselect .multiselect-tag {
   @apply bg-indigo-100 text-indigo-900;
+  max-width: 100%;
+}
+
+.multiselect,
+.multiselect .multiselect-wrapper,
+.multiselect .multiselect-tags,
+.multiselect .multiselect-tags-search-wrapper {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.multiselect .multiselect-tag-wrapper {
+  max-width: 100%;
+}
+
+.multiselect .multiselect-option {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .dark .multiselect {
@@ -122,12 +142,27 @@ content {
   @apply bg-grey-700 text-white placeholder-grey-100;
 }
 
+.dark .multiselect .multiselect-tags-search,
+.dark .multiselect .multiselect-tags-search input {
+  @apply bg-grey-700 text-white;
+}
+
 .dark .multiselect .multiselect-dropdown {
   @apply border-grey-500 bg-grey-700 text-white;
 }
 
 .dark .multiselect .multiselect-placeholder {
   @apply text-grey-100;
+}
+
+.dark .multiselect.is-disabled {
+  @apply cursor-default bg-grey-700;
+}
+
+.dark .multiselect.is-disabled .multiselect-tags,
+.dark .multiselect.is-disabled .multiselect-tags-search,
+.dark .multiselect.is-disabled .multiselect-tags-search input {
+  @apply bg-grey-700 text-white;
 }
 
 /* purgecss end ignore */
