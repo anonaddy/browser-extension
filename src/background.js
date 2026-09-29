@@ -1,6 +1,8 @@
 import browser from 'webextension-polyfill'
 import psl from 'psl'
 import { createAliasRequest, formatAliasEmail } from './assets/js/api/createAlias.js'
+import { findAliasForSite } from './assets/js/api/findAliasForSite.js'
+import { incrementAliasesCreatedCount } from './assets/js/aliasCreateCount.js'
 
 const CONTEXT_MENU_ID = 'addy-generate-alias'
 const SHARED_DOMAINS = new Set([
@@ -82,7 +84,65 @@ async function createQuickAlias(description = '', hostname = '') {
     description: typeof description === 'string' ? description : '',
   })
 
-  return formatAliasEmail(data)
+  const email = formatAliasEmail(data)
+  await incrementAliasesCreatedCount()
+  return email
+}
+
+const RECENT_ALIAS_MS = 10 * 60 * 1000
+const recentAliasByHost = new Map()
+
+function readRecentAlias(hostname) {
+  const cached = recentAliasByHost.get(hostname)
+  if (!cached) return ''
+  if (Date.now() - cached.at > RECENT_ALIAS_MS) {
+    recentAliasByHost.delete(hostname)
+    return ''
+  }
+  return cached.email
+}
+
+function rememberAlias(hostname, email) {
+  if (!hostname || !email) return
+  recentAliasByHost.set(hostname, { email, at: Date.now() })
+}
+
+/**
+ * Reuse an alias for this site when one already exists. Create one only when
+ * the search has no strict match. The in-memory copy covers a second field
+ * on the same page before the new alias appears in search.
+ */
+async function resolveAliasForSite(hostname) {
+  const host = typeof hostname === 'string' ? hostname.trim() : ''
+  const { apiToken, instance, reuseExistingAlias } = await browser.storage.sync.get({
+    apiToken: '',
+    instance: '',
+    reuseExistingAlias: true,
+  })
+
+  if (reuseExistingAlias === false) {
+    const aliasEmail = await createQuickAlias(host, host)
+    return { aliasEmail, created: true }
+  }
+
+  const recent = host ? readRecentAlias(host) : ''
+  if (recent) return { aliasEmail: recent, created: false }
+
+  if (host && apiToken && instance) {
+    try {
+      const existing = await findAliasForSite({ instance, apiToken, hostname: host })
+      if (existing && existing.email) {
+        rememberAlias(host, existing.email)
+        return { aliasEmail: existing.email, created: false }
+      }
+    } catch (err) {
+      if (err && err.code === 'UNAUTHENTICATED') throw err
+    }
+  }
+
+  const aliasEmail = await createQuickAlias(host, host)
+  rememberAlias(host, aliasEmail)
+  return { aliasEmail, created: true }
 }
 
 function getHostnameFromTab(tab) {
@@ -105,7 +165,7 @@ async function getActiveTab() {
 
 async function createAndCopyAliasForTab(tab) {
   const hostname = getHostnameFromTab(tab)
-  const aliasEmail = await createQuickAlias(hostname, hostname)
+  const { aliasEmail, created } = await resolveAliasForSite(hostname)
 
   if (tab && tab.id) {
     try {
@@ -118,11 +178,16 @@ async function createAndCopyAliasForTab(tab) {
     }
   }
 
+  const { showAliasCreatedNotification } = await browser.storage.sync.get({
+    showAliasCreatedNotification: true,
+  })
+  if (showAliasCreatedNotification === false) return
+
   await browser.notifications.create({
     type: 'basic',
     iconUrl: browser.runtime.getURL('img/icon_128.png'),
     title: 'addy.io',
-    message: `Alias created: ${aliasEmail}`,
+    message: created ? `Alias created: ${aliasEmail}` : `Existing alias copied: ${aliasEmail}`,
   })
 }
 
@@ -172,7 +237,13 @@ async function toggleSidebarViaCommand() {
   }
 }
 
-async function setContextMenuVisibility(visible) {
+function contextMenuTitle(reuseExistingAlias) {
+  return reuseExistingAlias === false
+    ? 'Create and copy new addy.io alias'
+    : 'Use or create and copy addy.io alias'
+}
+
+async function setContextMenuVisibility(visible, reuseExistingAlias = true) {
   try {
     await browser.contextMenus.remove(CONTEXT_MENU_ID)
   } catch (_) {}
@@ -181,18 +252,19 @@ async function setContextMenuVisibility(visible) {
 
   await browser.contextMenus.create({
     id: CONTEXT_MENU_ID,
-    title: 'Create and copy new addy.io alias',
+    title: contextMenuTitle(reuseExistingAlias),
     contexts: ['all'],
   })
 }
 
 async function syncContextMenuVisibility() {
-  const { showContextMenuOption, apiToken } = await browser.storage.sync.get({
+  const { showContextMenuOption, apiToken, reuseExistingAlias } = await browser.storage.sync.get({
     showContextMenuOption: true,
     apiToken: '',
+    reuseExistingAlias: true,
   })
   const loggedIn = typeof apiToken === 'string' && apiToken.trim().length > 0
-  await setContextMenuVisibility(showContextMenuOption && loggedIn)
+  await setContextMenuVisibility(showContextMenuOption && loggedIn, reuseExistingAlias)
 }
 
 browser.runtime.onInstalled.addListener(() => {
@@ -205,7 +277,7 @@ browser.runtime.onStartup.addListener(() => {
 
 browser.storage.onChanged.addListener((changes, areaName) => {
   if (areaName !== 'sync') return
-  if (changes.showContextMenuOption || changes.apiToken) {
+  if (changes.showContextMenuOption || changes.reuseExistingAlias || changes.apiToken) {
     syncContextMenuVisibility().catch(() => {})
   }
 })
@@ -253,8 +325,8 @@ function showErrorNotification(message) {
 
 browser.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message.type === 'CREATE_ALIAS_FOR_INPUT') {
-    createQuickAlias(message.description, message.description)
-      .then((aliasEmail) => sendResponse({ aliasEmail }))
+    resolveAliasForSite(message.description)
+      .then(({ aliasEmail }) => sendResponse({ aliasEmail }))
       .catch((err) => {
         const msg = err.message || 'Failed to create alias'
         showErrorNotification(msg)

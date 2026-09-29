@@ -7,7 +7,16 @@
         <a href="https://app.addy.io" target="_blank" rel="nofollow noreferrer noopener">
           <img class="h-6" src="img/logo.png" alt="addy.io Logo" />
         </a>
-        <span class="self-center text-sm text-grey-50">Anonymous Email Forwarding</span>
+        <button
+          v-if="showOpenInTab"
+          @click="openInTab"
+          type="button"
+          class="rounded-xs border border-indigo-500 px-2 py-1 text-sm text-white hover:bg-indigo-800 focus:outline-hidden"
+          title="Open the login form in a browser tab"
+        >
+          Open in a tab
+        </button>
+        <span v-else class="self-center text-sm text-grey-50">Anonymous Email Forwarding</span>
       </header>
       <div
         v-if="error"
@@ -681,11 +690,46 @@
             </div>
           </div>
 
+          <div v-if="showIconInEmailFields" class="w-full border-b border-grey-200 p-3 text-left">
+            <label
+              for="select_email_field_icon_position"
+              class="mb-1 block text-grey-700 dark:text-white"
+              >Email field icon position:</label
+            >
+            <div class="relative">
+              <select
+                v-model="emailFieldIconPosition"
+                id="select_email_field_icon_position"
+                class="block w-full appearance-none rounded-sm bg-white p-2 pr-8 text-grey-700 shadow-sm focus:ring-3 dark:bg-grey-600 dark:text-white"
+                required
+              >
+                <option value="inside">Inside the field</option>
+                <option value="outside">To the right of the field</option>
+              </select>
+              <div
+                class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-grey-700 dark:text-white"
+              >
+                <svg
+                  class="h-4 w-4 fill-current"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"
+                  />
+                </svg>
+              </div>
+            </div>
+            <p class="mt-1 text-xs text-grey-500 dark:text-grey-300">
+              Use the right-hand position if a password manager covers the icon.
+            </p>
+          </div>
+
           <div class="w-full border-b border-grey-200 p-3 text-left">
             <label
               for="select_show_context_menu_option"
               class="mb-1 block text-grey-700 dark:text-white"
-              >Show right-click "Create and copy new addy.io alias" option:</label
+              >Show right-click addy.io alias option:</label
             >
             <div class="relative">
               <select
@@ -711,6 +755,77 @@
                 </svg>
               </div>
             </div>
+          </div>
+
+          <div class="w-full border-b border-grey-200 p-3 text-left">
+            <label
+              for="select_reuse_existing_alias"
+              class="mb-1 block text-grey-700 dark:text-white"
+              >Use an existing alias for this site when one is found:</label
+            >
+            <div class="relative">
+              <select
+                v-model="reuseExistingAlias"
+                id="select_reuse_existing_alias"
+                class="block w-full appearance-none rounded-sm bg-white p-2 pr-8 text-grey-700 shadow-sm focus:ring-3 dark:bg-grey-600 dark:text-white"
+                required
+              >
+                <option :value="true">Enabled</option>
+                <option :value="false">Disabled</option>
+              </select>
+              <div
+                class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-grey-700 dark:text-white"
+              >
+                <svg
+                  class="h-4 w-4 fill-current"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"
+                  />
+                </svg>
+              </div>
+            </div>
+            <p class="mt-1 text-xs text-grey-500 dark:text-grey-300">
+              When disabled, the field icon, right-click action, and shortcut always create a new
+              alias.
+            </p>
+          </div>
+
+          <div class="w-full border-b border-grey-200 p-3 text-left">
+            <label
+              for="select_show_alias_created_notification"
+              class="mb-1 block text-grey-700 dark:text-white"
+              >Show a notification after creating and copying an alias:</label
+            >
+            <div class="relative">
+              <select
+                v-model="showAliasCreatedNotification"
+                id="select_show_alias_created_notification"
+                class="block w-full appearance-none rounded-sm bg-white p-2 pr-8 text-grey-700 shadow-sm focus:ring-3 dark:bg-grey-600 dark:text-white"
+                required
+              >
+                <option :value="true">Enabled</option>
+                <option :value="false">Disabled</option>
+              </select>
+              <div
+                class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-grey-700 dark:text-white"
+              >
+                <svg
+                  class="h-4 w-4 fill-current"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"
+                  />
+                </svg>
+              </div>
+            </div>
+            <p class="mt-1 text-xs text-grey-500 dark:text-grey-300">
+              Applies to the right-click option and the keyboard shortcut. Errors are still shown.
+            </p>
           </div>
 
           <div class="w-full border-b border-grey-200 p-3 text-left">
@@ -1286,6 +1401,30 @@
             </button>
           </div>
           <div class="p-3">
+            <div
+              v-if="existingAliasForSite && !newAlias"
+              class="mb-4 rounded-xs border-t-4 border-indigo-600 bg-indigo-50 p-2 text-sm text-indigo-900 dark:bg-grey-800 dark:text-white"
+            >
+              <p v-if="existingAliasCount > 1" class="mb-1">
+                {{
+                  existingAliasHasMore
+                    ? `At least ${existingAliasCount} aliases were found for this site.`
+                    : `${existingAliasCount} aliases were found for this site.`
+                }}
+                <button type="button" class="font-semibold underline" @click="showAliasesForSite">
+                  View search results
+                </button>
+              </p>
+              <p v-else class="mb-1">An alias already exists for this site. Click to copy it.</p>
+              <p v-if="existingAliasCount > 1" class="mb-1">Newest alias. Click to copy it.</p>
+              <button
+                type="button"
+                class="w-full truncate text-left font-semibold"
+                @click="copyToClipboard(existingAliasForSite)"
+              >
+                {{ existingAliasForSite }}
+              </button>
+            </div>
             <div v-if="newAlias">
               <p for="alias_domain" class="mb-1 block text-grey-700 dark:text-white">
                 {{ autoCopyNewAlias ? 'This is' : 'Click To Copy' }} Your New Alias:
@@ -1327,6 +1466,18 @@
                   <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                 </svg>
               </div>
+              <p
+                v-if="showRateExtensionLink"
+                class="-mt-2 mb-4 text-center text-sm text-grey-600 dark:text-grey-200"
+              >
+                <a
+                  :href="extensionUrl"
+                  target="_blank"
+                  rel="noopener noreferrer nofollow"
+                  class="text-indigo-700 underline hover:text-indigo-500 dark:text-indigo-200"
+                  >Rate the extension</a
+                >
+              </p>
             </div>
 
             <div class="flex items-center justify-between">
@@ -1861,11 +2012,14 @@ import Modal from './../components/Modal.vue'
 import Multiselect from '@vueform/multiselect'
 import { useNotification, Notifications } from '@kyvg/vue3-notification'
 import { createAliasRequest, formatAliasEmail } from '../api/createAlias.js'
+import { findAliasForSite } from '../api/findAliasForSite.js'
+import { claimRateExtensionLink, incrementAliasesCreatedCount } from '../aliasCreateCount.js'
 const { notify } = useNotification()
 
 // State
 const browser = require('webextension-polyfill')
 const extensionWindow = ref('')
+const showOpenInTab = ref(false)
 const extensionVersion = ref(null)
 const tabs = ref([
   {
@@ -1926,11 +2080,17 @@ const logoutModalOpen = ref(false)
 const aliasToViewDescriptionEditing = ref(false)
 const aliasDescriptionToEdit = ref('')
 const newAlias = ref('')
+const showRateExtensionLink = ref(false)
+const existingAliasForSite = ref('')
+const existingAliasCount = ref(0)
+const existingAliasHasMore = ref(false)
 const newAliasCopied = ref(false)
 const sendFromAddressCopied = ref(false)
 const error = ref('')
 const domain = ref('')
 const domainOptions = ref([])
+// Shared domains the account plan can use. domain-options omits hidden domains from domainOptions.
+const availableSharedDomains = ref(null)
 const recipients = ref([])
 const labels = ref([])
 const createAliasRecipientIds = ref([])
@@ -1986,7 +2146,10 @@ const theme = ref('system')
 const autoCopyNewAlias = ref(true)
 const showSearchSuggestions = ref(true)
 const showIconInEmailFields = ref(true)
+const emailFieldIconPosition = ref('inside')
 const showContextMenuOption = ref(true)
+const reuseExistingAlias = ref(true)
+const showAliasCreatedNotification = ref(true)
 const autoFillLocalPart = ref('')
 const defaultAliasSort = ref('created_at')
 const defaultAliasSortDir = ref('-')
@@ -2085,8 +2248,14 @@ const maybeAutoRefreshDomainAndRecipients = async () => {
         lastLabelsRefreshAt: 0,
       })
 
+    const needsPlanSharedDomains =
+      availableSharedDomains.value === null &&
+      ['https://app.anonaddy.com', 'https://app.addy.io'].includes(instance.value)
     const refreshTasks = []
-    if (shouldAutoRefresh(lastDomainOptionsRefreshAt) && !domainOptionsLoading.value) {
+    if (
+      (shouldAutoRefresh(lastDomainOptionsRefreshAt) || needsPlanSharedDomains) &&
+      !domainOptionsLoading.value
+    ) {
       refreshTasks.push(getAliasDomainOptions(apiToken.value, instance.value, false, true))
     }
     if (shouldAutoRefresh(lastRecipientsRefreshAt) && !recipientsLoading.value) {
@@ -2122,6 +2291,7 @@ onMounted(async () => {
     }
   }
   domainOptions.value = await getDomainOptions()
+  availableSharedDomains.value = await getAvailableSharedDomains()
   recipients.value = await getRecipients()
   labels.value = await getLabels()
   domain.value = await getDomain()
@@ -2134,7 +2304,10 @@ onMounted(async () => {
   autoCopyNewAlias.value = await getAutoCopyNewAlias()
   showSearchSuggestions.value = await getShowSearchSuggestions()
   showIconInEmailFields.value = await getShowIconInEmailFields()
+  emailFieldIconPosition.value = await getEmailFieldIconPosition()
   showContextMenuOption.value = await getShowContextMenuOption()
+  reuseExistingAlias.value = await getReuseExistingAlias()
+  showAliasCreatedNotification.value = await getShowAliasCreatedNotification()
   autoFillLocalPart.value = await getAutoFillLocalPart()
   defaultAliasSort.value = await getDefaultAliasSort()
   defaultAliasSortDir.value = await getDefaultAliasSortDir()
@@ -2150,7 +2323,11 @@ onMounted(async () => {
   }
 
   extensionWindow.value = await getExtensionWindow()
+  showOpenInTab.value = await isPopupOrSidebar()
   currentTabHostname.value = await getCurrentTabHostname()
+  if (selected.value === 'CreateAlias') {
+    lookupExistingAliasForSite()
+  }
   await maybeAutoRefreshDomainAndRecipients()
 
   let manifest = browser.runtime.getManifest()
@@ -2200,7 +2377,14 @@ onMounted(async () => {
 })
 
 // Computed properties
-const subscribed = computed(() => Object.values(domainOptions.value).includes('addy.io'))
+const subscribed = computed(() => {
+  // addy.io is in this list for lite and pro. A hidden addy.io stays in the list.
+  if (Array.isArray(availableSharedDomains.value)) {
+    return availableSharedDomains.value.includes('addy.io')
+  }
+
+  return Object.values(domainOptions.value).includes('addy.io')
+})
 const selfHosting = computed(
   () => !['https://app.anonaddy.com', 'https://app.addy.io'].includes(instance.value)
 )
@@ -2281,6 +2465,18 @@ watch(instance, async (val) => {
 watch(domainOptions, async (val) => {
   try {
     await browser.storage.sync.set({ domainOptions: val })
+  } catch (error) {
+    console.log(error)
+  }
+})
+
+watch(availableSharedDomains, async (val) => {
+  if (!Array.isArray(val)) {
+    return
+  }
+
+  try {
+    await browser.storage.sync.set({ availableSharedDomains: val })
   } catch (error) {
     console.log(error)
   }
@@ -2373,9 +2569,34 @@ watch(showIconInEmailFields, async (val) => {
   }
 })
 
+watch(emailFieldIconPosition, async (val) => {
+  const position = val === 'outside' ? 'outside' : 'inside'
+  try {
+    await browser.storage.sync.set({ emailFieldIconPosition: position })
+  } catch (error) {
+    console.log(error)
+  }
+})
+
 watch(showContextMenuOption, async (val) => {
   try {
     await browser.storage.sync.set({ showContextMenuOption: val })
+  } catch (error) {
+    console.log(error)
+  }
+})
+
+watch(reuseExistingAlias, async (val) => {
+  try {
+    await browser.storage.sync.set({ reuseExistingAlias: val !== false })
+  } catch (error) {
+    console.log(error)
+  }
+})
+
+watch(showAliasCreatedNotification, async (val) => {
+  try {
+    await browser.storage.sync.set({ showAliasCreatedNotification: val })
   } catch (error) {
     console.log(error)
   }
@@ -2440,6 +2661,9 @@ watch(selected, (val) => {
   error.value = ''
   cancelEditDescription()
   cancelEditLabels()
+  if (val === 'CreateAlias') {
+    lookupExistingAliasForSite()
+  }
 })
 
 watch(mfaRequired, async (val) => {
@@ -2499,6 +2723,25 @@ const getDomainOptions = async () => {
   } catch (error) {
     console.log(error)
   }
+}
+
+const getAvailableSharedDomains = async () => {
+  try {
+    const result = await browser.storage.sync.get({ availableSharedDomains: null })
+    return Array.isArray(result.availableSharedDomains) ? result.availableSharedDomains : null
+  } catch (error) {
+    console.log(error)
+    return null
+  }
+}
+
+const applyDomainOptionsData = (data) => {
+  domainOptions.value = data.data
+  if (Array.isArray(data.sharedDomains)) {
+    availableSharedDomains.value = data.sharedDomains
+  }
+  domain.value = data.defaultAliasDomain ? data.defaultAliasDomain : data.data[0]
+  aliasFormat.value = data.defaultAliasFormat ? data.defaultAliasFormat : 'random_characters'
 }
 
 const getRecipients = async () => {
@@ -2582,12 +2825,42 @@ const getShowIconInEmailFields = async () => {
   }
 }
 
+const getEmailFieldIconPosition = async () => {
+  try {
+    const result = await browser.storage.sync.get({ emailFieldIconPosition: 'inside' })
+    return result.emailFieldIconPosition === 'outside' ? 'outside' : 'inside'
+  } catch (error) {
+    console.log(error)
+    return 'inside'
+  }
+}
+
 const getShowContextMenuOption = async () => {
   try {
     const result = await browser.storage.sync.get({ showContextMenuOption: true })
     return result.showContextMenuOption
   } catch (error) {
     console.log(error)
+  }
+}
+
+const getReuseExistingAlias = async () => {
+  try {
+    const result = await browser.storage.sync.get({ reuseExistingAlias: true })
+    return result.reuseExistingAlias !== false
+  } catch (error) {
+    console.log(error)
+    return true
+  }
+}
+
+const getShowAliasCreatedNotification = async () => {
+  try {
+    const result = await browser.storage.sync.get({ showAliasCreatedNotification: true })
+    return result.showAliasCreatedNotification !== false
+  } catch (error) {
+    console.log(error)
+    return true
   }
 }
 
@@ -2624,6 +2897,43 @@ const getDefaultSelected = async () => {
     return result.defaultSelected
   } catch (error) {
     console.log(error)
+  }
+}
+
+const lookupExistingAliasForSite = async () => {
+  existingAliasForSite.value = ''
+  existingAliasCount.value = 0
+  existingAliasHasMore.value = false
+  if (reuseExistingAlias.value === false) return
+  if (!currentTabHostname.value || !apiToken.value || !instance.value) return
+  try {
+    const found = await findAliasForSite({
+      instance: instance.value,
+      apiToken: apiToken.value,
+      hostname: currentTabHostname.value,
+    })
+    existingAliasForSite.value = found.email || ''
+    existingAliasCount.value = found.count || 0
+    existingAliasHasMore.value = Boolean(found.hasMore)
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+const showAliasesForSite = () => {
+  const term = currentTabHostname.value || ''
+  selected.value = 'Aliases'
+  aliasesCurrentPage.value = 1
+  if (searchInput.value === term) {
+    getAliases()
+    return
+  }
+  if (term.length > 2) {
+    getAliasesLoading.value = true
+  }
+  searchInput.value = term
+  if (term.length <= 2) {
+    getAliases()
   }
 }
 
@@ -2680,6 +2990,20 @@ const getExtensionWindow = async () => {
     return result[0]
   } catch (error) {
     console.log(error)
+  }
+}
+
+const isPopupOrSidebar = async () => {
+  try {
+    const popupViews = await browser.extension.getViews({ type: 'popup' })
+    if (popupViews.includes(window)) return true
+    // Chrome only allows type "popup" or "tab". Firefox also allows "sidebar".
+    if (!browser.sidebarAction) return false
+    const sidebarViews = await browser.extension.getViews({ type: 'sidebar' })
+    return sidebarViews.includes(window)
+  } catch (error) {
+    console.log(error)
+    return false
   }
 }
 
@@ -2846,14 +3170,7 @@ const loginWithCredentials = async () => {
         },
       })
       if (domainResponse.status === 200) {
-        const domainData = await domainResponse.json()
-        domainOptions.value = domainData.data
-        domain.value = domainData.defaultAliasDomain
-          ? domainData.defaultAliasDomain
-          : domainData.data[0]
-        aliasFormat.value = domainData.defaultAliasFormat
-          ? domainData.defaultAliasFormat
-          : 'random_characters'
+        applyDomainOptionsData(await domainResponse.json())
       }
       success('Logged in successfully')
       return
@@ -2937,14 +3254,7 @@ const submitMfa = async () => {
         },
       })
       if (domainResponse.status === 200) {
-        const domainData = await domainResponse.json()
-        domainOptions.value = domainData.data
-        domain.value = domainData.defaultAliasDomain
-          ? domainData.defaultAliasDomain
-          : domainData.data[0]
-        aliasFormat.value = domainData.defaultAliasFormat
-          ? domainData.defaultAliasFormat
-          : 'random_characters'
+        applyDomainOptionsData(await domainResponse.json())
       }
       success('Logged in successfully')
       return
@@ -3044,10 +3354,7 @@ const getAliasDomainOptions = async (token, instanceArgument, renew = false, sil
         }
       }
 
-      let data = await response.json()
-      domainOptions.value = data.data
-      domain.value = data.defaultAliasDomain ? data.defaultAliasDomain : data.data[0]
-      aliasFormat.value = data.defaultAliasFormat ? data.defaultAliasFormat : 'random_characters'
+      applyDomainOptionsData(await response.json())
       await browser.storage.sync.set({ lastDomainOptionsRefreshAt: Date.now() })
 
       if (
@@ -3211,6 +3518,8 @@ const createAlias = async () => {
     createAliasRecipientIds.value = []
     createAliasLabelIds.value = []
     newAlias.value = formatAliasEmail(data)
+    const createdCount = await incrementAliasesCreatedCount()
+    showRateExtensionLink.value = await claimRateExtensionLink(createdCount)
 
     if (autoCopyNewAlias.value) {
       await copyToClipboard(formatAliasEmail(data))
@@ -3789,6 +4098,7 @@ const logout = async (expiredToken = false) => {
       'apiTokenExpiresAt',
       'instance',
       'domainOptions',
+      'availableSharedDomains',
       'recipients',
       'labels',
       'domain',
@@ -3798,7 +4108,10 @@ const logout = async (expiredToken = false) => {
       'autoCopyNewAlias',
       'showSearchSuggestions',
       'showIconInEmailFields',
+      'emailFieldIconPosition',
       'showContextMenuOption',
+      'reuseExistingAlias',
+      'showAliasCreatedNotification',
       'autoFillLocalPart',
       'defaultAliasSort',
       'defaultAliasSortDir',
@@ -3807,6 +4120,7 @@ const logout = async (expiredToken = false) => {
     apiToken.value = await getApiToken()
     instance.value = await getInstance()
     domainOptions.value = await getDomainOptions()
+    availableSharedDomains.value = await getAvailableSharedDomains()
     recipients.value = await getRecipients()
     labels.value = await getLabels()
     domain.value = await getDomain()
@@ -3816,7 +4130,10 @@ const logout = async (expiredToken = false) => {
     autoCopyNewAlias.value = await getAutoCopyNewAlias()
     showSearchSuggestions.value = await getShowSearchSuggestions()
     showIconInEmailFields.value = await getShowIconInEmailFields()
+    emailFieldIconPosition.value = await getEmailFieldIconPosition()
     showContextMenuOption.value = await getShowContextMenuOption()
+    reuseExistingAlias.value = await getReuseExistingAlias()
+    showAliasCreatedNotification.value = await getShowAliasCreatedNotification()
     autoFillLocalPart.value = await getAutoFillLocalPart()
     defaultAliasSort.value = await getDefaultAliasSort()
     defaultAliasSortDir.value = await getDefaultAliasSortDir()
@@ -3848,6 +4165,12 @@ const popout = () => {
     newUrl = hrefParts[0] + '?uilocation=popout' + (hrefParts.length > 1 ? '#' + hrefParts[1] : '')
   }
   window.open(newUrl, '_blank', 'width=600,height=800')
+}
+
+const openInTab = async () => {
+  const url = browser.runtime.getURL('app.html') + '?uilocation=tab'
+  await browser.tabs.create({ url })
+  window.close()
 }
 </script>
 

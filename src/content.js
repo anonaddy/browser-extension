@@ -2,6 +2,8 @@ import browser from 'webextension-polyfill'
 
 const ICON_SIZE = 20
 const ICON_INSET = 8
+const ICON_OUTSIDE_GAP = 6
+const ICON_VIEWPORT_MARGIN = 4
 const WRAPPER_CLASS = 'addy-io-extension-wrapper'
 const ICON_CLASS = 'addy-io-extension-icon'
 const SPINNER_CLASS = 'addy-io-extension-spinner'
@@ -39,6 +41,18 @@ function shouldSkipPage() {
 
 /** Data URL for the icon (set after first request to background); avoids CSP blocking extension URLs on pages */
 let iconDataUrl = null
+
+/** 'inside' overlays the right side of the field. 'outside' sits to the right of the field. */
+let iconPosition = 'inside'
+let reuseExistingAlias = true
+
+function iconTitle() {
+  return reuseExistingAlias ? 'Use or create an addy.io alias' : 'Create new addy.io alias'
+}
+
+function normaliseIconPosition(value) {
+  return value === 'outside' ? 'outside' : 'inside'
+}
 
 /** Map from input element to { wrapper, intervalId } for cleanup */
 const trackedInputs = new Map()
@@ -103,7 +117,9 @@ function isValidEmailInput(element) {
 }
 
 /**
- * Place the floating button over the right side of the input.
+ * Place the floating button on the input.
+ * 'inside' overlays the right side of the field.
+ * 'outside' sits to the right of the field, clear of password-manager icons.
  * Uses position:fixed + viewport coords so we must update on scroll/resize.
  */
 function updateButtonPosition(input, wrapper) {
@@ -119,7 +135,14 @@ function updateButtonPosition(input, wrapper) {
   }
 
   const rect = input.getBoundingClientRect()
-  const left = rect.right - ICON_SIZE - ICON_INSET
+  let left
+  if (iconPosition === 'outside') {
+    left = rect.right + ICON_OUTSIDE_GAP
+    const maxLeft = window.innerWidth - ICON_SIZE - ICON_VIEWPORT_MARGIN
+    if (left > maxLeft) left = Math.max(ICON_VIEWPORT_MARGIN, maxLeft)
+  } else {
+    left = rect.right - ICON_SIZE - ICON_INSET
+  }
   const top = rect.top + (rect.height - ICON_SIZE) / 2
 
   wrapper.style.left = left + 'px'
@@ -159,7 +182,7 @@ function injectIconIntoInput(input) {
   icon.className = ICON_CLASS
   icon.src = iconDataUrl || ''
   icon.alt = 'addy.io'
-  icon.title = 'Create new addy.io alias'
+  icon.title = iconTitle()
   icon.setAttribute('role', 'button')
   icon.setAttribute('tabindex', '0')
   icon.style.cssText = `
@@ -281,14 +304,26 @@ function isLoggedIn(apiToken) {
   return typeof apiToken === 'string' && apiToken.trim().length > 0
 }
 
+let mutationObserver = null
+
+function ensureMutationObserver() {
+  if (mutationObserver || !document.body) return
+  mutationObserver = new MutationObserver(() => scanAndInject())
+  mutationObserver.observe(document.body, { childList: true, subtree: true })
+}
+
+function stopMutationObserver() {
+  mutationObserver?.disconnect()
+  mutationObserver = null
+}
+
 function run(showIcon, loggedIn) {
   const shouldShow = showIcon && loggedIn
   if (shouldShow) {
     setupScrollAndResizeListeners()
     if (iconDataUrl) {
       scanAndInject()
-      const observer = new MutationObserver(() => scanAndInject())
-      observer.observe(document.body, { childList: true, subtree: true })
+      ensureMutationObserver()
     } else {
       browser.runtime
         .sendMessage({ type: 'GET_ICON_DATA_URL' })
@@ -296,30 +331,48 @@ function run(showIcon, loggedIn) {
           if (response && response.dataUrl) {
             iconDataUrl = response.dataUrl
             scanAndInject()
-            const observer = new MutationObserver(() => scanAndInject())
-            observer.observe(document.body, { childList: true, subtree: true })
+            ensureMutationObserver()
           }
         })
         .catch(() => {})
     }
   } else {
+    stopMutationObserver()
     removeAllInjected()
   }
 }
 
 function refreshFromStorage() {
   return browser.storage.sync
-    .get({ showIconInEmailFields: true, apiToken: '' })
-    .then(({ showIconInEmailFields, apiToken }) => {
-      run(showIconInEmailFields, isLoggedIn(apiToken))
+    .get({
+      showIconInEmailFields: true,
+      emailFieldIconPosition: 'inside',
+      reuseExistingAlias: true,
+      apiToken: '',
     })
+    .then(
+      ({ showIconInEmailFields, emailFieldIconPosition, reuseExistingAlias: reuse, apiToken }) => {
+        iconPosition = normaliseIconPosition(emailFieldIconPosition)
+        reuseExistingAlias = reuse !== false
+        run(showIconInEmailFields, isLoggedIn(apiToken))
+        updateAllPositions()
+        document.querySelectorAll(`.${ICON_CLASS}`).forEach((icon) => {
+          icon.title = iconTitle()
+        })
+      }
+    )
 }
 
 refreshFromStorage()
 
 browser.storage.onChanged.addListener((changes, areaName) => {
   if (areaName !== 'sync') return
-  if (changes.showIconInEmailFields || changes.apiToken) {
+  if (
+    changes.showIconInEmailFields ||
+    changes.emailFieldIconPosition ||
+    changes.reuseExistingAlias ||
+    changes.apiToken
+  ) {
     refreshFromStorage()
   }
 })
