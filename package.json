@@ -1,6 +1,6 @@
 {
   "name": "addy-io-extension",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "description": "addy.io browser extension.",
   "main": "app.js",
   "scripts": {
@@ -10,6 +10,7 @@
     "build": "npm run production && rm -rf dist-zip && npm run zip",
     "format": "prettier --write 'src/assets/**/*.{css,js,vue}'",
     "zip": "node scripts/build-zip.js",
+    "test": "mix && playwright test",
     "pre-commit": "lint-staged",
     "prepare": "husky"
   },
@@ -31,6 +32,7 @@
     "webextension-polyfill": "^0.12.0"
   },
   "devDependencies": {
+    "@playwright/test": "1.55.0",
     "husky": "^9.0.0",
     "lint-staged": "^17.0.0",
     "prettier": "^3.5.3",

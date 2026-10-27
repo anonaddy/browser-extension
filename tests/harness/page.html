@@ -1,0 +1,71 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Sign up</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        padding: 20px;
+      }
+      input {
+        width: 300px;
+        height: 30px;
+        display: block;
+        margin-bottom: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Create your account</h1>
+    <form>
+      <input id="email" type="email" name="email" />
+    </form>
+    <div id="later"></div>
+    <dialog id="dialog"><input id="dialog-email" type="email" /></dialog>
+    <x-signup id="host"></x-signup>
+
+    <script>
+      // A web component with its email field in a shadow root
+      customElements.define(
+        'x-signup',
+        class extends HTMLElement {
+          connectedCallback() {
+            this.attachShadow({ mode: 'open' }).innerHTML =
+              '<input id="shadow-email" type="email" style="width:300px;height:30px">'
+          }
+        }
+      )
+
+      // Mimic React's value tracking on #email: a value written straight to the
+      // element is recorded as already seen, so React ignores the input event.
+      // Only a write through the native setter is reported as a change.
+      ;(() => {
+        const input = document.getElementById('email')
+        const native = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')
+        let tracked = ''
+        window.__reactChanges = []
+        Object.defineProperty(input, 'value', {
+          configurable: true,
+          get() {
+            return native.get.call(this)
+          },
+          set(value) {
+            tracked = String(value)
+            native.set.call(this, value)
+          },
+        })
+        input.addEventListener('input', () => {
+          const value = native.get.call(input)
+          if (value !== tracked) {
+            tracked = value
+            window.__reactChanges.push(value)
+          }
+        })
+      })()
+    </script>
+    <script src="__HARNESS__/stub.js"></script>
+    <script src="__DIST__/background.js"></script>
+    <script src="__DIST__/content.js"></script>
+  </body>
+</html>

@@ -43,13 +43,15 @@ const buildZip = async (src, dist, zipFilename) => {
     output.on('close', () => resolve())
 
     archive.pipe(output)
-    archive.directory(src, false)
+    // Skips dotfiles such as dist/.gitignore, which do not belong in a store upload
+    archive.glob('**/*', { cwd: src, dot: false })
     archive.finalize()
   })
 }
 
 /**
- * Copy dist to a temp dir and patch manifest.json for Firefox (add background.scripts).
+ * Copy dist to a temp dir and patch manifest.json for Firefox (background.scripts,
+ * extra shortcuts and the data collection declaration).
  * Returns path to the temp dir (caller must clean up).
  */
 const prepareFirefoxDist = () => {
@@ -77,6 +79,25 @@ const prepareFirefoxDist = () => {
       },
       description: 'Toggle addy.io sidebar',
     },
+  }
+  // Firefox's data consent declaration (https://mzl.la/firefox-builtin-data-consent).
+  // Both are sent to the user's addy.io instance and are needed for the extension to work:
+  // - authenticationInfo: username and password at sign-in, and the API key
+  // - browsingActivity: the current site's hostname, used as a new alias's
+  //   description and to look up that site's aliases
+  // Firefox shows this consent from desktop 140 and Android 142. Older versions
+  // would need a consent screen of our own, so they are not supported.
+  const settings = (manifest.browser_specific_settings = manifest.browser_specific_settings || {})
+  settings.gecko = {
+    ...(settings.gecko || {}),
+    strict_min_version: '140.0',
+    data_collection_permissions: {
+      required: ['authenticationInfo', 'browsingActivity'],
+    },
+  }
+  settings.gecko_android = {
+    ...(settings.gecko_android || {}),
+    strict_min_version: '142.0',
   }
   fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2))
 

@@ -1,3 +1,5 @@
 node_modules
 dist-zip
 dist-firefox
+test-results
+playwright-report

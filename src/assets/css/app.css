@@ -86,6 +86,12 @@ content {
 }
 
 /* purgecss start ignore */
+/* Keep toasts above the tab bar (h-14) so they never block the tabs. The
+   library sets bottom inline, so this needs !important. */
+.logged-in ~ .vue-notification-group {
+  bottom: 3.5rem !important;
+}
+
 .vue-notification-wrapper .vue-notification {
   @apply mx-2 mb-2 text-center text-sm;
 }

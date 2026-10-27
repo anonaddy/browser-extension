@@ -2,6 +2,10 @@
  * Shared create-alias API for popup, background and content script.
  * POSTs to addy.io API and returns the created alias data or throws.
  */
+import { apiRequest } from './request.js'
+
+export const UNAUTHENTICATED_MESSAGE =
+  'Your API key has expired or been revoked. Open the addy.io extension to sign in again.'
 
 /**
  * @param {{ local_part?: string, extension?: string, domain: string }} alias
@@ -40,22 +44,19 @@ export async function createAliasRequest(options) {
     labelIds = [],
   } = options
 
-  const response = await fetch(`${instance}/api/v1/aliases`, {
+  const response = await apiRequest({
+    instance,
+    apiToken,
+    path: '/api/v1/aliases',
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Requested-With': 'XMLHttpRequest',
-      'X-Requested-From': 'browser-extension',
-      Authorization: `Bearer ${apiToken}`,
-    },
-    body: JSON.stringify({
+    body: {
       domain,
       local_part: localPart,
       description: description || undefined,
       format,
       recipient_ids: recipientIds,
       label_ids: labelIds,
-    }),
+    },
   })
 
   const data = await response.json().catch(() => ({}))
@@ -65,7 +66,7 @@ export async function createAliasRequest(options) {
   }
 
   if (response.status === 401) {
-    const err = new Error('Unauthenticated')
+    const err = new Error(UNAUTHENTICATED_MESSAGE)
     err.code = 'UNAUTHENTICATED'
     throw err
   }

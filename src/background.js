@@ -1,19 +1,12 @@
 import browser from 'webextension-polyfill'
 import psl from 'psl'
 import { createAliasRequest, formatAliasEmail } from './assets/js/api/createAlias.js'
-import { findAliasForSite } from './assets/js/api/findAliasForSite.js'
+import { listAliasesForSite } from './assets/js/api/findAliasForSite.js'
 import { incrementAliasesCreatedCount } from './assets/js/aliasCreateCount.js'
+import { migrateSyncToLocal } from './assets/js/storage.js'
+import { SHARED_DOMAINS } from './assets/js/constants.js'
 
 const CONTEXT_MENU_ID = 'addy-generate-alias'
-const SHARED_DOMAINS = new Set([
-  'anonaddy.me',
-  'anonaddy.com',
-  '4wrd.cc',
-  'mailer.me',
-  'addymail.com',
-  'addy.io',
-  'addy.to',
-])
 let iconDataUrlCache = null
 
 async function getIconDataUrl() {
@@ -47,14 +40,14 @@ function deriveCustomLocalPartFromHostname(hostname, autoFillLocalPart) {
 }
 
 async function createQuickAlias(description = '', hostname = '') {
-  const { apiToken, instance, domain, aliasFormat, autoFillLocalPart } =
-    await browser.storage.sync.get({
-      apiToken: '',
-      instance: '',
-      domain: '',
-      aliasFormat: 'random_characters',
-      autoFillLocalPart: '',
-    })
+  await migrateSyncToLocal()
+  const { apiToken, instance, domain, aliasFormat } = await browser.storage.local.get({
+    apiToken: '',
+    instance: '',
+    domain: '',
+    aliasFormat: 'random_characters',
+  })
+  const { autoFillLocalPart } = await browser.storage.sync.get({ autoFillLocalPart: '' })
 
   if (!apiToken || !instance || !domain) {
     throw new Error('Not logged in or missing settings. Open the addy.io extension to sign in.')
@@ -67,7 +60,7 @@ async function createQuickAlias(description = '', hostname = '') {
     localPart = deriveCustomLocalPartFromHostname(hostname, autoFillLocalPart)
 
     // Shared domains require at least 2 chars for custom local parts.
-    if (!localPart || (SHARED_DOMAINS.has(domain) && localPart.length < 2)) {
+    if (!localPart || (SHARED_DOMAINS.includes(domain) && localPart.length < 2)) {
       // Fall back to random when custom cannot be safely derived.
       format = 'random_characters'
       localPart = ''
@@ -108,41 +101,52 @@ function rememberAlias(hostname, email) {
 }
 
 /**
- * Reuse an alias for this site when one already exists. Create one only when
- * the search has no strict match. The in-memory copy covers a second field
- * on the same page before the new alias appears in search.
+ * This site's aliases as { email, description }, newest first. An alias made in the last few
+ * minutes comes first, since a new alias can take a moment to appear in search.
+ * Empty when alias reuse is turned off. A failed search also returns none, so
+ * alias creation can continue. A 401 is thrown so the caller can show it.
  */
-async function resolveAliasForSite(hostname) {
+async function findSiteAliases(hostname) {
   const host = typeof hostname === 'string' ? hostname.trim() : ''
-  const { apiToken, instance, reuseExistingAlias } = await browser.storage.sync.get({
-    apiToken: '',
-    instance: '',
-    reuseExistingAlias: true,
-  })
+  await migrateSyncToLocal()
+  const { apiToken, instance } = await browser.storage.local.get({ apiToken: '', instance: '' })
+  const { reuseExistingAlias } = await browser.storage.sync.get({ reuseExistingAlias: true })
+  if (reuseExistingAlias === false || !host) return []
 
-  if (reuseExistingAlias === false) {
-    const aliasEmail = await createQuickAlias(host, host)
-    return { aliasEmail, created: true }
+  const found = []
+  const add = (email, description) => {
+    if (!found.some((alias) => alias.email === email)) found.push({ email, description })
   }
+  // Aliases made here are described with the hostname
+  const recent = readRecentAlias(host)
+  if (recent) add(recent, host)
 
-  const recent = host ? readRecentAlias(host) : ''
-  if (recent) return { aliasEmail: recent, created: false }
-
-  if (host && apiToken && instance) {
+  if (apiToken && instance) {
     try {
-      const existing = await findAliasForSite({ instance, apiToken, hostname: host })
-      if (existing && existing.email) {
-        rememberAlias(host, existing.email)
-        return { aliasEmail: existing.email, created: false }
-      }
+      const matches = await listAliasesForSite({ instance, apiToken, hostname: host })
+      matches.forEach((alias) => add(formatAliasEmail(alias), alias.description || ''))
     } catch (err) {
       if (err && err.code === 'UNAUTHENTICATED') throw err
     }
   }
+  return found
+}
 
+async function createSiteAlias(hostname) {
+  const host = typeof hostname === 'string' ? hostname.trim() : ''
   const aliasEmail = await createQuickAlias(host, host)
   rememberAlias(host, aliasEmail)
-  return { aliasEmail, created: true }
+  return aliasEmail
+}
+
+/** For the shortcut and context menu: reuse the newest site alias, or create one. */
+async function resolveAliasForSite(hostname) {
+  const [existing] = await findSiteAliases(hostname)
+  if (existing) {
+    rememberAlias(hostname, existing.email)
+    return { aliasEmail: existing.email, created: false }
+  }
+  return { aliasEmail: await createSiteAlias(hostname), created: true }
 }
 
 function getHostnameFromTab(tab) {
@@ -169,10 +173,12 @@ async function createAndCopyAliasForTab(tab) {
 
   if (tab && tab.id) {
     try {
-      await browser.tabs.sendMessage(tab.id, {
-        type: 'COPY_TO_CLIPBOARD',
-        text: aliasEmail,
-      })
+      // Top frame only, so third-party iframes never receive the alias.
+      await browser.tabs.sendMessage(
+        tab.id,
+        { type: 'COPY_TO_CLIPBOARD', text: aliasEmail },
+        { frameId: 0 }
+      )
     } catch (_) {
       // Content script might not be loaded; clipboard from background is limited
     }
@@ -243,24 +249,41 @@ function contextMenuTitle(reuseExistingAlias) {
     : 'Use or create and copy addy.io alias'
 }
 
+/** Update the menu item in place. Create it only when it does not exist yet. */
 async function setContextMenuVisibility(visible, reuseExistingAlias = true) {
+  const title = contextMenuTitle(reuseExistingAlias)
   try {
-    await browser.contextMenus.remove(CONTEXT_MENU_ID)
-  } catch (_) {}
+    await browser.contextMenus.update(CONTEXT_MENU_ID, { title, visible })
+    return
+  } catch (_) {
+    // Not created yet
+  }
 
   if (!visible) return
 
-  await browser.contextMenus.create({
-    id: CONTEXT_MENU_ID,
-    title: contextMenuTitle(reuseExistingAlias),
-    contexts: ['all'],
+  await new Promise((resolve, reject) => {
+    browser.contextMenus.create({ id: CONTEXT_MENU_ID, title, contexts: ['all'] }, () => {
+      const err = browser.runtime.lastError
+      // A concurrent create already made it
+      if (err && !/duplicate|already exists/i.test(err.message)) reject(err)
+      else resolve()
+    })
   })
 }
 
-async function syncContextMenuVisibility() {
-  const { showContextMenuOption, apiToken, reuseExistingAlias } = await browser.storage.sync.get({
+let contextMenuQueue = Promise.resolve()
+
+/** Run one sync at a time. Install, startup, worker wake and setting changes can overlap. */
+function syncContextMenuVisibility() {
+  contextMenuQueue = contextMenuQueue.catch(() => {}).then(syncContextMenuVisibilityNow)
+  return contextMenuQueue
+}
+
+async function syncContextMenuVisibilityNow() {
+  await migrateSyncToLocal()
+  const { apiToken } = await browser.storage.local.get({ apiToken: '' })
+  const { showContextMenuOption, reuseExistingAlias } = await browser.storage.sync.get({
     showContextMenuOption: true,
-    apiToken: '',
     reuseExistingAlias: true,
   })
   const loggedIn = typeof apiToken === 'string' && apiToken.trim().length > 0
@@ -276,8 +299,11 @@ browser.runtime.onStartup.addListener(() => {
 })
 
 browser.storage.onChanged.addListener((changes, areaName) => {
-  if (areaName !== 'sync') return
-  if (changes.showContextMenuOption || changes.reuseExistingAlias || changes.apiToken) {
+  const relevant =
+    areaName === 'local'
+      ? changes.apiToken
+      : areaName === 'sync' && (changes.showContextMenuOption || changes.reuseExistingAlias)
+  if (relevant) {
     syncContextMenuVisibility().catch(() => {})
   }
 })
@@ -324,8 +350,22 @@ function showErrorNotification(message) {
 }
 
 browser.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+  if (message.type === 'FIND_ALIASES_FOR_INPUT') {
+    findSiteAliases(message.hostname)
+      .then((aliases) => sendResponse({ aliases }))
+      .catch((err) => {
+        const msg = err.message || 'Failed to look up aliases'
+        showErrorNotification(msg)
+        sendResponse({ error: msg })
+      })
+    return true
+  }
   if (message.type === 'CREATE_ALIAS_FOR_INPUT') {
-    resolveAliasForSite(message.description)
+    // forceCreate comes from the picker's "Create new alias", after the user saw the existing ones
+    const resolve = message.forceCreate
+      ? createSiteAlias(message.description).then((aliasEmail) => ({ aliasEmail }))
+      : resolveAliasForSite(message.description)
+    resolve
       .then(({ aliasEmail }) => sendResponse({ aliasEmail }))
       .catch((err) => {
         const msg = err.message || 'Failed to create alias'
