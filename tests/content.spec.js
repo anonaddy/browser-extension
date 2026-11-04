@@ -67,6 +67,47 @@ test('adds the icon to fields in the page, a shadow root, a dialog and later fie
   await expect.poll(() => hasIcon('#late-email')).toBe(true)
 })
 
+test('hides the icon while its field is hidden in place, e.g. a closed modal', async ({
+  page,
+  api,
+}) => {
+  await openSignupPage(page)
+  const modalIconVisible = () =>
+    page.evaluate(() => {
+      const wrapper = document.getElementById('modal-email')._addyWrapper
+      return Boolean(wrapper) && wrapper.style.visibility === 'visible'
+    })
+  const setModal = (style) =>
+    page.evaluate((s) => Object.assign(document.getElementById('modal').style, s), style)
+
+  await expect.poll(modalIconVisible).toBe(true)
+
+  await setModal({ visibility: 'hidden' })
+  await expect.poll(modalIconVisible).toBe(false)
+  await setModal({ visibility: '' })
+  await expect.poll(modalIconVisible).toBe(true)
+
+  await setModal({ opacity: '0' })
+  await expect.poll(modalIconVisible).toBe(false)
+  await setModal({ opacity: '' })
+  await expect.poll(modalIconVisible).toBe(true)
+
+  // Other fields keep theirs
+  expect(
+    await page.evaluate(() => document.getElementById('email')._addyWrapper.style.visibility)
+  ).toBe('visible')
+})
+
+test('works without context menus or commands, as on Firefox for Android', async ({
+  page,
+  api,
+}) => {
+  // openSignupPage waits for the icon, which needs the background to answer
+  await openSignupPage(page, { missingApis: ['contextMenus', 'commands'] })
+  await clickIcon(page)
+  await expect.poll(() => fieldValue(page)).toBe('new1@addy.io')
+})
+
 test('reports a missing alias domain instead of failing silently', async ({ page, api }) => {
   await openSignupPage(page, { local: signedIn({ domain: '' }) })
   await clickIcon(page)

@@ -135,6 +135,8 @@
       _items: menus,
     },
   }
+  // e.g. ['contextMenus', 'commands'] to act like Firefox for Android
+  for (const name of config.missingApis || []) delete window.browser[name]
 
   // webextension-polyfill refuses to load unless this looks like an extension
   window.chrome = { runtime: { id: 'test' } }

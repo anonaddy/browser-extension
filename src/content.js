@@ -140,6 +140,18 @@ function isValidEmailInput(element) {
 }
 
 /**
+ * Whether the field can be seen now. A closed modal often stays in the page with
+ * visibility:hidden or opacity:0 on an ancestor, keeping the field's size and
+ * position, so size and intersection checks alone would leave its icon showing.
+ */
+function isFieldShown(input) {
+  if (typeof input.checkVisibility === 'function') {
+    return input.checkVisibility({ opacityProperty: true, visibilityProperty: true })
+  }
+  return getComputedStyle(input).visibility !== 'hidden'
+}
+
+/**
  * Place the floating button on the input.
  * 'inside' overlays the right side of the field.
  * 'outside' sits to the right of the field, clear of password-manager icons.
@@ -185,7 +197,10 @@ function updateButtonPosition(input, wrapper) {
 
   const sizeOk = rect.width >= MIN_INPUT_WIDTH && rect.height >= MIN_INPUT_HEIGHT
   const inView = wrapper._addyInView !== false
-  wrapper.style.visibility = sizeOk && inView ? 'visible' : 'hidden'
+  const shown = sizeOk && inView && isFieldShown(input)
+  wrapper.style.visibility = shown ? 'visible' : 'hidden'
+  // The picker is anchored to the field, so it goes too
+  if (!shown && isAliasPickerOpenFor(input)) closeAliasPicker()
 }
 
 function updateAllPositions() {
@@ -445,6 +460,10 @@ function setupScrollAndResizeListeners() {
   window._addyScrollResizeSetup = true
   window.addEventListener('scroll', schedulePositionUpdate, { passive: true, capture: true })
   window.addEventListener('resize', schedulePositionUpdate)
+  // Modals usually open and close with a transition, so update when it ends
+  // rather than waiting for the position fallback
+  document.addEventListener('transitionend', schedulePositionUpdate, { capture: true })
+  document.addEventListener('animationend', schedulePositionUpdate, { capture: true })
 }
 
 function isLoggedIn(apiToken) {

@@ -251,6 +251,8 @@ function contextMenuTitle(reuseExistingAlias) {
 
 /** Update the menu item in place. Create it only when it does not exist yet. */
 async function setContextMenuVisibility(visible, reuseExistingAlias = true) {
+  // Firefox for Android has no context menus
+  if (!browser.contextMenus) return
   const title = contextMenuTitle(reuseExistingAlias)
   try {
     await browser.contextMenus.update(CONTEXT_MENU_ID, { title, visible })
@@ -310,7 +312,10 @@ browser.storage.onChanged.addListener((changes, areaName) => {
 
 syncContextMenuVisibility().catch(() => {})
 
-browser.contextMenus.onClicked.addListener(async (_info, tab) => {
+// Firefox for Android has neither context menus nor commands. Registering a
+// listener on a missing API would throw and stop this script before the
+// message listener below, breaking the email field icon.
+browser.contextMenus?.onClicked.addListener(async (_info, tab) => {
   if (_info.menuItemId !== CONTEXT_MENU_ID) return
   try {
     await createAndCopyAliasForTab(tab)
@@ -319,7 +324,7 @@ browser.contextMenus.onClicked.addListener(async (_info, tab) => {
   }
 })
 
-browser.commands.onCommand.addListener(async (command) => {
+browser.commands?.onCommand.addListener(async (command) => {
   if (command === 'open_addy_extension') {
     await openExtensionViaCommand()
     return

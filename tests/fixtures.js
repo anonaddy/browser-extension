@@ -217,12 +217,15 @@ export async function openPopup(page, { local = {}, sync = {}, tabUrl } = {}) {
 }
 
 /** Open the GitHub signup test page with the background and content scripts running. */
-export async function openSignupPage(page, { local = signedIn(), sync = {} } = {}) {
+export async function openSignupPage(
+  page,
+  { local = signedIn(), sync = {}, missingApis = [] } = {}
+) {
   await page.addInitScript(
     (config) => {
       window.__addyTest = config
     },
-    { local, sync }
+    { local, sync, missingApis }
   )
   await page.goto(SIGNUP_URL)
   // The icon appears once the content script has its image from the background
